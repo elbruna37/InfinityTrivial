@@ -1,0 +1,284 @@
+{
+  "questions": [
+    // ---- Ciencia y Naturaleza ----
+	{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Cuál es el planeta más grande del sistema solar?",
+"opciones": ["Júpiter", "Saturno", "Tierra", "Marte"],
+"indiceCorrecta": 0,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué gas necesitan las plantas para realizar la fotosíntesis?",
+"opciones": ["Oxígeno", "Nitrógeno", "Dióxido de carbono", "Hidrógeno"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Cuál es el hueso más largo del cuerpo humano?",
+"opciones": ["Fémur", "Tibia", "Húmero", "Radio"],
+"indiceCorrecta": 0,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué animal es conocido como el 'rey de la selva'?",
+"opciones": ["Tigre", "Elefante", "León", "Jirafa"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Cuántos corazones tiene un pulpo?",
+"opciones": ["1", "2", "3", "4"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué planeta es conocido como el 'planeta rojo'?",
+"opciones": ["Venus", "Marte", "Júpiter", "Saturno"],
+"indiceCorrecta": 1,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué tipo de animal es la ballena?",
+"opciones": ["Pez", "Anfibio", "Reptil", "Mamífero"],
+"indiceCorrecta": 3,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Cuál es el océano más grande del mundo?",
+"opciones": ["Atlántico", "Índico", "Pacífico", "Ártico"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué parte del cuerpo humano produce insulina?",
+"opciones": ["Hígado", "Páncreas", "Riñón", "Estómago"],
+"indiceCorrecta": 1,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué gas es el más abundante en la atmósfera terrestre?",
+"opciones": ["Oxígeno", "Dióxido de carbono", "Nitrógeno", "Hidrógeno"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué animal duerme de pie?",
+"opciones": ["Caballo", "Perro", "Gato", "Vaca"],
+"indiceCorrecta": 0,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Cuál es el metal líquido a temperatura ambiente?",
+"opciones": ["Cobre", "Plata", "Mercurio", "Oro"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué planeta está más cerca del Sol?",
+"opciones": ["Venus", "Tierra", "Mercurio", "Marte"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué fruto seco crece en los robles?",
+"opciones": ["Avellana", "Almendra", "Bellota", "Nuez"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Cuántas patas tiene una araña?",
+"opciones": ["4", "6", "8", "10"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué gas liberan las plantas durante la fotosíntesis?",
+"opciones": ["Dióxido de carbono", "Nitrógeno", "Oxígeno", "Hidrógeno"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué animal tiene rayas blancas y negras?",
+"opciones": ["Leopardo", "Cebra", "Jirafa", "Elefante"],
+"indiceCorrecta": 1,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Cuál es el satélite natural de la Tierra?",
+"opciones": ["Marte", "Venus", "Luna", "Sol"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué tipo de animal es el delfín?",
+"opciones": ["Pez", "Reptil", "Mamífero", "Anfibio"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué planeta tiene anillos visibles?",
+"opciones": ["Júpiter", "Saturno", "Urano", "Neptuno"],
+"indiceCorrecta": 1,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué animal es el más rápido en tierra?",
+"opciones": ["León", "Guepardo", "Leopardo", "Tigre"],
+"indiceCorrecta": 1,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué parte de la planta absorbe agua y nutrientes?",
+"opciones": ["Hoja", "Tallo", "Flor", "Raíz"],
+"indiceCorrecta": 3,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Cuál es el animal más alto del mundo?",
+"opciones": ["Elefante", "Jirafa", "Oso", "Rinoceronte"],
+"indiceCorrecta": 1,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué planeta es conocido como el 'planeta azul'?",
+"opciones": ["Tierra", "Neptuno", "Urano", "Marte"],
+"indiceCorrecta": 0,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué animal migra cada año a México desde Canadá?",
+"opciones": ["Golondrinas", "Mariposa monarca", "Águilas", "Gansos"],
+"indiceCorrecta": 1,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Cuál es el órgano más grande del cuerpo humano?",
+"opciones": ["Hígado", "Corazón", "Piel", "Cerebro"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué animal puede regenerar sus extremidades?",
+"opciones": ["Rana", "Lagarto", "Salamandra", "Serpiente"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué gas necesitamos para respirar?",
+"opciones": ["Dióxido de carbono", "Nitrógeno", "Oxígeno", "Hidrógeno"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué tipo de árbol produce bellotas?",
+"opciones": ["Pino", "Roble", "Olivo", "Manzano"],
+"indiceCorrecta": 1,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Cuántos cromosomas tiene un ser humano?",
+"opciones": ["23", "46", "48", "50"],
+"indiceCorrecta": 1,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué animal es el símbolo de la sabiduría?",
+"opciones": ["Búho", "Águila", "Cuervo", "Paloma"],
+"indiceCorrecta": 0,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué planeta tiene más lunas?",
+"opciones": ["Tierra", "Marte", "Júpiter", "Venus"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué animal tiene tres corazones?",
+"opciones": ["Pulpo", "Calamar", "Tiburón", "Medusa"],
+"indiceCorrecta": 0,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué gas hace que los globos floten?",
+"opciones": ["Oxígeno", "Hidrógeno", "Helio", "Nitrógeno"],
+"indiceCorrecta": 2,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué animal vive más años?",
+"opciones": ["Elefante", "Tortuga", "Ballena", "Águila"],
+"indiceCorrecta": 1,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué planeta gira acostado sobre su lado?",
+"opciones": ["Saturno", "Urano", "Neptuno", "Júpiter"],
+"indiceCorrecta": 1,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué animal puede saltar más alto en proporción a su tamaño?",
+"opciones": ["Rana", "Pulga", "Canguro", "Gato"],
+"indiceCorrecta": 1,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué fruto seco da nombre a un color?",
+"opciones": ["Almendra", "Avellana", "Nuez", "Castaña"],
+"indiceCorrecta": 1,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué planeta tiene el día más largo?",
+"opciones": ["Venus", "Mercurio", "Júpiter", "Saturno"],
+"indiceCorrecta": 0,
+"dificultad": "facil"
+},
+{
+"categoria": "Ciencia y Naturaleza",
+"enunciado": "¿Qué animal tiene la lengua más larga en proporción a su cuerpo?",
+"opciones": ["Camaleón", "Oso hormiguero", "Murciélago", "Pájaro carpintero"],
+"indiceCorrecta": 0,
+"dificultad": "facil"
+}
+]

@@ -1,0 +1,250 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+public class TurnManager : MonoBehaviour
+{
+    public static TurnManager Instance;
+    public PreguntasManager preguntasManager;
+
+    [Header("Referencias")]
+    public DiceSpawner diceSpawner;      // Tiene el método SpawnAndThrowDice
+    public BoardManager boardManager;    // Para mover al jugador después (más tarde)
+
+    [Header("Fichas de jugadores")]
+    List<PlayerPiece> playerPieces = new List<PlayerPiece>();
+    private int[] quesitosPorJugador;
+
+    private int currentPlayerIndex = 0;
+    private bool isWaitingForClick = false;
+    private bool gameEnded = false;
+    public bool canDestroy = false;
+
+    public TMP_Text textInformation;
+    string[] equipos = { "Verde", "Azul", "Rojo", "Amarillo"};
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
+    private void Start()
+    {
+        quesitosPorJugador = new int[GameManager.Instance.maxPlayer];
+        gameEnded = false;
+        StartTurn();
+    }
+
+    private void StartTurn()
+    {
+        if (gameEnded) return;
+
+        textInformation.text = ($"Turno del equipo {equipos[currentPlayerIndex]} \n Haz clic para lanzar el dado.");
+        isWaitingForClick = true;   // ahora esperamos a que el jugador haga click
+    }
+
+    private void Update()
+    {
+        if (gameEnded) return;
+
+        if (isWaitingForClick && (Input.GetMouseButtonDown(0) || Input.touchCount > 0)) // clic izquierdo
+        {
+            isWaitingForClick = false;
+            textInformation.text = "";
+            diceSpawner.SpawnAndThrowDice(OnDiceResult);
+        }
+    }
+
+    public void RegisterPlayer(PlayerPiece piece)
+    {
+        if (playerPieces == null)
+            playerPieces = new List<PlayerPiece>();
+
+        playerPieces.Add(piece);
+    }
+
+    // Callback que recibe el resultado del dado
+    private void OnDiceResult(int result)
+    {
+        Debug.Log($"Jugador {currentPlayerIndex + 1} sacó un {result}");
+
+
+        //mover la ficha del jugador actual
+        if (playerPieces.Count > currentPlayerIndex)
+        {
+            PlayerPiece currentPiece = playerPieces[currentPlayerIndex];
+            StartCoroutine(MoveAndWait(currentPiece, result));
+        }
+    }
+
+    // Coroutine para esperar a que termine el movimiento
+    private IEnumerator MoveAndWait(PlayerPiece piece, int steps)
+    {
+
+        yield return boardManager.MoveRoutine(piece, steps); 
+        
+        BoardNode landedNode = piece.currentNode;
+        if (landedNode != null)
+        {
+            Debug.Log($"El jugador {piece.name} cayó en {landedNode.name} ({landedNode.nodeType}, {landedNode.nodeColor})");
+
+            switch (landedNode.nodeType)
+            {
+                case BoardNode.NodeType.Normal:
+                    Debug.Log("Casilla normal → buscando pregunta...");
+                    string categoria = GameManager.Instance.GetCategoriaParaColor(ConvertNodeColorToQuesitoColor(landedNode.nodeColor));
+                    
+                    PreguntasManager.Instance.AskRandomQuestion(categoria, (bool correcta) =>
+                    {
+                        if (correcta)
+                        {
+                            textInformation.text = ($"Vuelve a tirar equipo {equipos[currentPlayerIndex]}");
+                            isWaitingForClick = true;
+                        }
+                        if(!correcta)
+                        {
+                            NextTurn();
+                        }
+                    });
+
+                    break;
+
+                case BoardNode.NodeType.Quesito:
+                    Debug.Log($"Casilla de Quesito → preguntar categoría {landedNode.nodeColor}");
+                    categoria = GameManager.Instance.GetCategoriaParaColor(ConvertNodeColorToQuesitoColor(landedNode.nodeColor));
+
+                    PreguntasManager.Instance.AskRandomQuesitoQuestion(categoria, (bool correcta) =>
+                    {
+                        if (correcta)
+                        {
+                            textInformation.text = ($"El equipo {equipos[currentPlayerIndex]} gana quesito y vuelve a tirar");
+                            ActivarQuesitoParaJugador(currentPlayerIndex, ConvertNodeColorToQuesitoColor(landedNode.nodeColor));
+                            isWaitingForClick = true;
+                        }
+                        if(!correcta)
+                        {
+                            NextTurn();
+                        }
+                    });
+
+                    break;
+
+                case BoardNode.NodeType.VolverATirar:
+                    canDestroy = true;
+                    textInformation.text = ($"Casilla de Volver a tirar → el equipo {equipos[currentPlayerIndex]} vuelve a tirar");
+                    isWaitingForClick = true;
+                    break;
+
+                case BoardNode.NodeType.Start:
+                    canDestroy= true;
+                    NextTurn();
+                    break;
+            }
+        }
+    }
+
+    private void NextTurn()
+    {
+        currentPlayerIndex++;
+
+        if (currentPlayerIndex >= GameManager.Instance.maxPlayer)
+            currentPlayerIndex = 0; // volver al jugador 1
+
+        StartTurn();
+    }
+
+    private QuesitoColor ConvertNodeColorToQuesitoColor(BoardNode.NodeColor nodeColor)
+    {
+        switch (nodeColor)
+        {
+            case BoardNode.NodeColor.Blue: return QuesitoColor.Azul;
+            case BoardNode.NodeColor.Pink: return QuesitoColor.Rosa;
+            case BoardNode.NodeColor.Yellow: return QuesitoColor.Amarillo;
+            case BoardNode.NodeColor.Green: return QuesitoColor.Verde;
+            case BoardNode.NodeColor.Orange: return QuesitoColor.Naranja;
+            case BoardNode.NodeColor.Purple: return QuesitoColor.Morado;
+            default: throw new System.ArgumentException($"Color de nodo no soportado: {nodeColor}");
+        }
+    }
+
+    private void ActivarQuesitoParaJugador(int playerIndex, QuesitoColor color)
+    {
+        // Construimos el nombre del objeto padre del jugador
+        string jugadorName = $"QuesitoPlayer{playerIndex + 1}";
+        GameObject jugador = GameObject.Find(jugadorName);
+        if (jugador == null)
+        {
+            Debug.LogWarning($"No se encontró el objeto {jugadorName}");
+            return;
+        }
+
+        // Construimos el nombre del quesito a activar según el color
+        string quesitoName = color switch
+        {
+            QuesitoColor.Azul => "Quesito Azul",
+            QuesitoColor.Rosa => "Quesito Rosa",
+            QuesitoColor.Amarillo => "Quesito Amarillo",
+            QuesitoColor.Verde => "Quesito Verde",
+            QuesitoColor.Naranja => "Quesito Naranja",
+            QuesitoColor.Morado => "Quesito Morado",
+            _ => ""
+        };
+
+        if (string.IsNullOrEmpty(quesitoName)) return;
+
+        // Buscar el quesito dentro del jugador
+        Transform quesito = jugador.transform.Find(quesitoName);
+        if (quesito == null)
+        {
+            Debug.LogWarning($"No se encontró el quesito {quesitoName} dentro de {jugadorName}");
+            return;
+        }
+
+        if (!quesito.gameObject.activeSelf)
+        {
+            quesito.gameObject.SetActive(true);
+
+            // --- Comprobación de victoria ---
+            
+            quesitosPorJugador[playerIndex]++;
+                
+            
+            Debug.Log($"El equipo {equipos[currentPlayerIndex]} tiene {quesitosPorJugador[playerIndex]} puntos");
+
+
+            if (quesitosPorJugador[playerIndex] >= 6)
+            {
+                gameEnded = true;
+                textInformation.text = $"¡El equipo {equipos[playerIndex]} ha ganado! Haz clic para volver al menú.";
+                isWaitingForClick = false;
+                StartCoroutine(WaitForClickToReturnMenu());
+            }
+        }
+        else
+        {
+            Debug.Log($"El quesito {quesitoName} ya estaba activado para {jugadorName}. No se suma punto.");
+        }
+    }
+
+    private IEnumerator WaitForClickToReturnMenu()
+    {
+
+        while (!(Input.GetMouseButtonDown(0) || Input.touchCount > 0))
+        {
+            yield return null;
+        }
+
+        Destroy(GameManager.Instance.gameObject);
+        Destroy(PreguntasManager.Instance.gameObject);
+        Destroy(UIManager.Instance.gameObject);
+
+        SceneManager.LoadScene("Menu"); // Cambia "MenuScene" por el nombre exacto de tu escena de menú
+    }
+
+}
+
+
