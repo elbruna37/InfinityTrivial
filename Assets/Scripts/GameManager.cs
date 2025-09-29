@@ -60,7 +60,7 @@ public class GameManager : MonoBehaviour
 
     public void OptionsPressed()
     {
-
+        SceneManager.LoadScene("PreguntasImporter");
     }
     public void QuitPressed()
     {

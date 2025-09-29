@@ -12,11 +12,11 @@ EditorBuildSettings:
     path: Assets/Scenes/Options.unity
     guid: c4aacee9b29eb7b4ca287c6e901dd5e3
   - enabled: 1
+    path: Assets/Scenes/PreguntasImporter.unity
+    guid: d3d2494196055e54e8c528e2068117de
+  - enabled: 1
     path: Assets/Scenes/Questions.unity
     guid: 6137508e8d712c0498d0d95456ba4432
-  - enabled: 1
-    path: Assets/Scenes/LoadingScene.unity
-    guid: 8a242fc140922b14c90b70dd6d567e6f
   - enabled: 1
     path: Assets/Scenes/Game.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
