@@ -108,11 +108,20 @@ public class UISelectorCategorias : MonoBehaviour
     private void UpdateConfirmButton()
     {
         // El botón solo es interactuable si todos los dropdowns tienen selección
-        botonConfirmar.interactable = selectionMap.Values.All(v => !string.IsNullOrEmpty(v));
+        bool allSelected = selectionMap.Values.All(v => !string.IsNullOrEmpty(v));
+        botonConfirmar.interactable = allSelected;
+
+        // Busca el componente de texto del botón
+        TMP_Text buttonText = botonConfirmar.GetComponentInChildren<TMP_Text>();
+        if (buttonText != null)
+        {
+            buttonText.color = allSelected ? Color.white : Color.gray;
+        }
     }
 
     public void ConfirmarCategorias()
     {
+        GameManager.Instance.AudioClick();
 
         foreach (var map in dropdownColorMaps)
         {
@@ -128,6 +137,8 @@ public class UISelectorCategorias : MonoBehaviour
 
     public void VolverAlMenu()
     {
+        GameManager.Instance.AudioClick();
+
         Destroy(GameManager.Instance.gameObject);
         Destroy(PreguntasManager.Instance.gameObject);
 

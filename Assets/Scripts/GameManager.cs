@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-
     [Header("Datos de partida")]
     // Mapa color → categoría
     private Dictionary<QuesitoColor, string> categoriasPorColor = new Dictionary<QuesitoColor, string>();
 
-    public GameObject menuButtons;
-    public GameObject maxPlayerMenu;
+    [Header("Sonido")]
+    [SerializeField] private AudioClip click;
+    private AudioSource audioSource;
 
     public int maxPlayer = 0;
 
@@ -31,6 +32,10 @@ public class GameManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(this.gameObject);
         }
+
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.loop = false;
+
     }
     public void SetCategoriaParaColor(QuesitoColor color, string categoria)
     {
@@ -51,53 +56,12 @@ public class GameManager : MonoBehaviour
         return new Dictionary<QuesitoColor, string>(categoriasPorColor);
     }
 
-    public void StartPressed()
+    //Metedos para AudioClips
+
+    public void AudioClick()
     {
-        menuButtons.SetActive(false);
-
-        maxPlayerMenu.SetActive(true);
+        audioSource.clip = click;
+        audioSource.Play();
     }
-
-    public void OptionsPressed()
-    {
-        SceneManager.LoadScene("PreguntasImporter");
-    }
-    public void QuitPressed()
-    {
-        #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-        #else
-            Application.Quit();
-        #endif
-    }
-
-    public void BackPressed()
-    {
-        maxPlayerMenu.SetActive(false);
-
-        menuButtons.SetActive(true);
-    }
-
-    public void PlayerMax2()
-    {
-        maxPlayer = 2;
-
-        SceneManager.LoadScene("Questions");
-    }
-
-    public void PlayerMax3()
-    {
-        maxPlayer = 3;
-
-        SceneManager.LoadScene("Questions");
-    }
-
-    public void PlayerMax4()
-    {
-        maxPlayer = 4;
-
-        SceneManager.LoadScene("Questions");
-    }
-
 
 }
