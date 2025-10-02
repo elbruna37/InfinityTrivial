@@ -14,10 +14,8 @@ public class UIMenuManager : MonoBehaviour
     public GameObject maxPlayerMenu;
     bool canRotate = true;
 
-    [Header("UI")]
+    [Header("Camera Motion")]
     [SerializeField] private float moveDuration = 2f; // Tiempo en segundos
-    [SerializeField] private Image fadeImage; // Un panel UI en negro cubriendo la pantalla
-    [SerializeField] private float fadeDuration = 0.5f; // Tiempo del fundido
     [SerializeField] private float parabolaHeight = 3f; // Altura máxima de la parábola
 
     [SerializeField] private GameObject camara;
@@ -114,13 +112,12 @@ public class UIMenuManager : MonoBehaviour
     private IEnumerator MoveToZero(GameObject obj)
     {
         Vector3 startPos = obj.transform.position;
-        Vector3 targetPos = Vector3.zero;
+        Vector3 targetPos = new Vector3(1.42f, 2.84f, 12.31f);
 
         Quaternion startRot = obj.transform.rotation;
-        Quaternion targetRot = Quaternion.LookRotation(Vector3.down);
+        Quaternion targetRot = Quaternion.Euler(36.512f, 192.58f, 0f);
 
         float elapsed = 0f;
-        bool fadeStarted = false;
 
         while (elapsed < moveDuration)
         {
@@ -136,41 +133,22 @@ public class UIMenuManager : MonoBehaviour
 
             obj.transform.position = linearPos;
 
-            // Rotación hacia abajo 
+            // Rotación interpolada hacia la final
             obj.transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
 
             // Cuando llega al 50%, lanza el fade
-            if (!fadeStarted && t >= 0.5f)
+            /*if (!fadeStarted && t >= 0.5f)
             {
                 fadeStarted = true;
                 StartCoroutine(FadeToBlack());
             }
-
+            */
             yield return null;
         }
 
         // Asegura que termine exacto en destino
         obj.transform.position = targetPos;
-        obj.transform.rotation = Quaternion.LookRotation(Vector3.zero - targetPos);
-    }
-
-    private IEnumerator FadeToBlack()
-    {
-        if (fadeImage == null) yield break;
-
-        Color c = fadeImage.color;
-        float elapsed = 0f;
-
-        while (elapsed < fadeDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / fadeDuration);
-
-            c.a = Mathf.Lerp(0f, 1f, t); // De transparente a negro
-            fadeImage.color = c;
-
-            yield return null;
-        }
+        obj.transform.rotation = targetRot;
 
         SceneManager.LoadScene("Questions");
     }

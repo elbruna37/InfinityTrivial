@@ -21,23 +21,30 @@ public class UISelectorCategorias : MonoBehaviour
     private List<string> originalCategories;
     private Dictionary<TMP_Dropdown, string> selectionMap;
 
+    private int currentIndex = 0; // índice del dropdown que está activo
+
     void Start()
     {
         originalCategories = new List<string>(manager.categoriasDisponibles);
         selectionMap = new Dictionary<TMP_Dropdown, string>();
 
-        foreach (var map in dropdownColorMaps)
+        // Inicializar todos como ocultos excepto el primero
+        for (int i = 0; i < dropdownColorMaps.Length; i++)
         {
-            TMP_Dropdown dd = map.dropdown;
+            TMP_Dropdown dd = dropdownColorMaps[i].dropdown;
+            dd.gameObject.SetActive(i == 0); // solo el primero activo
             selectionMap[dd] = null;
 
-            var opciones = BuildOptionsFor(dd);
-            dd.ClearOptions();
-            dd.AddOptions(opciones);
-            dd.SetValueWithoutNotify(0);
+            if (i == 0) // solo configuro el primero al inicio
+            {
+                var opciones = BuildOptionsFor(dd);
+                dd.ClearOptions();
+                dd.AddOptions(opciones);
+                dd.SetValueWithoutNotify(0);
 
-            TMP_Dropdown local = dd;
-            dd.onValueChanged.AddListener((int value) => OnDropdownValueChanged(local, value));
+                TMP_Dropdown local = dd;
+                dd.onValueChanged.AddListener((int value) => OnDropdownValueChanged(local, value));
+            }
         }
 
         UpdateConfirmButton();
@@ -46,17 +53,31 @@ public class UISelectorCategorias : MonoBehaviour
     private void OnDropdownValueChanged(TMP_Dropdown dd, int value)
     {
         string nueva = value == 0 ? null : dd.options[value].text;
-        string anterior = selectionMap[dd];
-
-        if (anterior == nueva) return;
+        if (nueva == null) return;
 
         selectionMap[dd] = nueva;
 
-        // Bloquear dropdown al elegir
-        dd.interactable = string.IsNullOrEmpty(nueva) ? true : false;
+        // Bloquear dropdown actual
+        dd.interactable = false;
+        dd.gameObject.SetActive(false);
 
-        RefreshAllDropdowns();
-        UpdateConfirmButton(); // Actualizamos el estado del botón
+        // Avanzar al siguiente dropdown si existe
+        currentIndex++;
+        if (currentIndex < dropdownColorMaps.Length)
+        {
+            TMP_Dropdown siguiente = dropdownColorMaps[currentIndex].dropdown;
+            siguiente.gameObject.SetActive(true);
+
+            var opciones = BuildOptionsFor(siguiente);
+            siguiente.ClearOptions();
+            siguiente.AddOptions(opciones);
+            siguiente.SetValueWithoutNotify(0);
+
+            TMP_Dropdown local = siguiente;
+            siguiente.onValueChanged.AddListener((int v) => OnDropdownValueChanged(local, v));
+        }
+
+        UpdateConfirmButton();
     }
 
     private List<string> BuildOptionsFor(TMP_Dropdown dd)
@@ -72,46 +93,12 @@ public class UISelectorCategorias : MonoBehaviour
         return opciones;
     }
 
-    private void RefreshAllDropdowns()
-    {
-        foreach (var dd in selectionMap.Keys.ToList())
-        {
-            string seleccionActual = selectionMap[dd];
-            var opciones = BuildOptionsFor(dd);
-
-            dd.ClearOptions();
-            dd.AddOptions(opciones);
-
-            if (!string.IsNullOrEmpty(seleccionActual))
-            {
-                int idx = dd.options.FindIndex(o => o.text == seleccionActual);
-                if (idx != -1)
-                {
-                    dd.SetValueWithoutNotify(idx);
-                    dd.interactable = false;
-                }
-                else
-                {
-                    selectionMap[dd] = null;
-                    dd.SetValueWithoutNotify(0);
-                    dd.interactable = true;
-                }
-            }
-            else
-            {
-                dd.SetValueWithoutNotify(0);
-                dd.interactable = true;
-            }
-        }
-    }
-
     private void UpdateConfirmButton()
     {
         // El botón solo es interactuable si todos los dropdowns tienen selección
         bool allSelected = selectionMap.Values.All(v => !string.IsNullOrEmpty(v));
         botonConfirmar.interactable = allSelected;
 
-        // Busca el componente de texto del botón
         TMP_Text buttonText = botonConfirmar.GetComponentInChildren<TMP_Text>();
         if (buttonText != null)
         {

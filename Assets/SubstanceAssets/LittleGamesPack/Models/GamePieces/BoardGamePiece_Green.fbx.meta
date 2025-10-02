@@ -102,3 +102,10 @@ ModelImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 237164
+  packageName: PBR Little Games Pack - 4K
+  packageVersion: 1.0
+  assetPath: Assets/SubstanceAssets/LittleGamesPack/Models/GamePieces/BoardGamePiece_Green.fbx
+  uploadId: 538269
