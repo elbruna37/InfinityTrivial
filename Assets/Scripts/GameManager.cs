@@ -11,12 +11,15 @@ public class GameManager : MonoBehaviour
     [Header("Datos de partida")]
     // Mapa color → categoría
     private Dictionary<QuesitoColor, string> categoriasPorColor = new Dictionary<QuesitoColor, string>();
+    public int maxPlayer = 0;
 
     [Header("Sonido")]
     [SerializeField] private AudioClip click;
+    [SerializeField] private AudioClip acierto;
+    [SerializeField] private AudioClip fallo;
     private AudioSource audioSource;
 
-    public int maxPlayer = 0;
+    
 
     void Awake()
     {
@@ -61,6 +64,18 @@ public class GameManager : MonoBehaviour
     public void AudioClick()
     {
         audioSource.clip = click;
+        audioSource.Play();
+    }
+
+    public void AudioAcierto()
+    {
+        audioSource.clip = acierto;
+        audioSource.Play();
+    }
+
+    public void AudioFallo()
+    {
+        audioSource.clip = fallo;
         audioSource.Play();
     }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DG.Tweening;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -15,6 +16,10 @@ public class UIManager : MonoBehaviour
     public GameObject panelPregunta;
     public GameObject panelRespuestas;
     public GameObject quesitoPanel;
+    public RectTransform upRespuestasPanel;
+    public RectTransform downRespuestasPanel;
+    public Image fondo;
+    private Color colorOriginal;
 
     [Header("Textos")]
     public TMP_Text enunciadoTMP;
@@ -38,6 +43,9 @@ public class UIManager : MonoBehaviour
     public TMP_Text categoriaMoradoTMP;
     public TMP_Text categoriaVerdeTMP;
 
+    [Header("DoTween")]
+    Sequence upDownPanelsSeq = DOTween.Sequence();
+
     void Awake()
     {
         Instance = this;
@@ -47,6 +55,7 @@ public class UIManager : MonoBehaviour
     {
         var categorias = GameManager.Instance.GetTodasLasCategorias();
         ActualizarCategorias(categorias);
+        colorOriginal = fondo.color;
     }
 
     public void MostrarPregunta(Pregunta pregunta, Action<bool> onAnswered)
@@ -64,18 +73,35 @@ public class UIManager : MonoBehaviour
         // 🔹 Mostrar solo enunciado 30s
         panelPregunta.SetActive(true);
         panelRespuestas.SetActive(false);
+        enunciadoTMP.fontSize = 70;
         enunciadoTMP.text = preguntaActual.enunciado;
         TurnManager.Instance.canDestroy = true;
 
         yield return new WaitForSeconds(6f);
 
-        panelPregunta.SetActive(false);
+        // 🔹 Reducir tamaño Texto Pregunta
+        float elapsed = 0f;
+        float startSize = enunciadoTMP.fontSize;
+
+        while (elapsed < 0.3f)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / 0.3f);
+            enunciadoTMP.fontSize = Mathf.Lerp(startSize, 50, t);
+            yield return null;
+        }
+
+        enunciadoTMP.fontSize = 50;
 
         // 🔹 Mostrar opciones
         panelRespuestas.SetActive(true);
+        
+        upDownPanelsSeq.Append(upRespuestasPanel.DOAnchorPosY(upRespuestasPanel.anchoredPosition.y - 479, 0.3f).SetEase(Ease.OutQuad));
+        upDownPanelsSeq.Join(downRespuestasPanel.DOAnchorPosY(downRespuestasPanel.anchoredPosition.y + 483, 0.3f).SetEase(Ease.OutQuad));
+
         PrepararOpciones();
 
-        float tiempo = 15f;
+        float tiempo = 30f;
         while (tiempo > 0f)
         {
             contadorTMP.text = Mathf.CeilToInt(tiempo).ToString();
@@ -111,9 +137,14 @@ public class UIManager : MonoBehaviour
 
         // Feedback
         if (correcta)
-            textInformation.text = "Respuesta correcta";
+            //textInformation.text = "Respuesta correcta";
+            GameManager.Instance.AudioAcierto();
+
         else
-            textInformation.text = "Respuesta incorrecta → pierde turno";
+            //textInformation.text = "Respuesta incorrecta → pierde turno";
+            GameManager.Instance.AudioFallo();
+
+        StartCoroutine(ParpadearFondo(correcta ? Color.green : Color.red));
 
         if (timerCoroutine != null) StopCoroutine(timerCoroutine);
         timerCoroutine = StartCoroutine(CerrarConRetraso(correcta));
@@ -127,6 +158,9 @@ public class UIManager : MonoBehaviour
 
     private void OnRespuestaFinalizada(bool correcta)
     {
+        upDownPanelsSeq.Append(upRespuestasPanel.DOAnchorPosY(upRespuestasPanel.anchoredPosition.y + 479, 0.3f).SetEase(Ease.OutQuad));
+        upDownPanelsSeq.Join(downRespuestasPanel.DOAnchorPosY(downRespuestasPanel.anchoredPosition.y - 483, 0.3f).SetEase(Ease.OutQuad));
+
         panelPregunta.SetActive(false);
         panelRespuestas.SetActive(false);
         quesitoPanel.SetActive(true);
@@ -153,6 +187,22 @@ public class UIManager : MonoBehaviour
 
         if (categorias.TryGetValue(QuesitoColor.Verde, out string verde))
             categoriaVerdeTMP.text = verde;
+    }
+
+    private IEnumerator ParpadearFondo(Color colorObjetivo)
+    {
+        int repeticionesParpadeo = 4;
+        float duracionParpadeo = 0.5f;
+
+        for (int i = 0; i < repeticionesParpadeo; i++)
+        {
+            fondo.color = colorObjetivo;
+            yield return new WaitForSeconds(duracionParpadeo / (2 * repeticionesParpadeo));
+
+            fondo.color = colorOriginal;
+            yield return new WaitForSeconds(duracionParpadeo / (2 * repeticionesParpadeo));
+        }
+        fondo.color = colorOriginal; // Asegurar color original al final
     }
 }
 
