@@ -13,6 +13,7 @@ public class PreguntasManager : MonoBehaviour
     public Pregunta[] todasLasPreguntas;
     public List<string> categoriasDisponibles;
 
+
     // Historial → clave "categoria_dificultad"
     private Dictionary<string, HashSet<int>> historialPreguntas = new Dictionary<string, HashSet<int>>();
 
@@ -66,7 +67,7 @@ public class PreguntasManager : MonoBehaviour
         Debug.Log($"Pregunta seleccionada ({categoria}, {dificultad}): {seleccionada.enunciado}");
 
         // Delegamos en el UIManager
-        UIManager.Instance.MostrarPregunta(seleccionada, onAnswered);
+        UIManager.Instance.MostrarPregunta(seleccionada,dificultad, onAnswered);
     }
 
     public void AskRandomQuesitoQuestion(string categoria, System.Action<bool> onAnswered)
@@ -84,7 +85,7 @@ public class PreguntasManager : MonoBehaviour
         Debug.Log($"Pregunta seleccionada ({categoria}, {dificultad}): {seleccionada.enunciado}");
 
         // Delegamos en el UIManager
-        UIManager.Instance.MostrarPregunta(seleccionada, onAnswered);
+        UIManager.Instance.MostrarPregunta(seleccionada,dificultad, onAnswered);
     }
 
     private Pregunta GetPreguntaNoRepetida(string categoria, string dificultad)

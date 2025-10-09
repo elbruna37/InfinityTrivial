@@ -21,9 +21,21 @@ public class UIManager : MonoBehaviour
     public Image fondo;
     private Color colorOriginal;
 
+    [Header("Indicador de Dificultad")]
+    public Image[] dificultadIcons;
+
+    [Header("Temporizador")]
+    public Image rellenoTemporizador;
+    public Transform agujaTemporizador;
+    public TMP_Text contadorTMP;
+    public float duracion = 30f;
+    public float rotacionInicial = 0f;
+    public float rotacionFinal = -360f;
+    private Tween rotTween;
+    private Tween fillTween;
+
     [Header("Textos")]
     public TMP_Text enunciadoTMP;
-    public TMP_Text contadorTMP;
     public TMP_Text textInformation;
     
 
@@ -58,19 +70,48 @@ public class UIManager : MonoBehaviour
         colorOriginal = fondo.color;
     }
 
-    public void MostrarPregunta(Pregunta pregunta, Action<bool> onAnswered)
+    public void MostrarPregunta(Pregunta pregunta, string dificultad, Action<bool> onAnswered)
     {
         preguntaActual = pregunta;
         callbackRespuesta = onAnswered;
 
+        MostrarDificultad(dificultad);
+
         if (timerCoroutine != null) StopCoroutine(timerCoroutine);
         timerCoroutine = StartCoroutine(FlujoPregunta());
+    }
+
+    private void MostrarDificultad(string dificultad)
+    {
+        // Oculta todos los iconos primero
+        foreach (var icon in dificultadIcons)
+            icon.gameObject.SetActive(false);
+
+        int cantidadVisible = 0;
+
+        switch (dificultad.ToLower())
+        {
+            case "facil":
+                cantidadVisible = 1;
+                break;
+            case "media":
+                cantidadVisible = 2;
+                break;
+            case "dificil":
+                cantidadVisible = 3;
+                break;
+        }
+
+        for (int i = 0; i < cantidadVisible && i < dificultadIcons.Length; i++)
+            dificultadIcons[i].gameObject.SetActive(true);
     }
 
     private IEnumerator FlujoPregunta()
     {
         quesitoPanel.SetActive(false);
         // 🔹 Mostrar solo enunciado 30s
+
+        fondo.color = colorOriginal;
         panelPregunta.SetActive(true);
         panelRespuestas.SetActive(false);
         enunciadoTMP.fontSize = 70;
@@ -83,6 +124,7 @@ public class UIManager : MonoBehaviour
         float elapsed = 0f;
         float startSize = enunciadoTMP.fontSize;
 
+        Temporizador();
         while (elapsed < 0.3f)
         {
             elapsed += Time.deltaTime;
@@ -96,7 +138,7 @@ public class UIManager : MonoBehaviour
         // 🔹 Mostrar opciones
         panelRespuestas.SetActive(true);
         
-        upDownPanelsSeq.Append(upRespuestasPanel.DOAnchorPosY(upRespuestasPanel.anchoredPosition.y - 479, 0.3f).SetEase(Ease.OutQuad));
+        upDownPanelsSeq.Append(upRespuestasPanel.DOAnchorPosY(upRespuestasPanel.anchoredPosition.y - 483, 0.3f).SetEase(Ease.OutQuad));
         upDownPanelsSeq.Join(downRespuestasPanel.DOAnchorPosY(downRespuestasPanel.anchoredPosition.y + 483, 0.3f).SetEase(Ease.OutQuad));
 
         PrepararOpciones();
@@ -129,6 +171,8 @@ public class UIManager : MonoBehaviour
 
     private void OnOpcionSeleccionada(int indice)
     {
+        rotTween.Kill(); fillTween.Kill();
+
         bool correcta = indice == preguntaActual.indiceCorrecta;
 
         // Bloquear todos los botones al seleccionar una opción
@@ -144,10 +188,48 @@ public class UIManager : MonoBehaviour
             //textInformation.text = "Respuesta incorrecta → pierde turno";
             GameManager.Instance.AudioFallo();
 
-        StartCoroutine(ParpadearFondo(correcta ? Color.green : Color.red));
+        ParpadearFondo(correcta ? Color.green : Color.red);
 
         if (timerCoroutine != null) StopCoroutine(timerCoroutine);
         timerCoroutine = StartCoroutine(CerrarConRetraso(correcta));
+    }
+
+    private void ParpadearFondo(Color colorObjetivo)
+    {
+        int repeticionesParpadeo = 3;
+        float duracionParpadeo = 0.5f;
+
+        // Secuencia de parpadeo
+        Sequence seq = DOTween.Sequence();
+
+        for (int i = 0; i < repeticionesParpadeo; i++)
+        {
+            seq.Append(fondo.DOColor(colorObjetivo, duracionParpadeo / (2 * repeticionesParpadeo)))
+               .Append(fondo.DOColor(colorOriginal, duracionParpadeo / (2 * repeticionesParpadeo)));
+        }
+
+        // Asegurar que al final quede en su color original
+        seq.OnComplete(() => fondo.color = colorObjetivo);
+    }
+
+    public void Temporizador()
+    {
+        //resetear estados
+        DOTween.Kill(agujaTemporizador);
+        DOTween.Kill(rellenoTemporizador);
+
+        agujaTemporizador.rotation = Quaternion.Euler(0f, 0f, rotacionInicial);
+        rellenoTemporizador.fillAmount = 0f;
+        contadorTMP.text = Mathf.CeilToInt(duracion).ToString();
+
+        // Tween de rotación (aguja)
+        rotTween = agujaTemporizador
+            .DORotate(new Vector3(0f, 0f, rotacionFinal), duracion, RotateMode.FastBeyond360)
+            .SetEase(Ease.Linear);
+
+        // Tween del fillAmount (relleno)
+        fillTween = DOTween.To(() => rellenoTemporizador.fillAmount, x => rellenoTemporizador.fillAmount = x, 1f, duracion)
+            .SetEase(Ease.Linear);
     }
 
     private IEnumerator CerrarConRetraso(bool correcta)
@@ -158,7 +240,7 @@ public class UIManager : MonoBehaviour
 
     private void OnRespuestaFinalizada(bool correcta)
     {
-        upDownPanelsSeq.Append(upRespuestasPanel.DOAnchorPosY(upRespuestasPanel.anchoredPosition.y + 479, 0.3f).SetEase(Ease.OutQuad));
+        upDownPanelsSeq.Append(upRespuestasPanel.DOAnchorPosY(upRespuestasPanel.anchoredPosition.y + 483, 0.3f).SetEase(Ease.OutQuad));
         upDownPanelsSeq.Join(downRespuestasPanel.DOAnchorPosY(downRespuestasPanel.anchoredPosition.y - 483, 0.3f).SetEase(Ease.OutQuad));
 
         panelPregunta.SetActive(false);
@@ -189,20 +271,6 @@ public class UIManager : MonoBehaviour
             categoriaVerdeTMP.text = verde;
     }
 
-    private IEnumerator ParpadearFondo(Color colorObjetivo)
-    {
-        int repeticionesParpadeo = 4;
-        float duracionParpadeo = 0.5f;
-
-        for (int i = 0; i < repeticionesParpadeo; i++)
-        {
-            fondo.color = colorObjetivo;
-            yield return new WaitForSeconds(duracionParpadeo / (2 * repeticionesParpadeo));
-
-            fondo.color = colorOriginal;
-            yield return new WaitForSeconds(duracionParpadeo / (2 * repeticionesParpadeo));
-        }
-        fondo.color = colorOriginal; // Asegurar color original al final
-    }
+   
 }
 

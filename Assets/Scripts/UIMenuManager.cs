@@ -1,9 +1,6 @@
 using System.Collections;
-using Unity.Android.Gradle;
 using UnityEngine;
-using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class UIMenuManager : MonoBehaviour
 {

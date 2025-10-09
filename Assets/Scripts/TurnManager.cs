@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using DG.Tweening;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -24,7 +25,11 @@ public class TurnManager : MonoBehaviour
     public bool canDestroy = false;
 
     public TMP_Text textInformation;
-    string[] equipos = { "Verde", "Azul", "Rojo", "Amarillo"};
+    private float velocidadParpadeo = 2f;
+    private Tween tweenParpadeo;
+
+    string[] equipos = { "VERDE", "AZUL", "ROJO", "AMARILLO"};
+    string[] color = { "green", "blue", "red", "yellow" };
 
     private void Awake()
     {
@@ -43,7 +48,8 @@ public class TurnManager : MonoBehaviour
     {
         if (gameEnded) return;
 
-        textInformation.text = ($"Turno del equipo {equipos[currentPlayerIndex]} \n Haz clic para lanzar el dado.");
+        ActualizarTexto($"Turno del equipo <color={color[currentPlayerIndex]}>{equipos[currentPlayerIndex]}</color={color[currentPlayerIndex]}> \n Haz clic para lanzar el dado.");
+
         isWaitingForClick = true;   // ahora esperamos a que el jugador haga click
     }
 
@@ -54,7 +60,7 @@ public class TurnManager : MonoBehaviour
         if (isWaitingForClick && (Input.GetMouseButtonDown(0) || Input.touchCount > 0)) // clic izquierdo
         {
             isWaitingForClick = false;
-            textInformation.text = "";
+            ActualizarTexto("");
             diceSpawner.SpawnAndThrowDice(OnDiceResult);
         }
     }
@@ -102,7 +108,7 @@ public class TurnManager : MonoBehaviour
                     {
                         if (correcta)
                         {
-                            textInformation.text = ($"Vuelve a tirar equipo {equipos[currentPlayerIndex]}");
+                            ActualizarTexto($"Vuelve a tirar equipo <color={color[currentPlayerIndex]}>{equipos[currentPlayerIndex]}</color={color[currentPlayerIndex]}>");
                             isWaitingForClick = true;
                         }
                         if(!correcta)
@@ -121,7 +127,7 @@ public class TurnManager : MonoBehaviour
                     {
                         if (correcta)
                         {
-                            textInformation.text = ($"El equipo {equipos[currentPlayerIndex]} gana quesito y vuelve a tirar");
+                            ActualizarTexto($"El equipo <color={color[currentPlayerIndex]}>{equipos[currentPlayerIndex]}</color={color[currentPlayerIndex]}> gana quesito y vuelve a tirar");
                             ActivarQuesitoParaJugador(currentPlayerIndex, ConvertNodeColorToQuesitoColor(landedNode.nodeColor));
                             isWaitingForClick = true;
                         }
@@ -135,7 +141,7 @@ public class TurnManager : MonoBehaviour
 
                 case BoardNode.NodeType.VolverATirar:
                     canDestroy = true;
-                    textInformation.text = ($"Casilla de Volver a tirar → el equipo {equipos[currentPlayerIndex]} vuelve a tirar");
+                    ActualizarTexto($"Casilla de Volver a tirar, el equipo <color={color[currentPlayerIndex]}>{equipos[currentPlayerIndex]}</color={color[currentPlayerIndex]}> vuelve a tirar");
                     isWaitingForClick = true;
                     break;
 
@@ -219,7 +225,7 @@ public class TurnManager : MonoBehaviour
             if (quesitosPorJugador[playerIndex] >= 6)
             {
                 gameEnded = true;
-                textInformation.text = $"¡El equipo {equipos[playerIndex]} ha ganado! Haz clic para volver al menú.";
+                ActualizarTexto($"¡El equipo <color={this.color[playerIndex]}>{equipos[playerIndex]}</color={this.color[playerIndex]}> ha ganado! Haz click para volver al menú.");
                 isWaitingForClick = false;
                 StartCoroutine(WaitForClickToReturnMenu());
             }
@@ -229,7 +235,26 @@ public class TurnManager : MonoBehaviour
             Debug.Log($"El quesito {quesitoName} ya estaba activado para {jugadorName}. No se suma punto.");
         }
     }
+    public void ActualizarTexto(string nuevoTexto)
+    {
+        textInformation.text = nuevoTexto;
 
+        // Detenemos cualquier tween anterior
+        tweenParpadeo?.Kill();
+
+        if (string.IsNullOrEmpty(nuevoTexto))
+        {
+            // Si no hay texto, se asegura de que esté completamente visible
+            textInformation.DOFade(1f, 0.2f);
+            return;
+        }
+
+        // Crear el parpadeo
+        tweenParpadeo = textInformation
+            .DOFade(0f, velocidadParpadeo / 2f)
+            .SetLoops(-1, LoopType.Yoyo)
+            .SetEase(Ease.InOutSine);
+    }
     private IEnumerator WaitForClickToReturnMenu()
     {
 
@@ -242,7 +267,7 @@ public class TurnManager : MonoBehaviour
         Destroy(PreguntasManager.Instance.gameObject);
         Destroy(UIManager.Instance.gameObject);
 
-        SceneManager.LoadScene("Menu"); // Cambia "MenuScene" por el nombre exacto de tu escena de menú
+        SceneManager.LoadScene("Menu");
     }
 
 }
