@@ -1,3 +1,4 @@
+ï»¿using DG.Tweening;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,17 +10,16 @@ public class UIMenuManager : MonoBehaviour
     [Header("Botones")]
     public GameObject menuButtons;
     public GameObject maxPlayerMenu;
+    public GameObject confirmButtons;
     bool canRotate = true;
-
-    [Header("Camera Motion")]
-    [SerializeField] private float moveDuration = 2f; // Tiempo en segundos
-    [SerializeField] private float parabolaHeight = 3f; // Altura máxima de la parábola
 
     [SerializeField] private GameObject camara;
 
     private void Start()
     {
         canRotate = true;
+
+        menuButtons.SetActive(true);
     }
 
     void Update()
@@ -43,10 +43,28 @@ public class UIMenuManager : MonoBehaviour
     public void OptionsPressed()
     {
         GameManager.Instance.AudioClick();
+        menuButtons.SetActive(false);
 
-        SceneManager.LoadScene("PreguntasImporter");
+        GameManager.Instance.MoveCamToPoint(camara, new Vector3(13.97f, 2.21f, -1.25f), Quaternion.Euler(36.151f, -72.055f, 0f), "Options");
     }
+
     public void QuitPressed()
+    {
+        GameManager.Instance.AudioClick();
+
+        confirmButtons.SetActive(true);
+        menuButtons.SetActive(false);
+    }
+
+    public void NoPressed()
+    {
+        GameManager.Instance.AudioClick();
+
+        confirmButtons.SetActive(false);
+        menuButtons.SetActive(true);
+    }
+
+    public void ExitPressed()
     {
         GameManager.Instance.AudioClick();
 
@@ -76,7 +94,7 @@ public class UIMenuManager : MonoBehaviour
 
         canRotate = false;
 
-        StartCoroutine(MoveToZero(camara));
+        GameManager.Instance.MoveCamToPoint(camara, new Vector3(1.42f, 2.84f, 12.31f), Quaternion.Euler(36.512f, 192.58f, 0f), "Questions");
     }
 
     public void PlayerMax3()
@@ -89,7 +107,7 @@ public class UIMenuManager : MonoBehaviour
 
         canRotate = false;
 
-        StartCoroutine(MoveToZero(camara));
+        GameManager.Instance.MoveCamToPoint(camara, new Vector3(1.42f, 2.84f, 12.31f), Quaternion.Euler(36.512f, 192.58f, 0f), "Questions");
     }
 
     public void PlayerMax4()
@@ -102,51 +120,6 @@ public class UIMenuManager : MonoBehaviour
 
         canRotate = false;
 
-        StartCoroutine(MoveToZero(camara));
-    }
-
-
-    private IEnumerator MoveToZero(GameObject obj)
-    {
-        Vector3 startPos = obj.transform.position;
-        Vector3 targetPos = new Vector3(1.42f, 2.84f, 12.31f);
-
-        Quaternion startRot = obj.transform.rotation;
-        Quaternion targetRot = Quaternion.Euler(36.512f, 192.58f, 0f);
-
-        float elapsed = 0f;
-
-        while (elapsed < moveDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / moveDuration);
-
-            // Movimiento lineal base
-            Vector3 linearPos = Vector3.Lerp(startPos, targetPos, t);
-
-            // Offset parabólico en Y
-            float parabola = 4f * parabolaHeight * t * (1 - t);
-            linearPos.y += parabola;
-
-            obj.transform.position = linearPos;
-
-            // Rotación interpolada hacia la final
-            obj.transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
-
-            // Cuando llega al 50%, lanza el fade
-            /*if (!fadeStarted && t >= 0.5f)
-            {
-                fadeStarted = true;
-                StartCoroutine(FadeToBlack());
-            }
-            */
-            yield return null;
-        }
-
-        // Asegura que termine exacto en destino
-        obj.transform.position = targetPos;
-        obj.transform.rotation = targetRot;
-
-        SceneManager.LoadScene("Questions");
+        GameManager.Instance.MoveCamToPoint(camara, new Vector3(1.42f, 2.84f, 12.31f), Quaternion.Euler(36.512f, 192.58f, 0f), "Questions");
     }
 }

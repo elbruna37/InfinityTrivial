@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using DG.Tweening;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -17,6 +18,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AudioClip click;
     [SerializeField] private AudioClip acierto;
     [SerializeField] private AudioClip fallo;
+    [SerializeField] private AudioClip temporizador;
+
     private AudioSource audioSource;
 
     
@@ -79,4 +82,52 @@ public class GameManager : MonoBehaviour
         audioSource.Play();
     }
 
+    public void AudioTemporizador()
+    {
+        audioSource.clip = temporizador;
+        audioSource.Play();
+    }
+
+    public void MoveCamToPoint(GameObject obj, Vector3 targetPos, Quaternion targetRot, string scene)
+    {
+        float moveDuration = 1.5f;
+        float parabolaHeight = 3f;
+
+        Vector3 startPos = obj.transform.position;
+        Quaternion startRot = obj.transform.rotation;
+
+        //Espera inicial
+        DOVirtual.DelayedCall(0f, () =>
+        {
+            // 2️⃣ Creamos la secuencia DOTween
+            Sequence seq = DOTween.Sequence();
+
+            // Tween "virtual" para controlar el parámetro t (0→1)
+            float t = 0f;
+            seq.Append(
+                DOVirtual.Float(0f, 1f, moveDuration, value =>
+                {
+                    t = value;
+
+                    // Interpolación lineal + parábola
+                    Vector3 linearPos = Vector3.Lerp(startPos, targetPos, t);
+                    float parabola = 4f * parabolaHeight * t * (1 - t);
+                    linearPos.y += parabola;
+                    obj.transform.position = linearPos;
+
+                    // Rotación
+                    obj.transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
+                })
+                .SetEase(Ease.InOutQuad)
+            );
+
+            // 3️⃣ Al terminar, fijamos la posición final y cargamos la escena
+            seq.OnComplete(() =>
+            {
+                obj.transform.position = targetPos;
+                obj.transform.rotation = targetRot;
+                SceneManager.LoadScene(scene);
+            });
+        });
+    }
 }

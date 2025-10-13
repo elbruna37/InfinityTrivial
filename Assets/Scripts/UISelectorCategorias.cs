@@ -22,6 +22,9 @@ public class UISelectorCategorias : MonoBehaviour
     public Button botonConfirmar;
     public GameObject canvas;
 
+    public GameObject confirmButtons;
+    public GameObject selectorQuesitosMenu;
+
     private List<string> originalCategories;
     private Dictionary<TMP_Dropdown, string> selectionMap;
 
@@ -34,9 +37,9 @@ public class UISelectorCategorias : MonoBehaviour
     new Vector3(-3.2f, 0f, 8.53f),  // Rosa
     new Vector3(-2.9f, 0f, 8.0f),   // Azul
     new Vector3(-3.2f, 0f, 7.5f),   // Verde
-    new Vector3(-3.78f, 0f, 7.5f),  // Amarillo
+    new Vector3(-3.786f, 0f, 7.5f),  // Amarillo
     new Vector3(-4.1f, 0f, 8.0f),   // Morado
-    new Vector3(-3.78f, 0f, 8.53f)  // Naranja
+    new Vector3(-3.784f, 0f, 8.528f)  // Naranja
 };
 
     public GameObject camara;
@@ -158,10 +161,29 @@ public class UISelectorCategorias : MonoBehaviour
     {
         GameManager.Instance.AudioClick();
 
-        Destroy(GameManager.Instance.gameObject);
+        confirmButtons.SetActive(true);
+
+        selectorQuesitosMenu.SetActive(false);
+    }
+
+    public void cancelBackMenu()
+    {
+        GameManager.Instance.AudioClick();
+
+        confirmButtons.SetActive(false);
+
+        selectorQuesitosMenu.SetActive(true);
+    }
+
+    public void confirmBackMenu()
+    {
+        GameManager.Instance.AudioClick();
+
+        confirmButtons.SetActive(false);
+        
         Destroy(PreguntasManager.Instance.gameObject);
 
-        SceneManager.LoadScene("Menu");
+        GameManager.Instance.MoveCamToPoint(camara, new Vector3(0, 8, -10.7f), Quaternion.Euler(48.968f, 0f, 0f), "Menu");
     }
 
     // 🔹 Animación con DOTween
@@ -172,6 +194,9 @@ public class UISelectorCategorias : MonoBehaviour
 
         Vector3 startPos = quesito.transform.position;
         Vector3 loopPos = startPos + Vector3.up * 1.5f;
+
+        // 🔹 Desactivar dropdown mientras anima
+        dropdown.interactable = false;
 
         // Secuencia de animación
         Sequence seq = DOTween.Sequence();
@@ -197,6 +222,9 @@ public class UISelectorCategorias : MonoBehaviour
             )
             .SetEase(Ease.Linear)
             .SetLoops(-1, LoopType.Restart);
+
+            // Habilitamos el dropdown cuando el spin comienza
+            dropdown.interactable = true;
         });
 
         bool waiting = true;

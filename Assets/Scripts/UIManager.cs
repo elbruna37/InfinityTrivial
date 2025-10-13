@@ -173,11 +173,21 @@ public class UIManager : MonoBehaviour
     {
         rotTween.Kill(); fillTween.Kill();
 
-        bool correcta = indice == preguntaActual.indiceCorrecta;
+        bool tiempoAgotado = indice == -1;
+        bool correcta = !tiempoAgotado && indice == preguntaActual.indiceCorrecta;
 
         // Bloquear todos los botones al seleccionar una opción
         foreach (var btn in botonesOpciones)
             btn.interactable = false;
+
+        if (tiempoAgotado)
+        {
+            GameManager.Instance.AudioFallo();
+            ParpadearFondo(Color.red);
+            if (timerCoroutine != null) StopCoroutine(timerCoroutine);
+            timerCoroutine = StartCoroutine(CerrarConRetraso(false));
+            return;
+        }
 
         // Feedback
         if (correcta)
@@ -218,6 +228,8 @@ public class UIManager : MonoBehaviour
         DOTween.Kill(agujaTemporizador);
         DOTween.Kill(rellenoTemporizador);
 
+        GameManager.Instance.AudioTemporizador();
+
         agujaTemporizador.rotation = Quaternion.Euler(0f, 0f, rotacionInicial);
         rellenoTemporizador.fillAmount = 0f;
         contadorTMP.text = Mathf.CeilToInt(duracion).ToString();
@@ -225,7 +237,10 @@ public class UIManager : MonoBehaviour
         // Tween de rotación (aguja)
         rotTween = agujaTemporizador
             .DORotate(new Vector3(0f, 0f, rotacionFinal), duracion, RotateMode.FastBeyond360)
-            .SetEase(Ease.Linear);
+            .SetEase(Ease.Linear).OnComplete(() =>
+            {
+                OnOpcionSeleccionada(-1);
+            });
 
         // Tween del fillAmount (relleno)
         fillTween = DOTween.To(() => rellenoTemporizador.fillAmount, x => rellenoTemporizador.fillAmount = x, 1f, duracion)
