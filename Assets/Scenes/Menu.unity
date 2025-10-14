@@ -154,6 +154,7 @@ MonoBehaviour:
   acierto: {fileID: 8300000, guid: 7bd6b897eb5ca4b7d88a205c4a51640c, type: 3}
   fallo: {fileID: 8300000, guid: 5fdb13d3756c84fecac96f5a2d124370, type: 3}
   temporizador: {fileID: 8300000, guid: f194ec66cf955f14293ba0a631c0db1c, type: 3}
+  ficha: {fileID: 8300000, guid: 6e8772b49f34d402a90016ed445d8a2f, type: 3}
 --- !u!4 &36389108
 Transform:
   m_ObjectHideFlags: 0
@@ -3413,8 +3414,6 @@ MonoBehaviour:
   menuButtons: {fileID: 131935870}
   maxPlayerMenu: {fileID: 1951113456}
   confirmButtons: {fileID: 715408353}
-  moveDuration: 2
-  parabolaHeight: 3
   camara: {fileID: 2137475864}
 --- !u!1001 &1387384371
 PrefabInstance:

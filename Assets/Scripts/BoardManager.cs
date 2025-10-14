@@ -1,13 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class BoardManager : MonoBehaviour
 {
     public static BoardManager Instance;
     public BoardNode startNode;
-
-    public GameObject tablero;
 
     private void Awake() => Instance = this;
 
@@ -19,82 +18,68 @@ public class BoardManager : MonoBehaviour
 
     public IEnumerator MoveRoutine(PlayerPiece piece, int steps)
     {
-        BoardNode node = piece.currentNode;
-
-        BoardNode previousNode = null; // nodo de donde venimos
-
-        while (steps > 0)
+        // Obtener nodos alcanzables
+        List<BoardNode> reachable = GetReachableNodes(piece.currentNode, steps);
+        if (reachable.Count == 0)
         {
-            BoardNode nextNode = null;
-
-            List<BoardNode> options = new List<BoardNode>();
-
-            if (node.neighbors.Count > 1) // intersección
-            {
-                // filtrar nodo anterior para no volver atrás
-                foreach (var n in node.neighbors)
-                    if (n != previousNode)
-                        options.Add(n);
-
-                // iluminar opciones
-                foreach (var n in options) n.Highlight(true);
-
-                // esperar elección
-                yield return StartCoroutine(ChooseNextNode(options));
-
-                nextNode = _chosenNode;
-                _chosenNode = null;
-
-                // desiluminar
-                foreach (var n in options) n.Highlight(false);
-
-                if (nextNode == null)
-                {
-                    Debug.LogWarning("No se eligió ningún nodo. Cancelando movimiento.");
-                    yield break;
-                }
-            }
-            else if (node.neighbors.Count == 1) // camino único
-            {
-                nextNode = node.neighbors[0];
-            }
-            else
-            {
-                Debug.LogWarning("Nodo sin vecinos. ¿Falta conectar el tablero?");
-                yield break;
-            }
-
-            // animar movimiento
-            yield return StartCoroutine(MoveToPosition(piece.transform, nextNode.transform.position, 0.35f));
-
-            // actualizar referencias
-            previousNode = node;
-            node = nextNode;
-            piece.currentNode = node;
-            steps--;
+            Debug.LogWarning("No hay nodos alcanzables.");
+            yield break;
         }
+
+        // Iluminar opciones
+        foreach (var node in reachable)
+            node.Highlight(true);
+
+        // Esperar elección
+        yield return StartCoroutine(ChooseNextNode(reachable));
+
+        // Desiluminar
+        foreach (var node in reachable)
+            node.Highlight(false);
+
+        if (_chosenNode == null)
+        {
+            Debug.LogWarning("No se eligió destino.");
+            yield break;
+        }
+
+        // Calcular camino hasta el destino
+        List<BoardNode> path = GetPath(piece.currentNode, _chosenNode, steps);
+        if (path == null)
+        {
+            Debug.LogWarning("No se pudo encontrar camino.");
+            yield break;
+        }
+
+        // Crear secuencia DoTween
+        Sequence moveSeq = DOTween.Sequence();
+        float moveDuration = 0.5f;
+
+        foreach (var stepNode in path)
+        { 
+            moveSeq.Append(
+                piece.transform.DOMove(stepNode.transform.position, moveDuration)
+                .SetEase(Ease.InOutQuad)
+                .OnStart(() => GameManager.Instance.AudioFicha())
+                .OnComplete(() => piece.currentNode = stepNode)
+            );
+        }
+
+        // Esperar a que termine la secuencia
+        bool finished = false;
+        moveSeq.OnComplete(() => finished = true);
+
+        yield return new WaitUntil(() => finished);
     }
 
-    private IEnumerator MoveToPosition(Transform obj, Vector3 target, float duration)
-    {
-        Vector3 start = obj.position;
-        float t = 0f;
-
-        while (t < 1f)
-        {
-            t += Time.deltaTime / duration;
-            obj.position = Vector3.Lerp(start, target, t);
-            yield return null;
-        }
-    }
-
-    // ----------------- Elección de nodo -----------------
+    // ----------------- Eleccion de Nodo -----------------
     private IEnumerator ChooseNextNode(List<BoardNode> options)
     {
         _awaitingChoice = true;
         _chosenNode = null;
         _validChoices.Clear();
-        foreach (var n in options) _validChoices.Add(n);
+        foreach (var n in options)
+            _validChoices.Add(n);
 
         yield return new WaitUntil(() => _chosenNode != null);
 
@@ -110,27 +95,67 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    public void SacudirTablero()
+    // ----------------- Calculo de Nodo -----------------
+    private List<BoardNode> GetReachableNodes(BoardNode start, int steps)
     {
-        StartCoroutine(Sacudir(0.5f,0.2f));
-    }
+        List<BoardNode> result = new List<BoardNode>();
+        Queue<(BoardNode node, int remaining)> queue = new Queue<(BoardNode, int)>();
+        HashSet<BoardNode> visited = new HashSet<BoardNode>();
 
-    public IEnumerator Sacudir(float duration, float magnitude)
-    {
-        Vector3 originalPos = tablero.transform.localPosition;
-        float elapsed = 0f;
+        queue.Enqueue((start, steps));
+        visited.Add(start);
 
-        while (elapsed < duration)
+        while (queue.Count > 0)
         {
-            float x = Random.Range(-1f, 1f) * magnitude;
-            float y = Random.Range(-1f, 1f) * magnitude;
+            var (current, remaining) = queue.Dequeue();
 
-            tablero.transform.localPosition = new Vector3(originalPos.x + x, originalPos.y + y, originalPos.z);
+            if (remaining == 0)
+            {
+                if (current != start)
+                    result.Add(current);
+                continue;
+            }
 
-            elapsed += Time.deltaTime;
-            yield return null;
+            foreach (var neighbor in current.neighbors)
+            {
+                if (!visited.Contains(neighbor))
+                {
+                    visited.Add(neighbor);
+                    queue.Enqueue((neighbor, remaining - 1));
+                }
+            }
         }
 
-        tablero.transform.localPosition = originalPos;
+        return result;
+    }
+
+    // ----------------- Camino hasta destino -----------------
+
+    private List<BoardNode> GetPath(BoardNode start, BoardNode end, int steps)
+    {
+        Queue<(BoardNode node, List<BoardNode> path)> queue = new Queue<(BoardNode, List<BoardNode>)>();
+        queue.Enqueue((start, new List<BoardNode>()));
+
+        while (queue.Count > 0)
+        {
+            var (current, path) = queue.Dequeue();
+
+            if (path.Count > steps)
+                continue;
+
+            if (current == end && path.Count == steps)
+                return path;
+
+            foreach (var neighbor in current.neighbors)
+            {
+                if (!path.Contains(neighbor))
+                {
+                    List<BoardNode> newPath = new List<BoardNode>(path) { neighbor };
+                    queue.Enqueue((neighbor, newPath));
+                }
+            }
+        }
+
+        return null;
     }
 }
