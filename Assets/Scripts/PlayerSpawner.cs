@@ -29,6 +29,7 @@ public class PlayerSpawner : MonoBehaviour
             if (piece != null)
             {
                 piece.currentNode = BoardManager.Instance.startNode; // asignar nodo inicial
+                BoardManager.Instance.startNode.piecesInNode = numPlayers;
             }
 
             // Registrar en TurnManager

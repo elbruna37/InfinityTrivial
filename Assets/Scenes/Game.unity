@@ -235,8 +235,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 655530119}
   - {fileID: 1236169073}
+  actualPieces: []
   nodeType: 0
   nodeColor: 1
+  piecesInNode: 0
   highlightRenderer: {fileID: 1504283627}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &100689485
@@ -325,8 +327,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
-  m_fontSizeBase: 32
+  m_fontSize: 29
+  m_fontSizeBase: 29
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -363,7 +365,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -37.486664, y: -36.913826, z: -32.780304, w: 6.4826126}
+  m_margin: {x: -38.311493, y: -36.913826, z: -32.780304, w: 6.4826126}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -687,8 +689,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 1360834359}
   - {fileID: 306032965}
+  actualPieces: []
   nodeType: 0
   nodeColor: 6
+  piecesInNode: 0
   highlightRenderer: {fileID: 520605140}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &196378463
@@ -1232,8 +1236,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 1573085109}
   - {fileID: 655530119}
+  actualPieces: []
   nodeType: 0
   nodeColor: 1
+  piecesInNode: 0
   highlightRenderer: {fileID: 1354155487}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &290239917
@@ -1306,8 +1312,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 196378462}
   - {fileID: 2123365243}
+  actualPieces: []
   nodeType: 0
   nodeColor: 1
+  piecesInNode: 0
   highlightRenderer: {fileID: 1362123425}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &306032966
@@ -1597,8 +1605,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 1236169073}
   - {fileID: 790088732}
+  actualPieces: []
   nodeType: 0
   nodeColor: 3
+  piecesInNode: 0
   highlightRenderer: {fileID: 1410280280}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &369490891
@@ -1897,8 +1907,10 @@ MonoBehaviour:
   - {fileID: 792169712}
   - {fileID: 519105558}
   - {fileID: 1459141498}
+  actualPieces: []
   nodeType: 2
   nodeColor: 0
+  piecesInNode: 0
   highlightRenderer: {fileID: 1715527844}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &437919997
@@ -2159,8 +2171,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 514332747}
   - {fileID: 1555478061}
+  actualPieces: []
   nodeType: 0
   nodeColor: 2
+  piecesInNode: 0
   highlightRenderer: {fileID: 1822938896}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &466568396
@@ -2428,8 +2442,10 @@ MonoBehaviour:
   - {fileID: 466568395}
   - {fileID: 1573085109}
   - {fileID: 2146775523}
+  actualPieces: []
   nodeType: 3
   nodeColor: 0
+  piecesInNode: 0
   highlightRenderer: {fileID: 2449591349040596796}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!4 &514332748
@@ -2518,8 +2534,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 619697070}
   - {fileID: 437919996}
+  actualPieces: []
   nodeType: 0
   nodeColor: 5
+  piecesInNode: 0
   highlightRenderer: {fileID: 559444830}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &519105559
@@ -3021,8 +3039,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 1439064626}
   - {fileID: 619697070}
+  actualPieces: []
   nodeType: 1
   nodeColor: 2
+  piecesInNode: 0
   highlightRenderer: {fileID: 1163891568}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &567853904
@@ -3213,8 +3233,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
-  m_fontSizeBase: 32
+  m_fontSize: 29
+  m_fontSizeBase: 29
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -3381,8 +3401,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 567853903}
   - {fileID: 519105558}
+  actualPieces: []
   nodeType: 0
   nodeColor: 4
+  piecesInNode: 0
   highlightRenderer: {fileID: 273330736}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &619697071
@@ -4136,8 +4158,10 @@ MonoBehaviour:
   - {fileID: 100689484}
   - {fileID: 1801018692}
   - {fileID: 290239916}
+  actualPieces: []
   nodeType: 1
   nodeColor: 5
+  piecesInNode: 0
   highlightRenderer: {fileID: 1105714639}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &655530120
@@ -4210,8 +4234,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 514332747}
   - {fileID: 1188651215}
+  actualPieces: []
   nodeType: 0
   nodeColor: 4
+  piecesInNode: 0
   highlightRenderer: {fileID: 1237772179}
   highlightColor: {r: 0.3336252, g: 1, b: 0.015686274, a: 1}
 --- !u!65 &659660246
@@ -4418,8 +4444,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 1555478061}
   - {fileID: 2123365243}
+  actualPieces: []
   nodeType: 0
   nodeColor: 5
+  piecesInNode: 0
   highlightRenderer: {fileID: 663926595}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &681813875
@@ -4999,8 +5027,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
-  m_fontSizeBase: 32
+  m_fontSize: 29
+  m_fontSizeBase: 29
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -5199,8 +5227,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 1794147579}
   - {fileID: 1439064626}
+  actualPieces: []
   nodeType: 0
   nodeColor: 3
+  piecesInNode: 0
   highlightRenderer: {fileID: 1188785095}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &769714743
@@ -5559,8 +5589,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 1011158213}
   - {fileID: 369490890}
+  actualPieces: []
   nodeType: 1
   nodeColor: 6
+  piecesInNode: 0
   highlightRenderer: {fileID: 846306366}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &790088733
@@ -5633,8 +5665,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 437919996}
   - {fileID: 1188651215}
+  actualPieces: []
   nodeType: 0
   nodeColor: 1
+  piecesInNode: 0
   highlightRenderer: {fileID: 1393098012}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &792169713
@@ -5827,6 +5861,7 @@ MonoBehaviour:
   preguntasManager: {fileID: 0}
   diceSpawner: {fileID: 1926024681}
   boardManager: {fileID: 2039084959}
+  currentPlayerIndex: 0
   canDestroy: 0
   textInformation: {fileID: 2146486884}
 --- !u!4 &834221102
@@ -5961,8 +5996,10 @@ MonoBehaviour:
   - {fileID: 1433325620}
   - {fileID: 1794147579}
   - {fileID: 1628900386}
+  actualPieces: []
   nodeType: 1
   nodeColor: 1
+  piecesInNode: 0
   highlightRenderer: {fileID: 985156869}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &861922190
@@ -6293,8 +6330,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 1232196815}
   - {fileID: 1360834359}
+  actualPieces: []
   nodeType: 0
   nodeColor: 6
+  piecesInNode: 0
   highlightRenderer: {fileID: 1927837287}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &918146291
@@ -6856,8 +6895,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 1801018692}
   - {fileID: 2060755997}
+  actualPieces: []
   nodeType: 0
   nodeColor: 6
+  piecesInNode: 0
   highlightRenderer: {fileID: 663081585}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1004439538
@@ -6961,8 +7002,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 790088732}
   - {fileID: 1459141498}
+  actualPieces: []
   nodeType: 0
   nodeColor: 3
+  piecesInNode: 0
   highlightRenderer: {fileID: 1462462727}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1011158214
@@ -7145,8 +7188,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
-  m_fontSizeBase: 32
+  m_fontSize: 29
+  m_fontSizeBase: 29
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -7514,8 +7557,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 659660245}
   - {fileID: 792169712}
+  actualPieces: []
   nodeType: 0
   nodeColor: 3
+  piecesInNode: 0
   highlightRenderer: {fileID: 1636984992}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1188651216
@@ -7837,8 +7882,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 1628900386}
   - {fileID: 918146290}
+  actualPieces: []
   nodeType: 0
   nodeColor: 2
+  piecesInNode: 0
   highlightRenderer: {fileID: 1511165295}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1232196816
@@ -7911,8 +7958,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 100689484}
   - {fileID: 369490890}
+  actualPieces: []
   nodeType: 0
   nodeColor: 4
+  piecesInNode: 0
   highlightRenderer: {fileID: 737774156}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1236169074
@@ -8866,8 +8915,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 918146290}
   - {fileID: 196378462}
+  actualPieces: []
   nodeType: 1
   nodeColor: 3
+  piecesInNode: 0
   highlightRenderer: {fileID: 180405587}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1360834360
@@ -9141,8 +9192,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 2146775523}
   - {fileID: 861922189}
+  actualPieces: []
   nodeType: 0
   nodeColor: 5
+  piecesInNode: 0
   highlightRenderer: {fileID: 1831212279}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1433325621
@@ -9215,8 +9268,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 769714742}
   - {fileID: 567853903}
+  actualPieces: []
   nodeType: 0
   nodeColor: 4
+  piecesInNode: 0
   highlightRenderer: {fileID: 620439200}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1439064627
@@ -9500,8 +9555,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 1011158213}
   - {fileID: 437919996}
+  actualPieces: []
   nodeType: 0
   nodeColor: 1
+  piecesInNode: 0
   highlightRenderer: {fileID: 1021125564}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1459141499
@@ -9960,8 +10017,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 466568395}
   - {fileID: 681813874}
+  actualPieces: []
   nodeType: 0
   nodeColor: 6
+  piecesInNode: 0
   highlightRenderer: {fileID: 1088342570}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1555478062
@@ -10034,8 +10093,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 514332747}
   - {fileID: 290239916}
+  actualPieces: []
   nodeType: 0
   nodeColor: 6
+  piecesInNode: 0
   highlightRenderer: {fileID: 511935187}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1573085110
@@ -10645,8 +10706,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 861922189}
   - {fileID: 1232196815}
+  actualPieces: []
   nodeType: 0
   nodeColor: 5
+  piecesInNode: 0
   highlightRenderer: {fileID: 1191861011}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1628900387
@@ -11192,8 +11255,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 861922189}
   - {fileID: 769714742}
+  actualPieces: []
   nodeType: 0
   nodeColor: 5
+  piecesInNode: 0
   highlightRenderer: {fileID: 63271673}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1794147580
@@ -11334,8 +11399,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 655530119}
   - {fileID: 1004439537}
+  actualPieces: []
   nodeType: 0
   nodeColor: 1
+  piecesInNode: 0
   highlightRenderer: {fileID: 1281870013}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1801018693
@@ -11483,8 +11550,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 2060755997}
   - {fileID: 2139486798}
+  actualPieces: []
   nodeType: 1
   nodeColor: 4
+  piecesInNode: 0
   highlightRenderer: {fileID: 507668976}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1806881390
@@ -11691,8 +11760,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 2139486798}
   - {fileID: 2123365243}
+  actualPieces: []
   nodeType: 0
   nodeColor: 5
+  piecesInNode: 0
   highlightRenderer: {fileID: 1815936683}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &1823850460
@@ -11950,8 +12021,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
-  m_fontSizeBase: 32
+  m_fontSize: 29
+  m_fontSizeBase: 29
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -12351,8 +12422,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
-  m_fontSizeBase: 32
+  m_fontSize: 29
+  m_fontSizeBase: 29
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -12444,8 +12515,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 1004439537}
   - {fileID: 1806881389}
+  actualPieces: []
   nodeType: 0
   nodeColor: 2
+  piecesInNode: 0
   highlightRenderer: {fileID: 751280365}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &2060755998
@@ -12712,8 +12785,10 @@ MonoBehaviour:
   - {fileID: 681813874}
   - {fileID: 306032965}
   - {fileID: 1823850459}
+  actualPieces: []
   nodeType: 2
   nodeColor: 0
+  piecesInNode: 0
   highlightRenderer: {fileID: 1616534951}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &2123365244
@@ -12786,8 +12861,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 1806881389}
   - {fileID: 1823850459}
+  actualPieces: []
   nodeType: 0
   nodeColor: 2
+  piecesInNode: 0
   highlightRenderer: {fileID: 1307889580}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &2139486799
@@ -12996,8 +13073,10 @@ MonoBehaviour:
   neighbors:
   - {fileID: 514332747}
   - {fileID: 1433325620}
+  actualPieces: []
   nodeType: 0
   nodeColor: 3
+  piecesInNode: 0
   highlightRenderer: {fileID: 183977651}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!65 &2146775524

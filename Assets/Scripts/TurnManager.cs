@@ -19,7 +19,7 @@ public class TurnManager : MonoBehaviour
     List<PlayerPiece> playerPieces = new List<PlayerPiece>();
     private int[] quesitosPorJugador;
 
-    private int currentPlayerIndex = 0;
+    public int currentPlayerIndex = 0;
     private bool isWaitingForClick = false;
     private bool gameEnded = false;
     public bool canDestroy = false;

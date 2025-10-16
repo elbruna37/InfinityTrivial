@@ -8,6 +8,7 @@ public class BoardNode : MonoBehaviour
 
     public List<BoardNode> neighbors;
 
+    public List<PlayerPiece> actualPieces = new List<PlayerPiece>();
 
     public enum NodeType { Normal, Quesito, VolverATirar, Start }
     public NodeType nodeType = NodeType.Normal;
@@ -17,6 +18,7 @@ public class BoardNode : MonoBehaviour
     public NodeColor nodeColor = NodeColor.Ninguno;
 
     public bool IsIntersection => neighbors.Count > 2;
+    public int piecesInNode = 0;
 
     [Header("Highlight")]
     public Renderer highlightRenderer;
@@ -25,6 +27,7 @@ public class BoardNode : MonoBehaviour
 
     private void Awake()
     {
+
         if (highlightRenderer != null)
             baseColor = GetColorFromNode(nodeColor);
 
@@ -32,6 +35,17 @@ public class BoardNode : MonoBehaviour
         highlightColor.a = 0.5f;
 
         Highlight(false);
+    }
+
+    public void OcupaNodo()
+    {
+        piecesInNode++;
+    }
+
+
+    public void LiberaNodo()
+    {
+        piecesInNode--;
     }
 
     public void Highlight(bool active)

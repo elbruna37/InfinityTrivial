@@ -128,8 +128,8 @@ public class UIManager : MonoBehaviour
         while (elapsed < 0.3f)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / 0.3f);
-            enunciadoTMP.fontSize = Mathf.Lerp(startSize, 50, t);
+            float t = Mathf.Clamp01(elapsed / 0.25f);
+            enunciadoTMP.fontSize = Mathf.Lerp(startSize, 40, t);
             yield return null;
         }
 

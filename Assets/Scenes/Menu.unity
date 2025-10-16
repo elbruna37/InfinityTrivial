@@ -155,6 +155,7 @@ MonoBehaviour:
   fallo: {fileID: 8300000, guid: 5fdb13d3756c84fecac96f5a2d124370, type: 3}
   temporizador: {fileID: 8300000, guid: f194ec66cf955f14293ba0a631c0db1c, type: 3}
   ficha: {fileID: 8300000, guid: 6e8772b49f34d402a90016ed445d8a2f, type: 3}
+  jump: {fileID: 8300000, guid: 2c5292ba5cf254919a6b9e2b18e04f49, type: 3}
 --- !u!4 &36389108
 Transform:
   m_ObjectHideFlags: 0
