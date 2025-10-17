@@ -1,7 +1,9 @@
 ﻿using DG.Tweening;
+using Newtonsoft.Json.Bson;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class UIMenuManager : MonoBehaviour
 {
@@ -13,6 +15,11 @@ public class UIMenuManager : MonoBehaviour
     public GameObject confirmButtons;
     bool canRotate = true;
 
+    [Header("UI")]
+    public Image logo;
+    public GameObject leftButtons;
+    public GameObject playButton;
+
     [SerializeField] private GameObject camara;
 
     private void Start()
@@ -20,6 +27,8 @@ public class UIMenuManager : MonoBehaviour
         canRotate = true;
 
         menuButtons.SetActive(true);
+
+        EmergenceMenu();
     }
 
     void Update()
@@ -28,6 +37,16 @@ public class UIMenuManager : MonoBehaviour
         {
             transform.Rotate(0f, velocidad * Time.deltaTime, 0f);
         }
+    }
+
+    void EmergenceMenu()
+    {
+        Sequence emergence = DOTween.Sequence();
+
+        emergence.Append(leftButtons.transform.DOLocalMoveX(0, 0.5f).SetEase(Ease.OutBounce));
+        emergence.Join(playButton.transform.DOLocalMoveY(-349, 0.5f).SetEase(Ease.OutBounce));
+        emergence.Join(logo.transform.DOScale(5, 0.5f).SetEase(Ease.OutBounce));
+
     }
 
     public void StartPressed()

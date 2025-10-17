@@ -32,6 +32,12 @@ public class UISelectorCategorias : MonoBehaviour
 
     Tween spin;
 
+    private Vector3[] originalQuesitoPositions;
+    private Quaternion[] originalQuesitoRotations;
+
+    private GameObject currentQuesito;
+    [SerializeField] private GameObject backButton;
+
     private static readonly Vector3[] basePositions = new Vector3[]
 {
     new Vector3(-3.2f, 0f, 8.53f),  // Rosa
@@ -52,6 +58,19 @@ public class UISelectorCategorias : MonoBehaviour
 
         originalCategories = new List<string>(manager.categoriasDisponibles);
         selectionMap = new Dictionary<TMP_Dropdown, string>();
+
+        originalQuesitoPositions = new Vector3[dropdownColorMaps.Length];
+        originalQuesitoRotations = new Quaternion[dropdownColorMaps.Length];
+        for (int i = 0; i < dropdownColorMaps.Length; i++)
+        {
+            var q = dropdownColorMaps[i].quesitoModel;
+            if (q != null)
+            {
+                // Guardamos la posición/rotación tal y como están al inicio de la escena
+                originalQuesitoPositions[i] = q.transform.position;
+                originalQuesitoRotations[i] = q.transform.rotation;
+            }
+        }
 
         for (int i = 0; i < dropdownColorMaps.Length; i++)
         {
@@ -178,12 +197,38 @@ public class UISelectorCategorias : MonoBehaviour
     public void confirmBackMenu()
     {
         GameManager.Instance.AudioClick();
-
         confirmButtons.SetActive(false);
-        
-        Destroy(PreguntasManager.Instance.gameObject);
 
-        GameManager.Instance.MoveCamToPoint(camara, new Vector3(0, 8, -10.7f), Quaternion.Euler(48.968f, 0f, 0f), "Menu");
+        Sequence returnSeq = DOTween.Sequence();
+
+        for (int i = 0; i < dropdownColorMaps.Length; i++)
+        {
+            var map = dropdownColorMaps[i];
+            GameObject quesito = map.quesitoModel;
+            if (quesito == null) continue;
+
+            // Matar tweens activos sobre el transform (spin, etc.)
+            DOTween.Kill(quesito.transform, complete: false);
+
+            Tween t = ReturnQuesitoToOriginalPosition(quesito, i);
+            if (t != null)
+            {
+                returnSeq.Join(t); // <-- correcto: Join sobre la Sequence
+            }
+        }
+
+        returnSeq.OnComplete(() =>
+        {
+            if (PreguntasManager.Instance != null)
+                Destroy(PreguntasManager.Instance.gameObject);
+
+            GameManager.Instance.MoveCamToPoint(
+                camara,
+                new Vector3(0, 8, -10.7f),
+                Quaternion.Euler(48.968f, 0f, 0f),
+                "Menu"
+            );
+        });
     }
 
     // 🔹 Animación con DOTween
@@ -252,5 +297,60 @@ public class UISelectorCategorias : MonoBehaviour
                     });
             }
         });
+    }
+
+    // Devuelve un quesito a su posición y rotación original con una parábola suave.
+    private Tween ReturnQuesitoToOriginalPosition(GameObject quesito, int index)
+    {
+        if (quesito == null) return null;
+
+        if (originalQuesitoPositions == null || originalQuesitoPositions.Length <= index)
+            return null;
+
+        Vector3 currentPos = quesito.transform.position;
+        Quaternion currentRot = quesito.transform.rotation;
+
+        Vector3 basePos = basePositions[index];
+        Vector3 targetPos = originalQuesitoPositions[index];
+        Quaternion targetRot = originalQuesitoRotations[index];
+
+        float moveDuration = 1.2f;
+        Ease moveEase = Ease.InOutQuad;
+
+        // Si NO está en la base → movimiento directo
+        if (Vector3.Distance(currentPos, basePos) > 0.3f)
+        {
+            Sequence quickSeq = DOTween.Sequence();
+            quickSeq.Join(quesito.transform.DOMove(targetPos, moveDuration).SetEase(moveEase));
+            quickSeq.Join(quesito.transform.DORotateQuaternion(targetRot, moveDuration).SetEase(moveEase));
+            return quickSeq;
+        }
+
+        // Movimiento parabólico
+        Sequence seq = DOTween.Sequence();
+
+        // Subida inicial más viva
+        Vector3 liftPos = currentPos + Vector3.up * 1.5f;
+        seq.Append(quesito.transform.DOMove(liftPos, 0.35f).SetEase(Ease.OutQuad));
+
+        // Parabola más natural: tres puntos con arco más alto
+        float arcHeight = Mathf.Max(2.0f, Vector3.Distance(currentPos, targetPos) * 0.1f);
+        Vector3 midPoint = Vector3.Lerp(liftPos, targetPos, 0.5f);
+        midPoint.y += arcHeight; // subida adicional
+
+        float jumpDuration = 1.0f;
+
+        // Movimiento en curva Catmull-Rom
+        seq.Append(quesito.transform.DOPath(
+            new Vector3[] { liftPos, midPoint, targetPos },
+            jumpDuration,
+            PathType.CatmullRom
+        )
+        .SetEase(Ease.InOutSine));
+
+        // Rotación sincronizada con el salto
+        seq.Join(quesito.transform.DORotateQuaternion(targetRot, jumpDuration + 0.3f).SetEase(Ease.InOutSine));
+
+        return seq;
     }
 }
