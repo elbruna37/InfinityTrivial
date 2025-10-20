@@ -17,13 +17,21 @@ public struct DropdownColorMap
 
 public class UISelectorCategorias : MonoBehaviour
 {
+    [Header("Referencias")]
     public PreguntasManager manager;
-    public DropdownColorMap[] dropdownColorMaps;
-    public Button botonConfirmar;
-    public GameObject canvas;
 
+    [Header("Dropdowns")]
+    public DropdownColorMap[] dropdownColorMaps;
+
+    [Header("UI")]
+    public GameObject canvas;
+    public Button botonConfirmar;
     public GameObject confirmButtons;
     public GameObject selectorQuesitosMenu;
+    public GameObject backButton;
+
+    [Header("Camara")]
+    public GameObject camara;
 
     private List<string> originalCategories;
     private Dictionary<TMP_Dropdown, string> selectionMap;
@@ -35,8 +43,7 @@ public class UISelectorCategorias : MonoBehaviour
     private Vector3[] originalQuesitoPositions;
     private Quaternion[] originalQuesitoRotations;
 
-    private GameObject currentQuesito;
-    [SerializeField] private GameObject backButton;
+    
 
     private static readonly Vector3[] basePositions = new Vector3[]
 {
@@ -48,7 +55,7 @@ public class UISelectorCategorias : MonoBehaviour
     new Vector3(-3.784f, 0f, 8.528f)  // Naranja
 };
 
-    public GameObject camara;
+    
 
     void Start()
     {
@@ -98,31 +105,54 @@ public class UISelectorCategorias : MonoBehaviour
     private void OnDropdownValueChanged(TMP_Dropdown dd, int value)
     {
         string nueva = value == 0 ? null : dd.options[value].text;
-        if (nueva == null) return;
+        if (nueva == null)
+        {
+            return;
+        }
 
         selectionMap[dd] = nueva;
 
+        // Desactivar dropdown seleccionado
         dd.interactable = false;
         dd.gameObject.SetActive(false);
+        if (spin != null) spin.Kill();
 
-        currentIndex++;
-        if (currentIndex < dropdownColorMaps.Length)
-        {
-            TMP_Dropdown siguiente = dropdownColorMaps[currentIndex].dropdown;
-            siguiente.gameObject.SetActive(true);
+        // Mover el quesito seleccionado a la base
+        GameObject quesito = dropdownColorMaps[currentIndex].quesitoModel;
+        Vector3 basePos = basePositions[currentIndex];
+        basePos.y = quesito.transform.position.y;
+        Quaternion baseRot = Quaternion.Euler(270, 0, 120 + (currentIndex * 60));
 
-            var opciones = BuildOptionsFor(siguiente);
-            siguiente.ClearOptions();
-            siguiente.AddOptions(opciones);
-            siguiente.SetValueWithoutNotify(0);
+        quesito.transform.DOMove(basePos, 1.5f).SetEase(Ease.InOutQuad);
+        quesito.transform.DORotateQuaternion(baseRot, 1.5f).SetEase(Ease.InOutQuad)
+            .OnComplete(() =>
+            {
+                Vector3 finalPos = new Vector3(basePos.x, 0.18f, basePos.z);
+                quesito.transform.DOMove(finalPos, 1f).SetEase(Ease.InOutQuad);
 
-            TMP_Dropdown local = siguiente;
-            siguiente.onValueChanged.AddListener((int v) => OnDropdownValueChanged(local, v));
+                // Incrementar currentIndex y activar siguiente quesito
+                currentIndex++;
 
-            AnimateQuesito(dropdownColorMaps[currentIndex].quesitoModel, dropdownColorMaps[currentIndex].dropdown, currentIndex);
-        }
+                if (currentIndex < dropdownColorMaps.Length)
+                {
+                    var siguienteMap = dropdownColorMaps[currentIndex];
+                    TMP_Dropdown siguiente = siguienteMap.dropdown;
+                    siguiente.gameObject.SetActive(true);
 
-        UpdateConfirmButton();
+                    var opciones = BuildOptionsFor(siguiente);
+                    siguiente.ClearOptions();
+                    siguiente.AddOptions(opciones);
+                    siguiente.SetValueWithoutNotify(0);
+
+                    TMP_Dropdown local = siguiente;
+                    siguiente.onValueChanged.RemoveAllListeners();
+                    siguiente.onValueChanged.AddListener((int v) => OnDropdownValueChanged(local, v));
+
+                    AnimateQuesito(siguienteMap.quesitoModel, siguiente, currentIndex);
+                }
+
+                UpdateConfirmButton();
+            });
     }
 
     private List<string> BuildOptionsFor(TMP_Dropdown dd)
@@ -231,11 +261,67 @@ public class UISelectorCategorias : MonoBehaviour
         });
     }
 
+    public void RetrocederSeleccion()
+    {
+        GameManager.Instance.AudioClick();
+
+        if (currentIndex <= 0)
+        {
+            return;
+        }
+
+        // Bloquear el botón de back
+        backButton.SetActive(false);
+
+        // Devolver quesito actual a posición original si existe
+        if (currentIndex < dropdownColorMaps.Length)
+        {
+            var actualMap = dropdownColorMaps[currentIndex];
+            GameObject actualQuesito = actualMap.quesitoModel;
+            if (actualQuesito != null)
+            {
+                DOTween.Kill(actualQuesito.transform, complete: false);
+                actualQuesito.transform.DOMove(originalQuesitoPositions[currentIndex], 0.6f).SetEase(Ease.InOutQuad);
+                actualQuesito.transform.DORotateQuaternion(originalQuesitoRotations[currentIndex], 0.6f).SetEase(Ease.InOutQuad);
+            }
+            actualMap.dropdown.gameObject.SetActive(false);
+        }
+
+        currentIndex--;
+
+        var prevMap = dropdownColorMaps[currentIndex];
+        var prevDropdown = prevMap.dropdown;
+        var prevQuesito = prevMap.quesitoModel;
+
+        // Restaurar selección anterior
+        if (selectionMap.ContainsKey(prevDropdown))
+            selectionMap[prevDropdown] = null;
+
+        // Reconstruir opciones
+        var opciones = BuildOptionsFor(prevDropdown);
+        prevDropdown.ClearOptions();
+        prevDropdown.AddOptions(opciones);
+        prevDropdown.SetValueWithoutNotify(0);
+
+        prevDropdown.interactable = false;
+        prevDropdown.gameObject.SetActive(true);
+
+        // Solo animación visual, no afecta currentIndex
+        if (prevQuesito != null)
+        {
+            ReturnQuesitoToOriginalPosition(prevQuesito, currentIndex).OnComplete(() =>
+            {
+                AnimateQuesito(prevQuesito, prevDropdown, currentIndex);
+            });
+        }
+
+        UpdateConfirmButton();
+    }
+
     // 🔹 Animación con DOTween
     private void AnimateQuesito(GameObject quesito, TMP_Dropdown dropdown, int index)
     {
         if (quesito == null) return;
-
 
         Vector3 startPos = quesito.transform.position;
         Vector3 loopPos = startPos + Vector3.up * 1.5f;
@@ -270,6 +356,8 @@ public class UISelectorCategorias : MonoBehaviour
 
             // Habilitamos el dropdown cuando el spin comienza
             dropdown.interactable = true;
+
+            if(currentIndex > 0) { backButton.SetActive(true); }    
         });
 
         bool waiting = true;
@@ -353,4 +441,6 @@ public class UISelectorCategorias : MonoBehaviour
 
         return seq;
     }
+
+
 }

@@ -1020,8 +1020,8 @@ MonoBehaviour:
   - color: 4
     dropdown: {fileID: 847312008}
     quesitoModel: {fileID: 1915604204}
-  botonConfirmar: {fileID: 461096494}
   canvas: {fileID: 934456820}
+  botonConfirmar: {fileID: 461096494}
   confirmButtons: {fileID: 531069275}
   selectorQuesitosMenu: {fileID: 90223920}
   backButton: {fileID: 2136273756}
@@ -10163,7 +10163,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 258666297}
         m_TargetAssemblyTypeName: UISelectorCategorias, Assembly-CSharp
-        m_MethodName: OnBackButtonPressed
+        m_MethodName: RetrocederSeleccion
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

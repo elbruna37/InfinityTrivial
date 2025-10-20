@@ -23,67 +23,50 @@ public class BoardNode : MonoBehaviour
     [Header("Highlight")]
     public Renderer highlightRenderer;
     private Color baseColor;
-    public Color highlightColor = new Color(1f, 1f, 0f, 0.5f); // amarillo translúcido
+    private bool materialInstantiated = false;
 
     private void Awake()
     {
-
         if (highlightRenderer != null)
-            baseColor = GetColorFromNode(nodeColor);
+        {
+            // Instanciar material para que no comparta con otros nodos
+            if (!materialInstantiated)
+            {
+                highlightRenderer.material = new Material(highlightRenderer.material);
+                materialInstantiated = true;
+            }
 
-        highlightColor = baseColor * 1.5f;
-        highlightColor.a = 0.5f;
-
-        Highlight(false);
+            baseColor = highlightRenderer.material.color;
+            Highlight(Color.white, false); // desactivar highlight al inicio
+        }
     }
 
-    public void OcupaNodo()
-    {
-        piecesInNode++;
-    }
+    public void OcupaNodo() => piecesInNode++;
+    public void LiberaNodo() => piecesInNode--;
 
-
-    public void LiberaNodo()
+    // Highlight basado en el color del jugador actual
+    public void Highlight(Color playerColor, bool active)
     {
-        piecesInNode--;
-    }
-
-    public void Highlight(bool active)
-    {
+        if (highlightRenderer == null) return;
 
         highlightRenderer.gameObject.SetActive(active);
-
         highlightRenderer.enabled = active;
-
-        highlightRenderer.material.DOKill(); // detener tweens anteriores
+        highlightRenderer.material.DOKill(); // detener cualquier tween anterior
 
         if (active)
         {
-            // Hace que pulse suavemente el alfa
+            Color transparentColor = new Color(playerColor.r, playerColor.g, playerColor.b, 0f);
+
             highlightRenderer.material
-                .DOColor(highlightColor, 0.8f)
+                .DOColor(transparentColor, 0.8f)
+                .From(new Color(playerColor.r, playerColor.g, playerColor.b, 0.5f)) // desde alpha visible
                 .SetLoops(-1, LoopType.Yoyo)
                 .SetEase(Ease.InOutSine);
         }
         else
         {
-            // Volver al color base y detener el loop
+            // Restaurar color base
             highlightRenderer.material.color = baseColor;
-        }
-    }
-
-    private Color GetColorFromNode(NodeColor color)
-    {
-        switch (color)
-        {
-            case NodeColor.Pink: return new Color(1f, 0.5f, 0.7f);       // Rosa claro
-            case NodeColor.Blue: return new Color(0.4f, 0.6f, 1f);       // Azul suave
-            case NodeColor.Green: return new Color(0.5f, 1f, 0.5f);      // Verde brillante
-            case NodeColor.Yellow: return new Color(1f, 1f, 0.5f);     // Amarillo claro
-            case NodeColor.Orange: return new Color(0.9f, 0.45f, 0.1f); // Naranja más oscuro
-            case NodeColor.Purple: return new Color(0.7f, 0.5f, 1f);     // Morado suave
-            // Default o Quesito → tono grisáceo oscuro y poco brillante
-            default: return new Color(0.2f, 0.2f, 0.2f, 0.5f);
         }
     }
 

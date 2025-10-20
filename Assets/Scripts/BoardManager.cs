@@ -14,6 +14,8 @@ public class BoardManager : MonoBehaviour
     private bool _awaitingChoice = false;
     private readonly HashSet<BoardNode> _validChoices = new HashSet<BoardNode>();
 
+    Color[] playerColors = {Color.green,Color.blue,Color.red,Color.yellow};
+
     // ----------------- Movimiento -----------------
 
     public IEnumerator MoveRoutine(PlayerPiece piece, int steps)
@@ -28,14 +30,14 @@ public class BoardManager : MonoBehaviour
 
         // Iluminar opciones
         foreach (var node in reachable)
-            node.Highlight(true);
+            node.Highlight(playerColors[TurnManager.Instance.currentPlayerIndex],true);
 
         // Esperar elección
         yield return StartCoroutine(ChooseNextNode(reachable));
 
         // Desiluminar
         foreach (var node in reachable)
-            node.Highlight(false);
+            node.Highlight(playerColors[TurnManager.Instance.currentPlayerIndex], false);
 
         if (_chosenNode == null)
         {
