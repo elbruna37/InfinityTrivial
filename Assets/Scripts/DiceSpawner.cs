@@ -34,6 +34,8 @@ public class DiceSpawner : MonoBehaviour
         // 2. Instanciar el dado
         GameObject dice = Instantiate(dicePrefab, randomPos, UnityEngine.Random.rotation);
 
+        GameManager.Instance.AudioDado();
+
         Rigidbody rb = dice.GetComponent<Rigidbody>();
         if (rb == null)
         {

@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AudioClip temporizador;
     [SerializeField] private AudioClip ficha;
     [SerializeField] private AudioClip jump;
+    [SerializeField] private AudioClip dado;
 
     private AudioSource audioSource;
 
@@ -99,6 +100,12 @@ public class GameManager : MonoBehaviour
     public void AudioJump()
     {
         audioSource.clip = jump;
+        audioSource.Play();
+    }
+
+    public void AudioDado()
+    {
+        audioSource.clip = dado;
         audioSource.Play();
     }
 

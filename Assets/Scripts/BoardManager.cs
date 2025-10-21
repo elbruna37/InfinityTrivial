@@ -88,12 +88,50 @@ public class BoardManager : MonoBehaviour
                     float jumpHeight = 2.5f + casillasSaltadas * 1f;
                     float jumpDuration = 0.5f + casillasSaltadas * 0.25f;
 
-                    // Saltar directamente hasta jumpTarget
-                    moveSeq.Append(piece.transform
-                        .DOJump(jumpTarget.transform.position, jumpHeight, 1, jumpDuration)
-                        .SetEase(Ease.OutQuad)
-                        .OnStart(() => GameManager.Instance.AudioJump())
+                    // Si el nodo destino está ocupado, calcula offsets para que la ficha entrante aterrice en su offset
+                    bool destinoOcupado = jumpTarget.actualPieces != null && jumpTarget.actualPieces.Count > 0;
+                    Vector3 incomingPos = jumpTarget.transform.position;
+                    Vector3[] offsets = null;
+                    int incomingIndex = 0;
+
+                    if (destinoOcupado)
+                    {
+                        offsets = GetOffsets(jumpTarget);
+                        int existingCount = jumpTarget.actualPieces.Count;
+                        incomingIndex = Mathf.Min(existingCount, offsets.Length - 1);
+                        incomingPos = jumpTarget.transform.position + offsets[incomingIndex];
+                    }
+
+                    // Salto directamente al incomingPos (offset si estaba ocupado, centro si estaba vacío)
+                    moveSeq.Append(
+                        piece.transform
+                             .DOJump(incomingPos, jumpHeight, 1, jumpDuration)
+                             .SetEase(Ease.OutQuad)
+                             .OnStart(() => GameManager.Instance.AudioJump())
                     );
+
+                    // Si el destino está ocupado, mueve las piezas existentes a sus offsets al mismo tiempo (Join),
+                    // de modo que cuando la incoming aterrice, ya haya sitio.
+                    if (destinoOcupado && offsets != null)
+                    {
+                        int existingCount = jumpTarget.actualPieces.Count;
+                        float otherDuration = Mathf.Max(0.15f, jumpDuration * 0.9f);
+
+                        for (int k = 0; k < existingCount && k < offsets.Length; k++)
+                        {
+                            var other = jumpTarget.actualPieces[k];
+                            if (other == null) continue;
+
+                            Vector3 target = jumpTarget.transform.position + offsets[k];
+
+                            // join para que ocurra concurrentemente con la llegada de la incoming
+                            moveSeq.Join(
+                                other.transform
+                                     .DOMove(target, otherDuration)
+                                     .SetEase(Ease.OutQuad)
+                            );
+                        }
+                    }
 
                     // Actualizar nodo actual al llegar
                     moveSeq.AppendCallback(() =>
@@ -228,6 +266,7 @@ public class BoardManager : MonoBehaviour
         if (_awaitingChoice && node != null && _validChoices.Contains(node))
         {
             _chosenNode = node;
+            //TurnManager.Instance.canDestroy=true;
         }
     }
 

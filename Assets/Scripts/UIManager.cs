@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.GraphicsBuffer;
 
 public class UIManager : MonoBehaviour
 {
@@ -36,6 +37,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Textos")]
     public TMP_Text enunciadoTMP;
+    public RectTransform enunciado;
     public TMP_Text textInformation;
     
 
@@ -55,6 +57,13 @@ public class UIManager : MonoBehaviour
     public TMP_Text categoriaMoradoTMP;
     public TMP_Text categoriaVerdeTMP;
 
+    [Header("Movimiento Tarjeta")]
+    public Transform tarjeta;
+    private Vector3 startPos;
+    private Quaternion startRot;
+    private float duration = 5f;
+    private Sequence seq;
+
     [Header("DoTween")]
     Sequence upDownPanelsSeq = DOTween.Sequence();
 
@@ -65,6 +74,8 @@ public class UIManager : MonoBehaviour
 
     void Start()
     {
+        startPos = tarjeta.position;
+        startRot = tarjeta.rotation;
         var categorias = GameManager.Instance.GetTodasLasCategorias();
         ActualizarCategorias(categorias);
         colorOriginal = fondo.color;
@@ -108,6 +119,9 @@ public class UIManager : MonoBehaviour
 
     private IEnumerator FlujoPregunta()
     {
+        CardMotion();
+        yield return new WaitForSeconds(duration);
+
         quesitoPanel.SetActive(false);
         // 🔹 Mostrar solo enunciado 30s
 
@@ -118,22 +132,28 @@ public class UIManager : MonoBehaviour
         enunciadoTMP.text = preguntaActual.enunciado;
         TurnManager.Instance.canDestroy = true;
 
-        yield return new WaitForSeconds(6f);
+        enunciado.localScale = Vector3.zero;
+        enunciado.DOScale(Vector3.one, 1f).SetEase(Ease.OutBack);
 
-        // 🔹 Reducir tamaño Texto Pregunta
-        float elapsed = 0f;
-        float startSize = enunciadoTMP.fontSize;
+        yield return new WaitForSeconds(5f);
+
+        tarjeta.position = startPos;
+        tarjeta.rotation = startRot;
+
+        //  Reducir tamaño Texto Pregunta
+        float startSize = 70;
 
         Temporizador();
-        while (elapsed < 0.3f)
+        float t = 0f;
+        while (t < 1f)
         {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / 0.25f);
-            enunciadoTMP.fontSize = Mathf.Lerp(startSize, 40, t);
+            t += Time.deltaTime / 0.5f;
+            float easedT = Mathf.SmoothStep(0f, 1f, t); // <-- suaviza el movimiento
+            enunciadoTMP.fontSize = Mathf.Lerp(startSize, 40, easedT);
             yield return null;
         }
 
-        enunciadoTMP.fontSize = 50;
+        enunciadoTMP.fontSize = 40;
 
         // 🔹 Mostrar opciones
         panelRespuestas.SetActive(true);
@@ -286,6 +306,50 @@ public class UIManager : MonoBehaviour
             categoriaVerdeTMP.text = verde;
     }
 
-   
+    public void CardMotion()
+    {
+        // Resetea tweens anteriores
+        tarjeta.DOKill();
+        seq?.Kill();
+
+        // Fases del movimiento
+        Vector3 startRot = tarjeta.eulerAngles;                
+        Vector3 midPos = new Vector3(0f, 14f, -10f);
+        Vector3 highPos = new Vector3(0f, 50.31f, -10f);
+        Vector3 finalRot = new Vector3(90f, 90f, 0f);
+
+        seq = DOTween.Sequence();
+
+        // 1º paso: sube al centro y gira solo en Z (360°) - 2s
+        seq.Append(
+            tarjeta.DOMove(midPos, 2f)
+                .SetEase(Ease.InOutCubic)
+        );
+        seq.Join(
+            tarjeta.DORotate(new Vector3(startRot.x, startRot.y, startRot.z + 720), 2f, RotateMode.FastBeyond360)
+                .SetEase(Ease.InOutSine)
+        );
+
+        // 2º paso: sube a 50.31 sin alterar rotación original - 3s
+        seq.Append(
+            tarjeta.DOMove(highPos, 2f)
+                .SetEase(Ease.OutCubic)
+        );
+        seq.Join(
+            tarjeta.DORotate(new Vector3(startRot.x + 1080, startRot.y, startRot.z), 2f, RotateMode.FastBeyond360)
+                .SetEase(Ease.OutCubic)
+        );
+
+        // Espera 0.5s antes del siguiente paso
+        seq.AppendInterval(0.25f);
+
+        // 3º paso: ajusta rotación final - 1s
+        seq.Append(
+            tarjeta.DORotate(finalRot, 0.5f)
+                .SetEase(Ease.OutBack)
+        );
+
+        seq.Play();
+    }
 }
 
