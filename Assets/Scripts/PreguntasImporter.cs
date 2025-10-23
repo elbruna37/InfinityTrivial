@@ -75,9 +75,6 @@ public class PreguntasImporter : MonoBehaviour
         Debug.Log($"📘 Total de preguntas ahora: {lote.questions.Length}");
 
         inputJson.text = "";
-
-        // Actualizar resumen
-        MostrarResumen();
     }
 
     public void BorrarPreguntas()

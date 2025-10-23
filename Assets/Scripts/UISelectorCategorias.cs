@@ -110,10 +110,11 @@ public class UISelectorCategorias : MonoBehaviour
             return;
         }
 
+        backButton.SetActive(false);
+
         selectionMap[dd] = nueva;
 
         // Desactivar dropdown seleccionado
-        dd.interactable = false;
         dd.gameObject.SetActive(false);
         if (spin != null) spin.Kill();
 
@@ -303,15 +304,42 @@ public class UISelectorCategorias : MonoBehaviour
         prevDropdown.AddOptions(opciones);
         prevDropdown.SetValueWithoutNotify(0);
 
-        prevDropdown.interactable = false;
-        prevDropdown.gameObject.SetActive(true);
+        //prevDropdown.interactable = false;
+        prevDropdown.gameObject.SetActive(false);
 
         // Solo animación visual, no afecta currentIndex
         if (prevQuesito != null)
         {
-            ReturnQuesitoToOriginalPosition(prevQuesito, currentIndex).OnComplete(() =>
+            // Desactivar momentáneamente el dropdown
+            prevDropdown.gameObject.SetActive(false);
+
+            // Matamos tweens activos
+            DOTween.Kill(prevQuesito.transform, complete: false);
+
+            // Definimos directamente la posición de "rotación" (la misma que usa AnimateQuesito)
+            Vector3 loopPos = originalQuesitoPositions[currentIndex] + Vector3.up * 1.5f;
+
+            Sequence seq = DOTween.Sequence();
+
+            // Movimiento suave hacia la posición de spin
+            seq.Append(prevQuesito.transform.DOMoveY(prevQuesito.transform.position.y + 1f, 0.4f).SetEase(Ease.OutQuad));
+
+            seq.Append(prevQuesito.transform.DOMove(loopPos, 1f).SetEase(Ease.InOutQuad));
+            seq.Join(prevQuesito.transform.DORotateQuaternion(Quaternion.Euler(0, 0, 90), 1f).SetEase(Ease.InOutQuad));
+
+            seq.OnComplete(() =>
             {
-                AnimateQuesito(prevQuesito, prevDropdown, currentIndex);
+                // Empieza a girar sin pasar por posición original
+                spin = prevQuesito.transform.DORotate(
+                    new Vector3(0, 360, 0),
+                    4f,
+                    RotateMode.WorldAxisAdd
+                )
+                .SetEase(Ease.Linear)
+                .SetLoops(-1, LoopType.Restart);
+
+                prevDropdown.gameObject.SetActive(true);
+                if (currentIndex > 0) backButton.SetActive(true);
             });
         }
 
@@ -327,7 +355,7 @@ public class UISelectorCategorias : MonoBehaviour
         Vector3 loopPos = startPos + Vector3.up * 1.5f;
 
         // 🔹 Desactivar dropdown mientras anima
-        dropdown.interactable = false;
+        dropdown.gameObject.SetActive(false);
 
         // Secuencia de animación
         Sequence seq = DOTween.Sequence();
@@ -355,9 +383,9 @@ public class UISelectorCategorias : MonoBehaviour
             .SetLoops(-1, LoopType.Restart);
 
             // Habilitamos el dropdown cuando el spin comienza
-            dropdown.interactable = true;
+            dropdown.gameObject.SetActive(true);
 
-            if(currentIndex > 0) { backButton.SetActive(true); }    
+            if (currentIndex > 0) { backButton.SetActive(true); }    
         });
 
         bool waiting = true;

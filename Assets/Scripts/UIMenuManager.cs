@@ -67,6 +67,14 @@ public class UIMenuManager : MonoBehaviour
         GameManager.Instance.MoveCamToPoint(camara, new Vector3(13.97f, 2.21f, -1.25f), Quaternion.Euler(36.151f, -72.055f, 0f), "Options");
     }
 
+    public void QuestionsPressed()
+    {
+        GameManager.Instance.AudioClick();
+        menuButtons.SetActive(false);
+
+        GameManager.Instance.MoveCamToPoint(camara, new Vector3(13.97f, 2.21f, -1.25f), Quaternion.Euler(36.151f, -72.055f, 0f), "PreguntasImporter");
+    }
+
     public void QuitPressed()
     {
         GameManager.Instance.AudioClick();

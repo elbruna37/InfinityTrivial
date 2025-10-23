@@ -63,6 +63,7 @@ public class UIManager : MonoBehaviour
     private Quaternion startRot;
     private float duration = 5f;
     private Sequence seq;
+    private Sequence backSeq;
 
     [Header("DoTween")]
     Sequence upDownPanelsSeq = DOTween.Sequence();
@@ -133,12 +134,9 @@ public class UIManager : MonoBehaviour
         TurnManager.Instance.canDestroy = true;
 
         enunciado.localScale = Vector3.zero;
-        enunciado.DOScale(Vector3.one, 1f).SetEase(Ease.OutBack);
+        enunciado.DOScale(Vector3.one, 0.7f).SetEase(Ease.OutBack);
 
         yield return new WaitForSeconds(5f);
-
-        tarjeta.position = startPos;
-        tarjeta.rotation = startRot;
 
         //  Reducir tamaño Texto Pregunta
         float startSize = 70;
@@ -282,7 +280,22 @@ public class UIManager : MonoBehaviour
         panelRespuestas.SetActive(false);
         quesitoPanel.SetActive(true);
         textInformation.text = "";
-        callbackRespuesta?.Invoke(correcta);
+
+        backSeq = DOTween.Sequence();
+
+        backSeq.Append(tarjeta.DORotate(new Vector3(-90, 90, 0), 0.5f, RotateMode.FastBeyond360).SetEase(Ease.OutBack));
+
+        backSeq.AppendInterval(0.25f);
+
+        backSeq.Append(tarjeta.DOMoveY(30, 0.5f).SetEase(Ease.OutCubic));
+
+        backSeq.Append(tarjeta.DOMoveX(-10, 0.5f).SetEase(Ease.OutCubic).OnComplete(() =>
+            {
+                tarjeta.position = startPos;
+                tarjeta.rotation = startRot;
+
+                callbackRespuesta?.Invoke(correcta);
+            }));
     }
 
     public void ActualizarCategorias(Dictionary<QuesitoColor, string> categorias)
@@ -320,17 +333,19 @@ public class UIManager : MonoBehaviour
 
         seq = DOTween.Sequence();
 
-        // 1º paso: sube al centro y gira solo en Z (360°) - 2s
+        // 1º paso: sube al centro y gira solo en Z (360°)
         seq.Append(
-            tarjeta.DOMove(midPos, 2f)
+            tarjeta.DOMove(midPos, 1.5f)
                 .SetEase(Ease.InOutCubic)
         );
         seq.Join(
-            tarjeta.DORotate(new Vector3(startRot.x, startRot.y, startRot.z + 720), 2f, RotateMode.FastBeyond360)
+            tarjeta.DORotate(new Vector3(startRot.x, startRot.y, startRot.z + 720), 1.5f, RotateMode.FastBeyond360)
                 .SetEase(Ease.InOutSine)
         );
 
-        // 2º paso: sube a 50.31 sin alterar rotación original - 3s
+        seq.AppendInterval(0.25f);
+
+        // 2º paso: sube a 50.31 sin alterar rotación original
         seq.Append(
             tarjeta.DOMove(highPos, 2f)
                 .SetEase(Ease.OutCubic)
@@ -343,7 +358,7 @@ public class UIManager : MonoBehaviour
         // Espera 0.5s antes del siguiente paso
         seq.AppendInterval(0.25f);
 
-        // 3º paso: ajusta rotación final - 1s
+        // 3º paso: ajusta rotación final
         seq.Append(
             tarjeta.DORotate(finalRot, 0.5f)
                 .SetEase(Ease.OutBack)
