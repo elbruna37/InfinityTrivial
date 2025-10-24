@@ -1,0 +1,172 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: UI_Strings Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: UI_Strings
+  m_TableCollectionNameGuidString: 15fc5b3d200de564ca280db633bee336
+  m_Entries:
+  - m_Id: 127416131584
+    m_Key: play_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 289999937536
+    m_Key: nTeam_SelectorText
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4862663712768
+    m_Key: 2Teams_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5014254247936
+    m_Key: 3Teams_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5031253762048
+    m_Key: 4Teams_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5192054988800
+    m_Key: categorySelector_Text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6010892181504
+    m_Key: confrim_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6513369800704
+    m_Key: backMenu_Text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6959115264000
+    m_Key: yes_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6985791037440
+    m_Key: no_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7331913392128
+    m_Key: settings_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7405053665280
+    m_Key: language_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7515770707968
+    m_Key: resolution_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7729873149952
+    m_Key: quality_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8320422764544
+    m_Key: volume_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8429835378688
+    m_Key: vibration_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8524639232000
+    m_Key: confirmSettings_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8965779349504
+    m_Key: lowQuality_setting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8967805198336
+    m_Key: mediumQuality_setting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8969399033856
+    m_Key: highQuality_setting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9481863290880
+    m_Key: instructions_Text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9934621630464
+    m_Key: aceptInstructions_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10098245623808
+    m_Key: copy_Text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10193502461952
+    m_Key: category_Text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10328999452672
+    m_Key: cantidadQuestions_Text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10480384466944
+    m_Key: difficulty_Text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10614824493056
+    m_Key: difficultyEasy_Option
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10689093033984
+    m_Key: difficultyMedium_Option
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10728582406144
+    m_Key: difficultyHard_Option
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10962259664896
+    m_Key: copy_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11064206417920
+    m_Key: paste_Text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11199518859264
+    m_Key: import_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11242556612608
+    m_Key: history_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11490817466368
+    m_Key: back_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13977595142144
+    m_Key: exit_Text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14217547079680
+    m_Key: exit_button
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 8685319978778099940
+  references:
+    version: 2
+    RefIds:
+    - rid: 8685319978778099940
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1761304121837

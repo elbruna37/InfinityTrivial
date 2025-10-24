@@ -77,7 +77,8 @@ public class UIOptionsManager : MonoBehaviour
         // Idioma
         selectedLanguage = languageDropdown.value == 0 ? "Español" : "English";
         PlayerPrefs.SetString("language", selectedLanguage);
-        Debug.Log("Idioma cambiado a: " + selectedLanguage);
+        string code = selectedLanguage == "Español" ? "es" : "en";
+        LocaleController.Instance.SetLocaleCode(code);
 
         // Resolución
         selectedResolutionIndex = resolutionDropdown.value;
