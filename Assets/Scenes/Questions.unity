@@ -1025,7 +1025,19 @@ MonoBehaviour:
   confirmButtons: {fileID: 531069275}
   selectorQuesitosMenu: {fileID: 90223920}
   backButton: {fileID: 2136273756}
+  defaultCategoryText:
+    m_TableReference:
+      m_TableCollectionName: GUID:15fc5b3d200de564ca280db633bee336
+    m_TableEntryReference:
+      m_KeyId: 1110310192144384
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
   camara: {fileID: 842800692}
+  references:
+    version: 2
+    RefIds: []
 --- !u!4 &258666298
 Transform:
   m_ObjectHideFlags: 0

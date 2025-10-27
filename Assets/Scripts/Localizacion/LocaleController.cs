@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Localization;
@@ -7,6 +8,7 @@ using UnityEngine.Localization.Settings;
 public class LocaleController : MonoBehaviour
 {
     public static LocaleController Instance;
+    public event Action OnLanguageChanged;
 
     private void Awake()
     {
@@ -49,6 +51,8 @@ public class LocaleController : MonoBehaviour
         {
             LocalizationSettings.SelectedLocale = locale;
             Debug.Log("Locale cambiado a: " + locale.LocaleName + " (" + locale.Identifier.Code + ")");
+
+            OnLanguageChanged?.Invoke();
         }
         else
         {

@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
+using UnityEngine.Localization.SmartFormat.PersistentVariables;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -24,21 +27,46 @@ public class TurnManager : MonoBehaviour
     private bool gameEnded = false;
     public bool canDestroy = false;
 
+    [Header("Localizacion")]
+    [SerializeField] private LocalizedString turnText;
+    [SerializeField] private LocalizedString rollAgain;
+    [SerializeField] private LocalizedString wedgeWin;
+    [SerializeField] private LocalizedString rerollBox;
+    [SerializeField] private LocalizedString winText;
+
+    public LocalizedString teamGreen;
+    public LocalizedString teamBlue;
+    public LocalizedString teamRed;
+    public LocalizedString teamYellow;
+
+    private StringVariable teamNameVar;
+    private StringVariable teamColorVar;
+
+
     public TMP_Text textInformation;
     private float velocidadParpadeo = 2f;
     private Tween tweenParpadeo;
 
-    string[] equipos = { "VERDE", "AZUL", "ROJO", "AMARILLO"};
+    string[] equipos;
     string[] color = { "green", "blue", "red", "yellow" };
 
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
     }
 
     private void Start()
     {
+        equipos = new string[]
+        {
+            teamGreen.GetLocalizedString(),
+            teamBlue.GetLocalizedString(),
+            teamRed.GetLocalizedString(),
+            teamYellow.GetLocalizedString()
+        };
+
         quesitosPorJugador = new int[GameManager.Instance.maxPlayer];
         gameEnded = false;
         StartTurn();
@@ -48,7 +76,26 @@ public class TurnManager : MonoBehaviour
     {
         if (gameEnded) return;
 
-        ActualizarTexto($"Turno del equipo <color={color[currentPlayerIndex]}>{equipos[currentPlayerIndex]}</color={color[currentPlayerIndex]}> \n Haz clic para lanzar el dado.");
+        teamNameVar = new StringVariable { Value = equipos[currentPlayerIndex] };
+        teamColorVar = new StringVariable { Value = color[currentPlayerIndex] };
+
+        turnText.Add("teamName", teamNameVar);
+        turnText.Add("teamColor", teamColorVar);
+
+        rollAgain.Add("teamName", teamNameVar);
+        rollAgain.Add("teamColor", teamColorVar);
+
+        wedgeWin.Add("teamName", teamNameVar);
+        wedgeWin.Add("teamColor", teamColorVar);
+
+        rerollBox.Add("teamName", teamNameVar);
+        rerollBox.Add("teamColor", teamColorVar);
+
+        winText.Add("teamName", teamNameVar);
+        winText.Add("teamColor", teamColorVar);
+
+
+        StartCoroutine(SetTextFromLocalized(turnText));
 
         isWaitingForClick = true;   // ahora esperamos a que el jugador haga click
     }
@@ -108,7 +155,7 @@ public class TurnManager : MonoBehaviour
                     {
                         if (correcta)
                         {
-                            ActualizarTexto($"Vuelve a tirar equipo <color={color[currentPlayerIndex]}>{equipos[currentPlayerIndex]}</color={color[currentPlayerIndex]}>");
+                            StartCoroutine(SetTextFromLocalized(rollAgain));
                             isWaitingForClick = true;
                         }
                         if(!correcta)
@@ -127,7 +174,7 @@ public class TurnManager : MonoBehaviour
                     {
                         if (correcta)
                         {
-                            ActualizarTexto($"El equipo <color={color[currentPlayerIndex]}>{equipos[currentPlayerIndex]}</color={color[currentPlayerIndex]}> gana quesito y vuelve a tirar");
+                            StartCoroutine(SetTextFromLocalized(wedgeWin));
                             ActivarQuesitoParaJugador(currentPlayerIndex, ConvertNodeColorToQuesitoColor(landedNode.nodeColor));
                             isWaitingForClick = true;
                         }
@@ -141,7 +188,7 @@ public class TurnManager : MonoBehaviour
 
                 case BoardNode.NodeType.VolverATirar:
                     canDestroy = true;
-                    ActualizarTexto($"Casilla de Volver a tirar, el equipo <color={color[currentPlayerIndex]}>{equipos[currentPlayerIndex]}</color={color[currentPlayerIndex]}> vuelve a tirar");
+                    StartCoroutine(SetTextFromLocalized(rerollBox));
                     isWaitingForClick = true;
                     break;
 
@@ -225,7 +272,7 @@ public class TurnManager : MonoBehaviour
             if (quesitosPorJugador[playerIndex] >= 6)
             {
                 gameEnded = true;
-                ActualizarTexto($"¡El equipo <color={this.color[playerIndex]}>{equipos[playerIndex]}</color={this.color[playerIndex]}> ha ganado! Haz click para volver al menú.");
+                StartCoroutine(SetTextFromLocalized(winText));
                 isWaitingForClick = false;
                 StartCoroutine(WaitForClickToReturnMenu());
             }
@@ -235,6 +282,16 @@ public class TurnManager : MonoBehaviour
             Debug.Log($"El quesito {quesitoName} ya estaba activado para {jugadorName}. No se suma punto.");
         }
     }
+
+    private IEnumerator SetTextFromLocalized(LocalizedString localized)
+    {
+        // Espera la inicialización del sistema si hace falta
+        yield return LocalizationSettings.InitializationOperation;
+
+        string s = localized.GetLocalizedString();
+        ActualizarTexto(s);
+    }
+
     public void ActualizarTexto(string nuevoTexto)
     {
         textInformation.text = nuevoTexto;
@@ -251,7 +308,7 @@ public class TurnManager : MonoBehaviour
 
         // Crear el parpadeo
         tweenParpadeo = textInformation
-            .DOFade(0f, velocidadParpadeo / 2f)
+            .DOFade(0f, velocidadParpadeo / 3f)
             .SetLoops(-1, LoopType.Yoyo)
             .SetEase(Ease.InOutSine);
     }

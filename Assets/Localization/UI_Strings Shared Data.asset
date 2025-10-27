@@ -159,6 +159,46 @@ MonoBehaviour:
     m_Key: exit_button
     m_Metadata:
       m_Items: []
+  - m_Id: 1098517109530624
+    m_Key: turn_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1098947059245056
+    m_Key: rollAgain_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1099465466830848
+    m_Key: wedgeWin_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1099850948534272
+    m_Key: rerollBox_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1100248618885120
+    m_Key: win_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1108704692264960
+    m_Key: teamGreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1108706634227712
+    m_Key: teamBlue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1108708307755008
+    m_Key: teamRed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1108713877790720
+    m_Key: TeamYellow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1110310192144384
+    m_Key: defaultCategoryText
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

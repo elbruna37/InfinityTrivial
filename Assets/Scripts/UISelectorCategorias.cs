@@ -6,6 +6,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using DG.Tweening;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 [System.Serializable]
 public struct DropdownColorMap
@@ -29,6 +31,7 @@ public class UISelectorCategorias : MonoBehaviour
     public GameObject confirmButtons;
     public GameObject selectorQuesitosMenu;
     public GameObject backButton;
+    [SerializeField] private LocalizedString defaultCategoryText;
 
     [Header("Camara")]
     public GameObject camara;
@@ -164,7 +167,9 @@ public class UISelectorCategorias : MonoBehaviour
 
         List<string> disponibles = originalCategories.Where(c => !bloqueadas.Contains(c)).ToList();
 
-        List<string> opciones = new List<string> { "Selecciona una categoría" };
+        string textoDefault = defaultCategoryText.GetLocalizedString();
+        List<string> opciones = new List<string> { textoDefault };
+
         opciones.AddRange(disponibles);
         return opciones;
     }

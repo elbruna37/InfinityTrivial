@@ -16,7 +16,8 @@ MonoBehaviour:
     m_Code: es
   m_SharedData: {fileID: 11400000, guid: 15fc5b3d200de564ca280db633bee336, type: 2}
   m_Metadata:
-    m_Items: []
+    m_Items:
+    - rid: 8685320046573781073
   m_TableData:
   - m_Id: 127416131584
     m_Localized: Jugar
@@ -167,6 +168,63 @@ MonoBehaviour:
     m_Localized: Salir
     m_Metadata:
       m_Items: []
+  - m_Id: 1098517109530624
+    m_Localized: Turno del equipo <color={teamColor}>{teamName}</color> \nHaz clic
+      para lanzar el dado.
+    m_Metadata:
+      m_Items:
+      - rid: 8685320046573781073
+  - m_Id: 1098947059245056
+    m_Localized: Vuelve a tirar equipo<color={teamColor}>{teamName}</color>
+    m_Metadata:
+      m_Items:
+      - rid: 8685320046573781073
+  - m_Id: 1099465466830848
+    m_Localized: El equipo <color={teamColor}>{teamName}</color> gana quesito \ny
+      vuelve a tirar
+    m_Metadata:
+      m_Items:
+      - rid: 8685320046573781073
+  - m_Id: 1099850948534272
+    m_Localized: Casilla de Volver a tirar \nel equipo <color={teamColor}>{teamName}</color>
+      vuelve a tirar
+    m_Metadata:
+      m_Items:
+      - rid: 8685320046573781073
+  - m_Id: 1100248618885120
+    m_Localized: "\xA1El equipo <color={teamColor}>{teamName}</color> ha ganado!
+      \\nHaz click para volver al men\xFA."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1108704692264960
+    m_Localized: VERDE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1108706634227712
+    m_Localized: AZUL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1108708307755008
+    m_Localized: ROJO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1108713877790720
+    m_Localized: AMARILLO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1110310192144384
+    m_Localized: Selecciona una categoria
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 8685320046573781073
+      type: {class: SmartFormatTag, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_Entries: 
+        m_SharedEntries:
+        - id: 1098517109530624
+        - id: 1098947059245056
+        - id: 1099465466830848
+        - id: 1099850948534272

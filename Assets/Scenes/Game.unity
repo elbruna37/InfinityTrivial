@@ -5961,7 +5961,91 @@ MonoBehaviour:
   boardManager: {fileID: 2039084959}
   currentPlayerIndex: 0
   canDestroy: 0
+  turnText:
+    m_TableReference:
+      m_TableCollectionName: GUID:15fc5b3d200de564ca280db633bee336
+    m_TableEntryReference:
+      m_KeyId: 1098517109530624
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  rollAgain:
+    m_TableReference:
+      m_TableCollectionName: GUID:15fc5b3d200de564ca280db633bee336
+    m_TableEntryReference:
+      m_KeyId: 1098947059245056
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  wedgeWin:
+    m_TableReference:
+      m_TableCollectionName: GUID:15fc5b3d200de564ca280db633bee336
+    m_TableEntryReference:
+      m_KeyId: 1099465466830848
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  rerollBox:
+    m_TableReference:
+      m_TableCollectionName: GUID:15fc5b3d200de564ca280db633bee336
+    m_TableEntryReference:
+      m_KeyId: 1099850948534272
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  winText:
+    m_TableReference:
+      m_TableCollectionName: GUID:15fc5b3d200de564ca280db633bee336
+    m_TableEntryReference:
+      m_KeyId: 1100248618885120
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  teamGreen:
+    m_TableReference:
+      m_TableCollectionName: GUID:15fc5b3d200de564ca280db633bee336
+    m_TableEntryReference:
+      m_KeyId: 1108704692264960
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  teamBlue:
+    m_TableReference:
+      m_TableCollectionName: GUID:15fc5b3d200de564ca280db633bee336
+    m_TableEntryReference:
+      m_KeyId: 1108706634227712
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  teamRed:
+    m_TableReference:
+      m_TableCollectionName: GUID:15fc5b3d200de564ca280db633bee336
+    m_TableEntryReference:
+      m_KeyId: 1108708307755008
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  teamYellow:
+    m_TableReference:
+      m_TableCollectionName: GUID:15fc5b3d200de564ca280db633bee336
+    m_TableEntryReference:
+      m_KeyId: 1108713877790720
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
   textInformation: {fileID: 2146486884}
+  references:
+    version: 2
+    RefIds: []
 --- !u!4 &834221102
 Transform:
   m_ObjectHideFlags: 0
