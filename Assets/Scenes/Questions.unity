@@ -1000,7 +1000,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f9039ffd06b8d043a7d0432b705dfc6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  manager: {fileID: 412663979}
+  questionsManager: {fileID: 412663979}
   dropdownColorMaps:
   - color: 1
     dropdown: {fileID: 1280760148}
@@ -1021,9 +1021,9 @@ MonoBehaviour:
     dropdown: {fileID: 847312008}
     quesitoModel: {fileID: 1915604204}
   canvas: {fileID: 934456820}
-  botonConfirmar: {fileID: 461096494}
+  confirmButton: {fileID: 461096494}
   confirmButtons: {fileID: 531069275}
-  selectorQuesitosMenu: {fileID: 90223920}
+  quesitoMenuPanel: {fileID: 90223920}
   backButton: {fileID: 2136273756}
   defaultCategoryText:
     m_TableReference:
@@ -1034,7 +1034,7 @@ MonoBehaviour:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
-  camara: {fileID: 842800692}
+  cameraObject: {fileID: 842800692}
   references:
     version: 2
     RefIds: []
@@ -1702,7 +1702,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 258666297}
         m_TargetAssemblyTypeName: UISelectorCategorias, Assembly-CSharp
-        m_MethodName: VolverAlMenu
+        m_MethodName: BackToMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2083,7 +2083,7 @@ GameObject:
   - component: {fileID: 412663980}
   - component: {fileID: 412663979}
   m_Layer: 0
-  m_Name: PreguntasManager
+  m_Name: QuestionsManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2101,8 +2101,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3423b4922340d87418d473fb855e1158, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  todasLasPreguntas: []
-  categoriasDisponibles: []
+  allQuestions: []
+  availableCategories: []
 --- !u!4 &412663980
 Transform:
   m_ObjectHideFlags: 0
@@ -2417,7 +2417,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 258666297}
         m_TargetAssemblyTypeName: UISelectorCategorias, Assembly-CSharp
-        m_MethodName: ConfirmarCategorias
+        m_MethodName: ConfirmCategories
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5796,7 +5796,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 258666297}
         m_TargetAssemblyTypeName: UISelectorCategorias, Assembly-CSharp
-        m_MethodName: confirmBackMenu
+        m_MethodName: ConfirmBackMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -10093,7 +10093,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 258666297}
         m_TargetAssemblyTypeName: UISelectorCategorias, Assembly-CSharp
-        m_MethodName: cancelBackMenu
+        m_MethodName: CancelBackMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -10380,7 +10380,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 258666297}
         m_TargetAssemblyTypeName: UISelectorCategorias, Assembly-CSharp
-        m_MethodName: RetrocederSeleccion
+        m_MethodName: UndoSelection
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

@@ -5,366 +5,481 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEngine.GraphicsBuffer;
 
+/// <summary>
+/// Manages question UI flow: entrance card motion, displaying question text,
+/// showing answer options, handling the countdown timer, feedback (color blink),
+/// and returning the card state while invoking the answer callback.
+/// </summary>
 public class UIManager : MonoBehaviour
 {
-    public static UIManager Instance;
+    public static UIManager Instance { get; private set; }
 
-    [Header("Referencias")]
+    #region Inspector References
 
-    [Header("UI Panels")]
-    public GameObject panelPregunta;
-    public GameObject panelRespuestas;
-    public GameObject quesitoPanel;
-    public RectTransform upRespuestasPanel;
-    public RectTransform downRespuestasPanel;
-    public Image fondo;
-    private Color colorOriginal;
+    [Header("Panels")]
+    [SerializeField] private GameObject questionPanel;
+    [SerializeField] private GameObject answersPanel;
+    [SerializeField] private GameObject wedgePanel;
+    [SerializeField] private RectTransform answersTopPanel;
+    [SerializeField] private RectTransform answersBottomPanel;
+    [SerializeField] private Image backgroundImage;
 
-    [Header("Indicador de Dificultad")]
-    public Image[] dificultadIcons;
+    [Header("Difficulty Indicator")]
+    [SerializeField] private Image[] difficultyIcons;
 
-    [Header("Temporizador")]
-    public Image rellenoTemporizador;
-    public Transform agujaTemporizador;
-    public TMP_Text contadorTMP;
-    public float duracion = 30f;
-    public float rotacionInicial = 0f;
-    public float rotacionFinal = -360f;
-    private Tween rotTween;
-    private Tween fillTween;
+    [Header("Timer")]
+    [SerializeField] private Image timerFill;
+    [SerializeField] private Transform timerNeedle;
+    [SerializeField] private float questionDuration = 30f;
+    [SerializeField] private float needleStartRotation = 0f;
+    [SerializeField] private float needleEndRotation = -360f;
 
-    [Header("Textos")]
-    public TMP_Text enunciadoTMP;
-    public RectTransform enunciado;
-    public TMP_Text textInformation;
-    
+    [Header("Question Text")]
+    [SerializeField] private TMP_Text questionText;
+    [SerializeField] private RectTransform questionTextRect;
 
-    [Header("Opciones de respuesta")]
-    public Button[] botonesOpciones;
-    public TMP_Text[] textosOpciones;
+    [Header("Answer Options")]
+    [SerializeField] private Button[] optionButtons;
+    [SerializeField] private TMP_Text[] optionTexts;
 
-    private Pregunta preguntaActual;
-    private Action<bool> callbackRespuesta;
-    private Coroutine timerCoroutine;
+    [Header("Category Texts (Board)")]
+    [SerializeField] private TMP_Text categoryBlueText;
+    [SerializeField] private TMP_Text categoryYellowText;
+    [SerializeField] private TMP_Text categoryOrangeText;
+    [SerializeField] private TMP_Text categoryPinkText;
+    [SerializeField] private TMP_Text categoryPurpleText;
+    [SerializeField] private TMP_Text categoryGreenText;
 
-    [Header("Textos de categorías en el tablero")]
-    public TMP_Text categoriaAzulTMP;
-    public TMP_Text categoriaAmarilloTMP;
-    public TMP_Text categoriaNaranjaTMP;
-    public TMP_Text categoriaRosaTMP;
-    public TMP_Text categoriaMoradoTMP;
-    public TMP_Text categoriaVerdeTMP;
+    [Header("Card Motion")]
+    [SerializeField] private Transform cardTransform;
 
-    [Header("Movimiento Tarjeta")]
-    public Transform tarjeta;
-    private Vector3 startPos;
-    private Quaternion startRot;
-    private float duration = 5f;
-    private Sequence seq;
-    private Sequence backSeq;
+    #endregion
 
-    [Header("DoTween")]
-    Sequence upDownPanelsSeq = DOTween.Sequence();
+    #region Private State
 
-    void Awake()
+    private Color _originalBackgroundColor;
+    private Question _currentQuestion;
+    private Action<bool> _answerCallback;
+    private Coroutine _questionCoroutine;
+
+    private Vector3 _cardStartPosition;
+    private Quaternion _cardStartRotation;
+
+    // Tweens and sequences
+    private Tween _needleTween;
+    private Tween _fillTween;
+    private Sequence _cardSequence;
+    private Sequence _panelsSequence;
+    private Sequence _cardReturnSequence;
+
+    #endregion
+
+    #region Unity Lifecycle
+
+    /// <summary>
+    /// Registers singleton instance.
+    /// </summary>
+    private void Awake()
     {
         Instance = this;
     }
 
-    void Start()
+    /// <summary>
+    /// Captures initial card transform and loads category labels from GameManager.
+    /// </summary>
+    private void Start()
     {
-        startPos = tarjeta.position;
-        startRot = tarjeta.rotation;
-        var categorias = GameManager.Instance.GetTodasLasCategorias();
-        ActualizarCategorias(categorias);
-        colorOriginal = fondo.color;
+        _cardStartPosition = cardTransform.position;
+        _cardStartRotation = cardTransform.rotation;
+        _originalBackgroundColor = backgroundImage.color;
+
+        var categories = GameManager.Instance.GetAllCategories();
+        UpdateCategoryTexts(categories);
     }
 
-    public void MostrarPregunta(Pregunta pregunta, string dificultad, Action<bool> onAnswered)
+    #endregion
+
+    #region Public API
+
+    /// <summary>
+    /// Starts the UI sequence to show a question and handle user answer.
+    /// Side effects:
+    ///  - Begins card animation.
+    ///  - Starts timer and shows answer options after initial delay.
+    ///  - Invokes onAnswered callback with true/false when flow completes.
+    /// </summary>
+    /// <param name="question">Question data to display.</param>
+    /// <param name="difficulty">Difficulty string ("facil"/"media"/"dificil").</param>
+    /// <param name="onAnswered">Callback to call when answer is processed.</param>
+    public void ShowQuestion(Question question, string difficulty, Action<bool> onAnswered)
     {
-        preguntaActual = pregunta;
-        callbackRespuesta = onAnswered;
+        _currentQuestion = question;
+        _answerCallback = onAnswered;
 
-        MostrarDificultad(dificultad);
+        DisplayDifficulty(difficulty);
 
-        if (timerCoroutine != null) StopCoroutine(timerCoroutine);
-        timerCoroutine = StartCoroutine(FlujoPregunta());
+        if (_questionCoroutine != null)
+            StopCoroutine(_questionCoroutine);
+
+        _questionCoroutine = StartCoroutine(QuestionFlowCoroutine());
     }
 
-    private void MostrarDificultad(string dificultad)
+    #endregion
+
+    #region Difficulty
+
+    /// <summary>
+    /// Shows a number of difficulty icons according to difficulty string.
+    /// </summary>
+    private void DisplayDifficulty(string difficulty)
     {
-        // Oculta todos los iconos primero
-        foreach (var icon in dificultadIcons)
-            icon.gameObject.SetActive(false);
+        // Hide all icons first
+        for (int i = 0; i < difficultyIcons.Length; i++)
+            difficultyIcons[i].gameObject.SetActive(false);
 
-        int cantidadVisible = 0;
-
-        switch (dificultad.ToLower())
+        int toShow = difficulty?.ToLower() switch
         {
-            case "facil":
-                cantidadVisible = 1;
-                break;
-            case "media":
-                cantidadVisible = 2;
-                break;
-            case "dificil":
-                cantidadVisible = 3;
-                break;
-        }
+            "facil" => 1,
+            "media" => 2,
+            "dificil" => 3,
+            _ => 0
+        };
 
-        for (int i = 0; i < cantidadVisible && i < dificultadIcons.Length; i++)
-            dificultadIcons[i].gameObject.SetActive(true);
+        for (int i = 0; i < toShow && i < difficultyIcons.Length; i++)
+            difficultyIcons[i].gameObject.SetActive(true);
     }
 
-    private IEnumerator FlujoPregunta()
+    #endregion
+
+    #region Question Flow (Coroutine broken into steps)
+
+    /// <summary>
+    /// Orchestrates the full question UI flow:
+    ///  1) Play card motion
+    ///  2) Show the question text (big) for a short time
+    ///  3) Shrink text and reveal answer panels
+    ///  4) Start countdown and wait for selection / timeout
+    /// If no selection occurs, treats as wrong answer.
+    /// </summary>
+    private IEnumerator QuestionFlowCoroutine()
     {
-        CardMotion();
-        yield return new WaitForSeconds(duration);
+        PlayCardMotion();
 
-        quesitoPanel.SetActive(false);
-        // 🔹 Mostrar solo enunciado 30s
-
-        fondo.color = colorOriginal;
-        panelPregunta.SetActive(true);
-        panelRespuestas.SetActive(false);
-        enunciadoTMP.fontSize = 70;
-        enunciadoTMP.text = preguntaActual.enunciado;
-        TurnManager.Instance.canDestroy = true;
-
-        enunciado.localScale = Vector3.zero;
-        enunciado.DOScale(Vector3.one, 0.7f).SetEase(Ease.OutBack);
-
+        // Wait for the card to animate upward
         yield return new WaitForSeconds(5f);
 
-        //  Reducir tamaño Texto Pregunta
-        float startSize = 70;
+        // Show question text panel
+        EnterQuestionTextPhase();
 
-        Temporizador();
+        // Wait a bit to let user read big text
+        yield return new WaitForSeconds(5f);
+
+        // Animate size reduction of the question text smoothly (0.5s)
+        yield return AnimateQuestionTextResize(70, 40, 0.5f);
+
+        // Reveal answers and prepare buttons
+        ShowAnswersPanel();
+
+        // Start countdown timer and block until timeout or selection handled by OnOptionSelected
+        float remaining = questionDuration;
+        StartTimerAnimation(questionDuration);
+
+        while (remaining > 0f)
+        {
+            yield return new WaitForSeconds(1f);
+            remaining -= 1f;
+        }
+
+        // Time out → treat as wrong selection
+        OnOptionSelected(-1);
+    }
+
+    /// <summary>
+    /// Enters the visual phase where only the question text is visible.
+    /// Sets UI state accordingly and populates the text field.
+    /// </summary>
+    private void EnterQuestionTextPhase()
+    {
+        wedgePanel.SetActive(false);
+
+        backgroundImage.color = _originalBackgroundColor;
+        questionPanel.SetActive(true);
+        answersPanel.SetActive(false);
+
+        questionText.fontSize = 70;
+        questionText.text = _currentQuestion.enunciado;
+        TurnManager.Instance.canDestroy = true;
+
+        // pop-in scale for the question text rect
+        questionTextRect.localScale = Vector3.zero;
+        questionTextRect.DOScale(Vector3.one, 0.7f).SetEase(Ease.OutBack);
+    }
+
+    /// <summary>
+    /// Smoothly animates the question font size from startSize to endSize over durationSeconds.
+    /// </summary>
+    private IEnumerator AnimateQuestionTextResize(float startSize, float endSize, float durationSeconds)
+    {
         float t = 0f;
         while (t < 1f)
         {
-            t += Time.deltaTime / 0.5f;
-            float easedT = Mathf.SmoothStep(0f, 1f, t); // <-- suaviza el movimiento
-            enunciadoTMP.fontSize = Mathf.Lerp(startSize, 40, easedT);
+            t += Time.deltaTime / durationSeconds;
+            float eased = Mathf.SmoothStep(0f, 1f, t);
+            questionText.fontSize = Mathf.RoundToInt(Mathf.Lerp(startSize, endSize, eased));
             yield return null;
         }
 
-        enunciadoTMP.fontSize = 40;
-
-        // 🔹 Mostrar opciones
-        panelRespuestas.SetActive(true);
-        
-        upDownPanelsSeq.Append(upRespuestasPanel.DOAnchorPosY(upRespuestasPanel.anchoredPosition.y - 483, 0.3f).SetEase(Ease.OutQuad));
-        upDownPanelsSeq.Join(downRespuestasPanel.DOAnchorPosY(downRespuestasPanel.anchoredPosition.y + 483, 0.3f).SetEase(Ease.OutQuad));
-
-        PrepararOpciones();
-
-        float tiempo = 30f;
-        while (tiempo > 0f)
-        {
-            contadorTMP.text = Mathf.CeilToInt(tiempo).ToString();
-            yield return new WaitForSeconds(1f);
-            tiempo -= 1f;
-        }
-
-        OnRespuestaFinalizada(false);
+        questionText.fontSize = Mathf.RoundToInt(endSize);
     }
 
-    private void PrepararOpciones()
+    /// <summary>
+    /// Reveals the answer panels with a sliding animation and sets up option buttons.
+    /// </summary>
+    private void ShowAnswersPanel()
     {
-        for (int i = 0; i < botonesOpciones.Length; i++)
+        answersPanel.SetActive(true);
+
+        // Build or reuse sequence to move top & bottom panels
+        _panelsSequence?.Kill();
+        _panelsSequence = DOTween.Sequence();
+        _panelsSequence.Append(answersTopPanel.DOAnchorPosY(answersTopPanel.anchoredPosition.y - 483f, 0.3f).SetEase(Ease.OutQuad));
+        _panelsSequence.Join(answersBottomPanel.DOAnchorPosY(answersBottomPanel.anchoredPosition.y + 483f, 0.3f).SetEase(Ease.OutQuad));
+        _panelsSequence.Play();
+
+        PrepareOptionButtons();
+    }
+
+    #endregion
+
+    #region Option Handling
+
+    /// <summary>
+    /// Prepares option buttons with text, listeners and sets them interactable.
+    /// </summary>
+    private void PrepareOptionButtons()
+    {
+        for (int i = 0; i < optionButtons.Length; i++)
         {
-            if (i < preguntaActual.opciones.Length)
+            if (i < _currentQuestion.opciones.Length)
             {
-                textosOpciones[i].text = preguntaActual.opciones[i];
-                int indice = i;
-                botonesOpciones[i].onClick.RemoveAllListeners();
-                botonesOpciones[i].onClick.AddListener(() => OnOpcionSeleccionada(indice));
-                botonesOpciones[i].interactable = true;
+                optionTexts[i].text = _currentQuestion.opciones[i];
+                int index = i; // capture
+                optionButtons[i].onClick.RemoveAllListeners();
+                optionButtons[i].onClick.AddListener(() => OnOptionSelected(index));
+                optionButtons[i].interactable = true;
+            }
+            else
+            {
+                optionTexts[i].text = string.Empty;
+                optionButtons[i].onClick.RemoveAllListeners();
+                optionButtons[i].interactable = false;
             }
         }
     }
 
-    private void OnOpcionSeleccionada(int indice)
+    /// <summary>
+    /// Handles both player selection and timeout (-1).
+    /// It:
+    ///  - Kills timer tweens
+    ///  - Disables all option buttons
+    ///  - Plays correct/wrong feedback
+    ///  - Starts the close-with-delay coroutine to wrap up the UI and call callback
+    /// </summary>
+    /// <param name="index">Index of selected option, or -1 on timeout.</param>
+    private void OnOptionSelected(int index)
     {
-        rotTween.Kill(); fillTween.Kill();
+        _needleTween?.Kill();
+        _fillTween?.Kill();
 
-        bool tiempoAgotado = indice == -1;
-        bool correcta = !tiempoAgotado && indice == preguntaActual.indiceCorrecta;
+        bool timedOut = index == -1;
+        bool correct = !timedOut && index == _currentQuestion.indiceCorrecta;
 
-        // Bloquear todos los botones al seleccionar una opción
-        foreach (var btn in botonesOpciones)
+        // Disable all buttons immediately
+        foreach (var btn in optionButtons)
             btn.interactable = false;
 
-        if (tiempoAgotado)
+        if (timedOut)
         {
-            GameManager.Instance.AudioFallo();
-            ParpadearFondo(Color.red);
-            if (timerCoroutine != null) StopCoroutine(timerCoroutine);
-            timerCoroutine = StartCoroutine(CerrarConRetraso(false));
+            GameManager.Instance.PlayWrongSound();
+            BlinkBackground(Color.red);
+            if (_questionCoroutine != null) StopCoroutine(_questionCoroutine);
+            _questionCoroutine = StartCoroutine(CloseWithDelay(false));
             return;
         }
 
-        // Feedback
-        if (correcta)
-            //textInformation.text = "Respuesta correcta";
-            GameManager.Instance.AudioAcierto();
+        // Play feedback sounds
+        if (correct) GameManager.Instance.PlayCorrectSound();
+        else GameManager.Instance.PlayWrongSound();
 
-        else
-            //textInformation.text = "Respuesta incorrecta → pierde turno";
-            GameManager.Instance.AudioFallo();
+        BlinkBackground(correct ? Color.green : Color.red);
 
-        ParpadearFondo(correcta ? Color.green : Color.red);
-
-        if (timerCoroutine != null) StopCoroutine(timerCoroutine);
-        timerCoroutine = StartCoroutine(CerrarConRetraso(correcta));
+        if (_questionCoroutine != null) StopCoroutine(_questionCoroutine);
+        _questionCoroutine = StartCoroutine(CloseWithDelay(correct));
     }
 
-    private void ParpadearFondo(Color colorObjetivo)
+    #endregion
+
+    #region Visual Feedback & Timer
+
+    /// <summary>
+    /// Blinks the background between the original color and target color a few times.
+    /// Final color is set back to the original when complete.
+    /// </summary>
+    private void BlinkBackground(Color targetColor)
     {
-        int repeticionesParpadeo = 3;
-        float duracionParpadeo = 0.5f;
+        int blinkRepeats = 3;
+        float blinkDuration = 0.5f;
 
-        // Secuencia de parpadeo
         Sequence seq = DOTween.Sequence();
-
-        for (int i = 0; i < repeticionesParpadeo; i++)
+        for (int i = 0; i < blinkRepeats; i++)
         {
-            seq.Append(fondo.DOColor(colorObjetivo, duracionParpadeo / (2 * repeticionesParpadeo)))
-               .Append(fondo.DOColor(colorOriginal, duracionParpadeo / (2 * repeticionesParpadeo)));
+            seq.Append(backgroundImage.DOColor(targetColor, blinkDuration / (2 * blinkRepeats)))
+               .Append(backgroundImage.DOColor(_originalBackgroundColor, blinkDuration / (2 * blinkRepeats)));
         }
 
-        // Asegurar que al final quede en su color original
-        seq.OnComplete(() => fondo.color = colorObjetivo);
+        // Ensure background returns to original color at the end
+        seq.OnComplete(() => backgroundImage.color = _originalBackgroundColor);
     }
 
-    public void Temporizador()
+    /// <summary>
+    /// Starts the needle rotation and fillAmount DOTween animations for the countdown.
+    /// On completion calls OnOptionSelected(-1) to treat as timeout.
+    /// </summary>
+    /// <param name="durationSeconds">Duration for the countdown.</param>
+    private void StartTimerAnimation(float durationSeconds)
     {
-        //resetear estados
-        DOTween.Kill(agujaTemporizador);
-        DOTween.Kill(rellenoTemporizador);
+        // Kill any existing tweens on the UI elements
+        DOTween.Kill(timerNeedle);
+        DOTween.Kill(timerFill);
 
-        GameManager.Instance.AudioTemporizador();
+        GameManager.Instance.PlayTimerSound();
 
-        agujaTemporizador.rotation = Quaternion.Euler(0f, 0f, rotacionInicial);
-        rellenoTemporizador.fillAmount = 0f;
-        contadorTMP.text = Mathf.CeilToInt(duracion).ToString();
+        timerNeedle.rotation = Quaternion.Euler(0f, 0f, needleStartRotation);
+        timerFill.fillAmount = 0f;
 
-        // Tween de rotación (aguja)
-        rotTween = agujaTemporizador
-            .DORotate(new Vector3(0f, 0f, rotacionFinal), duracion, RotateMode.FastBeyond360)
-            .SetEase(Ease.Linear).OnComplete(() =>
-            {
-                OnOpcionSeleccionada(-1);
-            });
+        _needleTween = timerNeedle
+            .DORotate(new Vector3(0f, 0f, needleEndRotation), durationSeconds, RotateMode.FastBeyond360)
+            .SetEase(Ease.Linear)
+            .OnComplete(() => OnOptionSelected(-1));
 
-        // Tween del fillAmount (relleno)
-        fillTween = DOTween.To(() => rellenoTemporizador.fillAmount, x => rellenoTemporizador.fillAmount = x, 1f, duracion)
+        _fillTween = DOTween.To(() => timerFill.fillAmount, x => timerFill.fillAmount = x, 1f, durationSeconds)
             .SetEase(Ease.Linear);
     }
 
-    private IEnumerator CerrarConRetraso(bool correcta)
+    #endregion
+
+    #region Closing / Return Card Motion
+
+    /// <summary>
+    /// Waits a short delay to let feedback settle, then closes the question UI,
+    /// plays the card return animation, and invokes the answer callback.
+    /// </summary>
+    private IEnumerator CloseWithDelay(bool wasCorrect)
     {
         yield return new WaitForSeconds(2f);
-        OnRespuestaFinalizada(correcta);
+        FinalizeAnswer(wasCorrect);
     }
 
-    private void OnRespuestaFinalizada(bool correcta)
+    /// <summary>
+    /// Finalizes the answer UI: hides panels, plays card return animation and
+    /// calls the answer callback when the card motion finishes.
+    /// </summary>
+    private void FinalizeAnswer(bool wasCorrect)
     {
-        upDownPanelsSeq.Append(upRespuestasPanel.DOAnchorPosY(upRespuestasPanel.anchoredPosition.y + 483, 0.3f).SetEase(Ease.OutQuad));
-        upDownPanelsSeq.Join(downRespuestasPanel.DOAnchorPosY(downRespuestasPanel.anchoredPosition.y - 483, 0.3f).SetEase(Ease.OutQuad));
+        // Move panels back
+        _panelsSequence?.Kill();
+        _panelsSequence = DOTween.Sequence();
+        _panelsSequence.Append(answersTopPanel.DOAnchorPosY(answersTopPanel.anchoredPosition.y + 483f, 0.3f).SetEase(Ease.OutQuad));
+        _panelsSequence.Join(answersBottomPanel.DOAnchorPosY(answersBottomPanel.anchoredPosition.y - 483f, 0.3f).SetEase(Ease.OutQuad));
+        _panelsSequence.Play();
 
-        panelPregunta.SetActive(false);
-        panelRespuestas.SetActive(false);
-        quesitoPanel.SetActive(true);
-        textInformation.text = "";
+        questionPanel.SetActive(false);
+        answersPanel.SetActive(false);
+        wedgePanel.SetActive(true);
 
-        backSeq = DOTween.Sequence();
+        // Card return sequence
+        _cardReturnSequence?.Kill();
+        _cardReturnSequence = DOTween.Sequence();
 
-        backSeq.Append(tarjeta.DORotate(new Vector3(-90, 90, 0), 0.5f, RotateMode.FastBeyond360).SetEase(Ease.OutBack));
+        _cardReturnSequence.Append(cardTransform.DORotate(new Vector3(-90f, 90f, 0f), 0.5f, RotateMode.FastBeyond360).SetEase(Ease.OutBack));
+        _cardReturnSequence.AppendInterval(0.25f);
+        _cardReturnSequence.Append(cardTransform.DOMoveY(30f, 0.5f).SetEase(Ease.OutCubic));
+        _cardReturnSequence.Append(cardTransform.DOMoveX(-10f, 0.5f).SetEase(Ease.OutCubic).OnComplete(() =>
+        {
+            // Reset transform to original state
+            cardTransform.position = _cardStartPosition;
+            cardTransform.rotation = _cardStartRotation;
 
-        backSeq.AppendInterval(0.25f);
-
-        backSeq.Append(tarjeta.DOMoveY(30, 0.5f).SetEase(Ease.OutCubic));
-
-        backSeq.Append(tarjeta.DOMoveX(-10, 0.5f).SetEase(Ease.OutCubic).OnComplete(() =>
-            {
-                tarjeta.position = startPos;
-                tarjeta.rotation = startRot;
-
-                callbackRespuesta?.Invoke(correcta);
-            }));
+            // Invoke callback
+            _answerCallback?.Invoke(wasCorrect);
+        }));
     }
 
-    public void ActualizarCategorias(Dictionary<QuesitoColor, string> categorias)
+    #endregion
+
+    #region Card Motion (Entrance)
+
+    /// <summary>
+    /// Plays the long card entrance motion used before showing the question.
+    /// This method creates and plays a DOTween sequence; it does not block.
+    /// </summary>
+    private void PlayCardMotion()
     {
-        if (categorias.TryGetValue(QuesitoColor.Azul, out string azul))
-            categoriaAzulTMP.text = azul;
+        // Kill previous tweens/sequences
+        cardTransform.DOKill();
+        _cardSequence?.Kill();
 
-        if (categorias.TryGetValue(QuesitoColor.Amarillo, out string amarillo))
-            categoriaAmarilloTMP.text = amarillo;
-
-        if (categorias.TryGetValue(QuesitoColor.Naranja, out string naranja))
-            categoriaNaranjaTMP.text = naranja;
-
-        if (categorias.TryGetValue(QuesitoColor.Rosa, out string rosa))
-            categoriaRosaTMP.text = rosa;
-
-        if (categorias.TryGetValue(QuesitoColor.Morado, out string morado))
-            categoriaMoradoTMP.text = morado;
-
-        if (categorias.TryGetValue(QuesitoColor.Verde, out string verde))
-            categoriaVerdeTMP.text = verde;
-    }
-
-    public void CardMotion()
-    {
-        // Resetea tweens anteriores
-        tarjeta.DOKill();
-        seq?.Kill();
-
-        // Fases del movimiento
-        Vector3 startRot = tarjeta.eulerAngles;                
+        Vector3 initialEuler = cardTransform.eulerAngles;
         Vector3 midPos = new Vector3(0f, 14f, -10f);
         Vector3 highPos = new Vector3(0f, 50.31f, -10f);
-        Vector3 finalRot = new Vector3(90f, 90f, 0f);
+        Vector3 finalRotation = new Vector3(90f, 90f, 0f);
 
-        seq = DOTween.Sequence();
+        _cardSequence = DOTween.Sequence();
 
-        // 1º paso: sube al centro y gira solo en Z (360°)
-        seq.Append(
-            tarjeta.DOMove(midPos, 1.5f)
-                .SetEase(Ease.InOutCubic)
-        );
-        seq.Join(
-            tarjeta.DORotate(new Vector3(startRot.x, startRot.y, startRot.z + 720), 1.5f, RotateMode.FastBeyond360)
-                .SetEase(Ease.InOutSine)
-        );
+        // Step 1: move to mid and spin Z
+        _cardSequence.Append(cardTransform.DOMove(midPos, 1.5f).SetEase(Ease.InOutCubic));
+        _cardSequence.Join(cardTransform.DORotate(new Vector3(initialEuler.x, initialEuler.y, initialEuler.z + 720f), 1.5f, RotateMode.FastBeyond360).SetEase(Ease.InOutSine));
+        _cardSequence.AppendInterval(0.25f);
 
-        seq.AppendInterval(0.25f);
+        // Step 2: move higher and continue rotation
+        _cardSequence.Append(cardTransform.DOMove(highPos, 2f).SetEase(Ease.OutCubic));
+        _cardSequence.Join(cardTransform.DORotate(new Vector3(initialEuler.x + 1080f, initialEuler.y, initialEuler.z), 2f, RotateMode.FastBeyond360).SetEase(Ease.OutCubic));
+        _cardSequence.AppendInterval(0.25f);
 
-        // 2º paso: sube a 50.31 sin alterar rotación original
-        seq.Append(
-            tarjeta.DOMove(highPos, 2f)
-                .SetEase(Ease.OutCubic)
-        );
-        seq.Join(
-            tarjeta.DORotate(new Vector3(startRot.x + 1080, startRot.y, startRot.z), 2f, RotateMode.FastBeyond360)
-                .SetEase(Ease.OutCubic)
-        );
+        // Step 3: final rotation
+        _cardSequence.Append(cardTransform.DORotate(finalRotation, 0.5f).SetEase(Ease.OutBack));
 
-        // Espera 0.5s antes del siguiente paso
-        seq.AppendInterval(0.25f);
-
-        // 3º paso: ajusta rotación final
-        seq.Append(
-            tarjeta.DORotate(finalRot, 0.5f)
-                .SetEase(Ease.OutBack)
-        );
-
-        seq.Play();
+        _cardSequence.Play();
     }
-}
 
+    #endregion
+
+    #region Category Texts
+
+    /// <summary>
+    /// Updates the category labels placed on the board using the provided dictionary.
+    /// </summary>
+    public void UpdateCategoryTexts(Dictionary<QuesitoColor, string> categories)
+    {
+        if (categories.TryGetValue(QuesitoColor.Azul, out string blue))
+            categoryBlueText.text = blue;
+
+        if (categories.TryGetValue(QuesitoColor.Amarillo, out string yellow))
+            categoryYellowText.text = yellow;
+
+        if (categories.TryGetValue(QuesitoColor.Naranja, out string orange))
+            categoryOrangeText.text = orange;
+
+        if (categories.TryGetValue(QuesitoColor.Rosa, out string pink))
+            categoryPinkText.text = pink;
+
+        if (categories.TryGetValue(QuesitoColor.Morado, out string purple))
+            categoryPurpleText.text = purple;
+
+        if (categories.TryGetValue(QuesitoColor.Verde, out string green))
+            categoryGreenText.text = green;
+    }
+
+    #endregion
+}

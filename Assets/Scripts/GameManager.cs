@@ -1,222 +1,259 @@
 ﻿using DG.Tweening;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
+/// <summary>
+/// Singleton GameManager that handles global game data, audio feedback, 
+/// aspect ratio adjustment, and camera transitions between scenes.
+/// </summary>
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance;
+    public static GameManager Instance { get; private set; }
 
-    private float targetAspect = 16f / 9f;
-    private Camera cam;
+    [Header("Screen Settings")]
+    private readonly float _targetAspect = 16f / 9f;
+    private Camera _mainCamera;
 
-    [Header("Datos de partida")]
-    // Mapa color → categoría
-    private Dictionary<QuesitoColor, string> categoriasPorColor = new Dictionary<QuesitoColor, string>();
-    public int maxPlayer = 0;
+    [Header("Game Data")]
+    // Mapping from color to category
+    private readonly Dictionary<QuesitoColor, string> _categoriesByColor = new Dictionary<QuesitoColor, string>();
+    public int MaxPlayers { get; set; } = 0;
 
-    [Header("Sonido")]
-    [SerializeField] private AudioClip click;
-    [SerializeField] private AudioClip acierto;
-    [SerializeField] private AudioClip fallo;
-    [SerializeField] private AudioClip temporizador;
-    [SerializeField] private AudioClip ficha;
-    [SerializeField] private AudioClip jump;
-    [SerializeField] private AudioClip dado;
+    [Header("Audio Clips")]
+    [SerializeField] private AudioClip _clickClip;
+    [SerializeField] private AudioClip _correctClip;
+    [SerializeField] private AudioClip _wrongClip;
+    [SerializeField] private AudioClip _timerClip;
+    [SerializeField] private AudioClip _tokenClip;
+    [SerializeField] private AudioClip _jumpClip;
+    [SerializeField] private AudioClip _diceClip;
 
-    private AudioSource audioSource;
+    private AudioSource _audioSource;
 
-    
+    #region Unity Lifecycle
 
-    void Awake()
+    /// <summary>
+    /// Initializes singleton instance, sets frame rate, ensures main camera reference,
+    /// and subscribes to scene change events.
+    /// </summary>
+    private void Awake()
     {
         Application.targetFrameRate = 60;
 
-        FindCamera();
+        FindMainCamera();
         SceneManager.activeSceneChanged += OnSceneChanged;
+        UpdateAspectRatio();
 
-        UpdateAspect();
-
-        // patrón Singleton
+        // Singleton pattern
         if (Instance != null && Instance != this)
         {
-            Destroy(this.gameObject);
-        }
-        else
-        {
-            Instance = this;
-            DontDestroyOnLoad(this.gameObject);
+            Destroy(gameObject);
+            return;
         }
 
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.loop = false;
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
 
+        _audioSource = gameObject.AddComponent<AudioSource>();
+        _audioSource.loop = false;
     }
-    void Update()
+
+    /// <summary>
+    /// Keeps aspect ratio updated if the camera changes or screen size adjusts.
+    /// </summary>
+    private void Update()
     {
-        if (cam == null)
-            FindCamera();
+        if (_mainCamera == null)
+            FindMainCamera();
         else
-            UpdateAspect();
+            UpdateAspectRatio();
     }
 
-    public void SetCategoriaParaColor(QuesitoColor color, string categoria)
-    {
-        categoriasPorColor[color] = categoria;
-        Debug.Log($"Asignada categoría '{categoria}' al color {color}");
-    }
-    public string GetCategoriaParaColor(QuesitoColor color)
-    {
-        if (categoriasPorColor.TryGetValue(color, out var categoria))
-            return categoria;
-
-        Debug.LogWarning($"No hay categoría asignada al color {color}");
-        return null;
-    }
-
-    public Dictionary<QuesitoColor, string> GetTodasLasCategorias()
-    {
-        return new Dictionary<QuesitoColor, string>(categoriasPorColor);
-    }
-
-    //Metedos para AudioClips
-
-    public void AudioClick()
-    {
-        audioSource.clip = click;
-        audioSource.Play();
-    }
-
-    public void AudioAcierto()
-    {
-        audioSource.clip = acierto;
-        audioSource.Play();
-    }
-
-    public void AudioFallo()
-    {
-        audioSource.clip = fallo;
-        audioSource.Play();
-    }
-
-    public void AudioTemporizador()
-    {
-        audioSource.clip = temporizador;
-        audioSource.Play();
-    }
-
-    public void AudioFicha()
-    {
-        audioSource.clip = ficha;
-        audioSource.Play();
-    }
-
-    public void AudioJump()
-    {
-        audioSource.clip = jump;
-        audioSource.Play();
-    }
-
-    public void AudioDado()
-    {
-        audioSource.clip = dado;
-        audioSource.Play();
-    }
-
-    public void MoveCamToPoint(GameObject obj, Vector3 targetPos, Quaternion targetRot, string scene)
-    {
-        float moveDuration = 1.5f;
-        float parabolaHeight = 3f;
-
-        Vector3 startPos = obj.transform.position;
-        Quaternion startRot = obj.transform.rotation;
-
-        //Espera inicial
-        DOVirtual.DelayedCall(0f, () =>
-        {
-            // 2️⃣ Creamos la secuencia DOTween
-            Sequence seq = DOTween.Sequence();
-
-            // Tween "virtual" para controlar el parámetro t (0→1)
-            float t = 0f;
-            seq.Append(
-                DOVirtual.Float(0f, 1f, moveDuration, value =>
-                {
-                    t = value;
-
-                    // Interpolación lineal + parábola
-                    Vector3 linearPos = Vector3.Lerp(startPos, targetPos, t);
-                    float parabola = 4f * parabolaHeight * t * (1 - t);
-                    linearPos.y += parabola;
-                    obj.transform.position = linearPos;
-
-                    // Rotación
-                    obj.transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
-                })
-                .SetEase(Ease.InOutQuad)
-            );
-
-            // 3️⃣ Al terminar, fijamos la posición final y cargamos la escena
-            seq.OnComplete(() =>
-            {
-                obj.transform.position = targetPos;
-                obj.transform.rotation = targetRot;
-                SceneManager.LoadScene(scene);
-            });
-        });
-    }
-
+    /// <summary>
+    /// Unsubscribes from scene change events when destroyed.
+    /// </summary>
     private void OnDestroy()
     {
         SceneManager.activeSceneChanged -= OnSceneChanged;
     }
 
-    private void OnSceneChanged(Scene oldScene, Scene newScene)
+    #endregion
+
+    #region Category Management
+
+    /// <summary>
+    /// Assigns a category string to a specific color key.
+    /// </summary>
+    public void SetCategoryForColor(QuesitoColor color, string category)
     {
-        FindCamera();
+        _categoriesByColor[color] = category;
+        Debug.Log($"Assigned category '{category}' to color {color}");
     }
 
-    private void FindCamera()
+    /// <summary>
+    /// Retrieves the category associated with a color, or null if not assigned.
+    /// </summary>
+    public string GetCategoryForColor(QuesitoColor color)
     {
-        // Busca siempre la cámara principal
-        cam = Camera.main;
+        if (_categoriesByColor.TryGetValue(color, out var category))
+            return category;
 
-        if (cam == null)
+        Debug.LogWarning($"No category assigned to color {color}");
+        return null;
+    }
+
+    /// <summary>
+    /// Returns a copy of the current color-category mapping.
+    /// </summary>
+    public Dictionary<QuesitoColor, string> GetAllCategories()
+    {
+        return new Dictionary<QuesitoColor, string>(_categoriesByColor);
+    }
+
+    #endregion
+
+    #region Audio Management
+
+    /// <summary>Plays a UI click sound.</summary>
+    public void PlayClickSound() => PlaySound(_clickClip);
+
+    /// <summary>Plays a correct-answer sound.</summary>
+    public void PlayCorrectSound() => PlaySound(_correctClip);
+
+    /// <summary>Plays a wrong-answer sound.</summary>
+    public void PlayWrongSound() => PlaySound(_wrongClip);
+
+    /// <summary>Plays a timer ticking sound.</summary>
+    public void PlayTimerSound() => PlaySound(_timerClip);
+
+    /// <summary>Plays a token placement sound.</summary>
+    public void PlayTokenSound() => PlaySound(_tokenClip);
+
+    /// <summary>Plays a jump sound effect.</summary>
+    public void PlayJumpSound() => PlaySound(_jumpClip);
+
+    /// <summary>Plays a dice roll sound.</summary>
+    public void PlayDiceSound() => PlaySound(_diceClip);
+
+    /// <summary>
+    /// Assigns a clip to the AudioSource and plays it once.
+    /// </summary>
+    private void PlaySound(AudioClip clip)
+    {
+        if (clip == null)
         {
-            Debug.LogWarning("⚠️ No se encontró una cámara principal en la escena.");
+            Debug.LogWarning("Attempted to play a null AudioClip.");
             return;
         }
 
-        UpdateAspect();
+        _audioSource.clip = clip;
+        _audioSource.Play();
     }
 
-    void UpdateAspect()
+    #endregion
+
+    #region Camera & Aspect Handling
+
+    /// <summary>
+    /// Locates the main camera in the active scene and updates aspect ratio.
+    /// </summary>
+    private void FindMainCamera()
     {
-        float windowAspect = (float)Screen.width / (float)Screen.height;
-        float scaleHeight = windowAspect / targetAspect;
+        _mainCamera = Camera.main;
+
+        if (_mainCamera == null)
+        {
+            Debug.LogWarning("⚠️ Main camera not found in the current scene.");
+            return;
+        }
+
+        UpdateAspectRatio();
+    }
+
+    /// <summary>
+    /// Adjusts the camera viewport to maintain a fixed 16:9 aspect ratio.
+    /// </summary>
+    private void UpdateAspectRatio()
+    {
+        if (_mainCamera == null) return;
+
+        float windowAspect = (float)Screen.width / Screen.height;
+        float scaleHeight = windowAspect / _targetAspect;
+
+        Rect rect = _mainCamera.rect;
 
         if (scaleHeight < 1.0f)
         {
-            Rect rect = cam.rect;
             rect.width = 1.0f;
             rect.height = scaleHeight;
             rect.x = 0;
             rect.y = (1.0f - scaleHeight) / 2.0f;
-            cam.rect = rect;
         }
         else
         {
             float scaleWidth = 1.0f / scaleHeight;
-            Rect rect = cam.rect;
             rect.width = scaleWidth;
             rect.height = 1.0f;
             rect.x = (1.0f - scaleWidth) / 2.0f;
             rect.y = 0;
-            cam.rect = rect;
         }
+
+        _mainCamera.rect = rect;
     }
+
+    #endregion
+
+    #region Scene Transition
+
+    /// <summary>
+    /// Moves an object along a parabolic path to a target position and rotation, 
+    /// then loads a new scene upon completion.
+    /// </summary>
+    public void MoveObjectToPoint(GameObject obj, Vector3 targetPosition, Quaternion targetRotation, string targetScene)
+    {
+        const float moveDuration = 1.5f;
+        const float parabolaHeight = 3f;
+
+        Vector3 startPosition = obj.transform.position;
+        Quaternion startRotation = obj.transform.rotation;
+
+        DOVirtual.DelayedCall(0f, () =>
+        {
+            Sequence sequence = DOTween.Sequence();
+            float t = 0f;
+
+            sequence.Append(
+                DOVirtual.Float(0f, 1f, moveDuration, value =>
+                {
+                    t = value;
+
+                    // Parabolic interpolation
+                    Vector3 linearPosition = Vector3.Lerp(startPosition, targetPosition, t);
+                    float parabola = 4f * parabolaHeight * t * (1 - t);
+                    linearPosition.y += parabola;
+                    obj.transform.position = linearPosition;
+
+                    obj.transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+                }).SetEase(Ease.InOutQuad)
+            );
+
+            sequence.OnComplete(() =>
+            {
+                obj.transform.position = targetPosition;
+                obj.transform.rotation = targetRotation;
+                SceneManager.LoadScene(targetScene);
+            });
+        });
+    }
+
+    /// <summary>
+    /// Called when the active scene changes; re-finds the main camera.
+    /// </summary>
+    private void OnSceneChanged(Scene oldScene, Scene newScene)
+    {
+        FindMainCamera();
+    }
+
+    #endregion
 }

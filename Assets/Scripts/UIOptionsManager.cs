@@ -1,59 +1,80 @@
 ﻿using DG.Tweening;
-using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+/// <summary>
+/// Handles the options/settings UI, including language, resolution, quality, volume, vibration,
+/// and card animations for entering and exiting the menu.
+/// </summary>
 public class UIOptionsManager : MonoBehaviour
 {
-    public GameObject tarjeta;
-    public GameObject camara;
+    #region Inspector References
 
-    [Header("Referencias UI")]
-    public TMP_Dropdown languageDropdown;
-    public TMP_Dropdown resolutionDropdown;
-    public TMP_Dropdown qualityDropdown;
-    public Slider volumeSlider;
-    public Toggle vibrationToggle;
-    public Button applyButton;
+    [Header("3D Card & Camera")]
+    [SerializeField] private GameObject card;
+    [SerializeField] private GameObject cameraObject;
 
-    private Resolution[] resolutions;
+    [Header("UI Elements")]
+    [SerializeField] private TMP_Dropdown languageDropdown;
+    [SerializeField] private TMP_Dropdown resolutionDropdown;
+    [SerializeField] private TMP_Dropdown qualityDropdown;
+    [SerializeField] private Slider volumeSlider;
+    [SerializeField] private Toggle vibrationToggle;
+    [SerializeField] private Button applyButton;
+
+    #endregion
+
+    #region Private State
+
+    private Vector3 startPosition;
+    private Quaternion startRotation;
+
     private int selectedResolutionIndex;
     private string selectedLanguage;
     private int selectedQuality;
     private float selectedVolume;
     private bool vibrationEnabled;
 
-    [Header("Animacion")]
-    Vector3 startPos;
-    Quaternion startRot;
+    #endregion
 
-    void Start()
+    #region Unity Lifecycle
+
+    /// <summary>
+    /// Initializes dropdowns, loads saved settings, sets apply button listener, and plays entrance animation.
+    /// </summary>
+    private void Start()
     {
-        // --- Idiomas ---
+        InitializeDropdowns();
+        LoadSettings();
+        applyButton.onClick.AddListener(ApplySettings);
+        AnimateCardEntrance();
+    }
+
+    #endregion
+
+    #region Initialization
+
+    /// <summary>
+    /// Populates the language, resolution, and quality dropdowns with options.
+    /// </summary>
+    private void InitializeDropdowns()
+    {
         languageDropdown.ClearOptions();
         languageDropdown.AddOptions(new System.Collections.Generic.List<string> { "Español", "English" });
 
-        // --- Resoluciones comunes 16:9 ---
         resolutionDropdown.ClearOptions();
-        string[] commonRes = { "1920x1080", "1600x900", "1366x768", "1280x720" };
-        resolutionDropdown.AddOptions(new System.Collections.Generic.List<string>(commonRes));
+        resolutionDropdown.AddOptions(new System.Collections.Generic.List<string> { "1920x1080", "1600x900", "1366x768", "1280x720" });
 
-        // --- Calidad ---
         qualityDropdown.ClearOptions();
         qualityDropdown.AddOptions(new System.Collections.Generic.List<string> { "Baja", "Media", "Alta" });
-
-        // Cargar valores guardados
-        LoadSettings();
-
-        // Asignar listener al botón
-        applyButton.onClick.AddListener(ApplySettings);
-
-        AnimateTarjeta();
     }
 
+    /// <summary>
+    /// Loads saved player settings and updates the UI accordingly.
+    /// </summary>
     private void LoadSettings()
     {
         selectedLanguage = PlayerPrefs.GetString("language", "Español");
@@ -62,7 +83,6 @@ public class UIOptionsManager : MonoBehaviour
         selectedVolume = PlayerPrefs.GetFloat("volume", 1f);
         vibrationEnabled = PlayerPrefs.GetInt("vibration", 1) == 1;
 
-        // Reflejar en UI
         languageDropdown.value = selectedLanguage == "English" ? 1 : 0;
         resolutionDropdown.value = selectedResolutionIndex;
         qualityDropdown.value = selectedQuality;
@@ -70,72 +90,110 @@ public class UIOptionsManager : MonoBehaviour
         vibrationToggle.isOn = vibrationEnabled;
     }
 
+    #endregion
+
+    #region Apply Settings
+
+    /// <summary>
+    /// Saves all settings selected in the UI, applies them immediately, and animates card exit.
+    /// </summary>
     public void ApplySettings()
     {
-        GameManager.Instance.AudioClick();
+        GameManager.Instance.PlayClickSound();
 
-        // Idioma
+        ApplyLanguage();
+        ApplyResolution();
+        ApplyQuality();
+        ApplyVolume();
+        ApplyVibration();
+
+        PlayerPrefs.Save();
+        AnimateCardExit();
+    }
+
+    private void ApplyLanguage()
+    {
         selectedLanguage = languageDropdown.value == 0 ? "Español" : "English";
         PlayerPrefs.SetString("language", selectedLanguage);
         string code = selectedLanguage == "Español" ? "es" : "en";
         LocaleController.Instance.SetLocaleCode(code);
+    }
 
-        // Resolución
+    private void ApplyResolution()
+    {
         selectedResolutionIndex = resolutionDropdown.value;
-        string res = resolutionDropdown.options[selectedResolutionIndex].text;
-        string[] dims = res.Split('x');
+        string resText = resolutionDropdown.options[selectedResolutionIndex].text;
+        string[] dims = resText.Split('x');
         int width = int.Parse(dims[0]);
         int height = int.Parse(dims[1]);
+
         Screen.SetResolution(width, height, FullScreenMode.FullScreenWindow);
         PlayerPrefs.SetInt("resolution", selectedResolutionIndex);
-        Debug.Log("Resolución cambiada a: " + res);
 
-        // Calidad
+        Debug.Log($"Resolution set to: {resText}");
+    }
+
+    private void ApplyQuality()
+    {
         selectedQuality = qualityDropdown.value;
         QualitySettings.SetQualityLevel(selectedQuality);
         PlayerPrefs.SetInt("quality", selectedQuality);
-        Debug.Log("Calidad: " + qualityDropdown.options[selectedQuality].text);
 
-        // Volumen
+        Debug.Log($"Quality set to: {qualityDropdown.options[selectedQuality].text}");
+    }
+
+    private void ApplyVolume()
+    {
         selectedVolume = volumeSlider.value;
         AudioListener.volume = selectedVolume;
         PlayerPrefs.SetFloat("volume", selectedVolume);
-        Debug.Log("Volumen: " + selectedVolume);
 
-        // Vibración
+        Debug.Log($"Volume set to: {selectedVolume}");
+    }
+
+    private void ApplyVibration()
+    {
         vibrationEnabled = vibrationToggle.isOn;
         PlayerPrefs.SetInt("vibration", vibrationEnabled ? 1 : 0);
-        Debug.Log("Vibración: " + (vibrationEnabled ? "Activada" : "Desactivada"));
 
-        PlayerPrefs.Save();
-
-        AnimateTarjetaAgain();
+        Debug.Log($"Vibration: {(vibrationEnabled ? "Enabled" : "Disabled")}");
     }
 
-    private void AnimateTarjeta()
+    #endregion
+
+    #region Card Animations
+
+    /// <summary>
+    /// Plays the entrance animation of the card when opening the options menu.
+    /// </summary>
+    private void AnimateCardEntrance()
     {
-        startPos = tarjeta.transform.position;
-        startRot = tarjeta.transform.rotation;
-        Vector3 loopPos = startPos + Vector3.up * 1.5f;
+        startPosition = card.transform.position;
+        startRotation = card.transform.rotation;
 
-        Sequence tarjetaSeq = DOTween.Sequence();
+        Vector3 loopPos = startPosition + Vector3.up * 1.5f;
+        Sequence seq = DOTween.Sequence();
 
-        //tarjetaSeq.AppendInterval(0f);
-
-        tarjetaSeq.Append(tarjeta.transform.DOMove(loopPos, 1f).SetEase(Ease.OutQuad));  //Suma 1.5 a la altura del objeto
-        tarjetaSeq.Insert(tarjetaSeq.Duration() - 1f + 0.3f, tarjeta.transform.DORotateQuaternion(Quaternion.Euler(-208.997f, 107.955f, -90.02499f), 1.5f)).SetEase(Ease.InOutQuad);  //0.3 segundos depués rota la tarjeta
-        tarjetaSeq.Insert(tarjetaSeq.Duration() - 2.2f + 0.7f, tarjeta.transform.DOMove(new Vector3(12.84f, 1.24f, -0.74f), 2f).SetEase(Ease.OutQuad));     //Y en el segundo 0.7 hace el movimiento hacia la camara
+        seq.Append(card.transform.DOMove(loopPos, 1f).SetEase(Ease.OutQuad));
+        seq.Insert(seq.Duration() - 1f + 0.3f,
+            card.transform.DORotateQuaternion(Quaternion.Euler(-208.997f, 107.955f, -90.02499f), 1.5f)
+                .SetEase(Ease.InOutQuad));
+        seq.Insert(seq.Duration() - 2.2f + 0.7f,
+            card.transform.DOMove(new Vector3(12.84f, 1.24f, -0.74f), 2f).SetEase(Ease.OutQuad));
     }
 
-    private void AnimateTarjetaAgain()
+    /// <summary>
+    /// Animates the card returning to its original position and rotation when exiting the menu.
+    /// Also moves the camera back to the main menu.
+    /// </summary>
+    private void AnimateCardExit()
     {
-        Sequence tarjetaSeq = DOTween.Sequence();
+        Sequence seq = DOTween.Sequence();
+        seq.Append(card.transform.DORotateQuaternion(startRotation, 0.5f).SetEase(Ease.InOutQuad));
+        seq.Append(card.transform.DOMove(startPosition, 1f).SetEase(Ease.OutQuad));
 
-        //tarjetaSeq.AppendInterval(0.5f);
-
-        tarjetaSeq.Append(tarjeta.transform.DORotateQuaternion(startRot, 0.5f).SetEase(Ease.InOutQuad));
-        tarjetaSeq.Append(tarjeta.transform.DOMove(startPos, 1f).SetEase(Ease.OutQuad));
-
-        GameManager.Instance.MoveCamToPoint(camara, new Vector3(0, 8, -10.7f), Quaternion.Euler(48.968f, 0f, 0f), "Menu");
+        GameManager.Instance.MoveObjectToPoint(cameraObject, new Vector3(0, 8, -10.7f), Quaternion.Euler(48.968f, 0f, 0f), "Menu");
     }
+
+    #endregion
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 
 [System.Serializable]
-public class Pregunta
+public class Question
 {
     public string categoria;
     public string enunciado;
@@ -14,9 +14,9 @@ public class Pregunta
 }
 
 [System.Serializable]
-public class PreguntaLote
+public class QuestionBatch
 {
-    public Pregunta[] questions;
+    public Question[] questions;
 }
 
 public enum QuesitoColor

@@ -149,14 +149,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74e7b589fd1218b4ea61916c501b7a48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxPlayer: 0
-  click: {fileID: 8300000, guid: ffb159a21c8a04135a5616979c828fab, type: 3}
-  acierto: {fileID: 8300000, guid: 7bd6b897eb5ca4b7d88a205c4a51640c, type: 3}
-  fallo: {fileID: 8300000, guid: 5fdb13d3756c84fecac96f5a2d124370, type: 3}
-  temporizador: {fileID: 8300000, guid: f194ec66cf955f14293ba0a631c0db1c, type: 3}
-  ficha: {fileID: 8300000, guid: 6e8772b49f34d402a90016ed445d8a2f, type: 3}
-  jump: {fileID: 8300000, guid: 2c5292ba5cf254919a6b9e2b18e04f49, type: 3}
-  dado: {fileID: 8300000, guid: d46323e22e74e46baa241cbf48c85671, type: 3}
+  _clickClip: {fileID: 8300000, guid: ffb159a21c8a04135a5616979c828fab, type: 3}
+  _correctClip: {fileID: 8300000, guid: 7bd6b897eb5ca4b7d88a205c4a51640c, type: 3}
+  _wrongClip: {fileID: 8300000, guid: 5fdb13d3756c84fecac96f5a2d124370, type: 3}
+  _timerClip: {fileID: 8300000, guid: f194ec66cf955f14293ba0a631c0db1c, type: 3}
+  _tokenClip: {fileID: 8300000, guid: 32d4b1811dda14a6cb9e059ee8ad17d2, type: 3}
+  _jumpClip: {fileID: 8300000, guid: 2c5292ba5cf254919a6b9e2b18e04f49, type: 3}
+  _diceClip: {fileID: 8300000, guid: fe0b1f9aeb45b41b089175aeeabd5d95, type: 3}
 --- !u!4 &36389108
 Transform:
   m_ObjectHideFlags: 0
@@ -794,8 +793,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1340669131}
-        m_TargetAssemblyTypeName: CameraRotation, Assembly-CSharp
-        m_MethodName: QuitPressed
+        m_TargetAssemblyTypeName: UIMenuManager, Assembly-CSharp
+        m_MethodName: OnQuitPressed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1137,8 +1136,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1340669131}
-        m_TargetAssemblyTypeName: CameraRotation, Assembly-CSharp
-        m_MethodName: PlayerMax3
+        m_TargetAssemblyTypeName: UIMenuManager, Assembly-CSharp
+        m_MethodName: OnSelect3Players
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1902,8 +1901,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1340669131}
-        m_TargetAssemblyTypeName: CameraRotation, Assembly-CSharp
-        m_MethodName: PlayerMax4
+        m_TargetAssemblyTypeName: UIMenuManager, Assembly-CSharp
+        m_MethodName: OnSelect4Players
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2396,8 +2395,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1340669131}
-        m_TargetAssemblyTypeName: CameraRotation, Assembly-CSharp
-        m_MethodName: OptionsPressed
+        m_TargetAssemblyTypeName: UIMenuManager, Assembly-CSharp
+        m_MethodName: OnOptionsPressed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3084,8 +3083,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1340669131}
-        m_TargetAssemblyTypeName: CameraRotation, Assembly-CSharp
-        m_MethodName: StartPressed
+        m_TargetAssemblyTypeName: UIMenuManager, Assembly-CSharp
+        m_MethodName: OnStartPressed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3657,14 +3656,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f9a2ab7ae0fa1a46b59f18c75d28d49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  velocidad: 15
-  menuButtons: {fileID: 131935870}
-  maxPlayerMenu: {fileID: 1951113456}
-  confirmButtons: {fileID: 715408353}
-  logo: {fileID: 2104484169}
+  rotationSpeed: 15
+  mainMenuPanel: {fileID: 131935870}
+  maxPlayersPanel: {fileID: 1951113456}
+  confirmExitPanel: {fileID: 715408353}
+  logoImage: {fileID: 2104484169}
   leftButtons: {fileID: 819604741}
   playButton: {fileID: 1280067019}
-  camara: {fileID: 2137475864}
+  mainCamera: {fileID: 2137475864}
 --- !u!1001 &1387384371
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4135,8 +4134,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1340669131}
-        m_TargetAssemblyTypeName: CameraRotation, Assembly-CSharp
-        m_MethodName: PlayerMax2
+        m_TargetAssemblyTypeName: UIMenuManager, Assembly-CSharp
+        m_MethodName: OnSelect2Players
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4965,7 +4964,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1340669131}
         m_TargetAssemblyTypeName: UIMenuManager, Assembly-CSharp
-        m_MethodName: QuestionsPressed
+        m_MethodName: OnQuestionsPressed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5275,7 +5274,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1340669131}
         m_TargetAssemblyTypeName: UIMenuManager, Assembly-CSharp
-        m_MethodName: NoPressed
+        m_MethodName: OnCancelQuitPressed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5408,7 +5407,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1340669131}
         m_TargetAssemblyTypeName: UIMenuManager, Assembly-CSharp
-        m_MethodName: ExitPressed
+        m_MethodName: OnConfirmQuitPressed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5694,11 +5693,11 @@ PrefabInstance:
       objectReference: {fileID: 1340669131}
     - target: {fileID: 907565116569268673, guid: 3028d48439c35b74996686de52116485, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: BackPressed
+      value: OnBackPressed
       objectReference: {fileID: 0}
     - target: {fileID: 907565116569268673, guid: 3028d48439c35b74996686de52116485, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: CameraRotation, Assembly-CSharp
+      value: UIMenuManager, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 1526758868591096696, guid: 3028d48439c35b74996686de52116485, type: 3}
       propertyPath: m_Name
@@ -5802,6 +5801,7 @@ SceneRoots:
   - {fileID: 1117948402}
   - {fileID: 1186200341}
   - {fileID: 1340669130}
+  - {fileID: 978275597}
   - {fileID: 36389108}
   - {fileID: 1584355827}
   - {fileID: 735520216}
@@ -5817,4 +5817,3 @@ SceneRoots:
   - {fileID: 1387384371}
   - {fileID: 157093708}
   - {fileID: 1250481968}
-  - {fileID: 978275597}

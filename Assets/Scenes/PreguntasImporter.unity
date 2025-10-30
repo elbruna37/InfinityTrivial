@@ -1444,18 +1444,48 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45cf27681d09b544abf3066633898cf6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tarjeta: {fileID: 1730664139}
-  camara: {fileID: 433221003}
-  instrucciones: {fileID: 7321539222103766248}
-  menuImporter: {fileID: 7321539222103766247}
-  menuHistorial: {fileID: 7321539222103766256}
-  numeroPreguntasInput: {fileID: 738522112}
-  categoriaInput: {fileID: 459779487}
-  dificultadDropdown: {fileID: 1047069628}
-  copiarButton: {fileID: 1976071562}
-  inputJson: {fileID: 7321539222103766249}
+  card: {fileID: 1730664139}
+  cameraObject: {fileID: 433221003}
+  instructionsPanel: {fileID: 7321539222103766248}
+  importMenuPanel: {fileID: 7321539222103766247}
+  historyMenuPanel: {fileID: 7321539222103766256}
+  questionCountInput: {fileID: 738522112}
+  categoryInput: {fileID: 459779487}
+  difficultyDropdown: {fileID: 1047069628}
+  copyButton: {fileID: 1976071562}
+  jsonInput: {fileID: 7321539222103766249}
   contentParent: {fileID: 7321539222103766250}
   itemPrefab: {fileID: 3469006425431142144, guid: 516bc820cea2dfe49bddae9cec6920ce, type: 3}
+  difficultyEasyOption:
+    m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  difficultyMediumOption:
+    m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  difficultyHardOption:
+    m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  references:
+    version: 2
+    RefIds: []
 --- !u!4 &817757301
 Transform:
   m_ObjectHideFlags: 0
@@ -2898,7 +2928,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2016817541310927080, guid: f87ef9def4c7f494c8c6816e776b3ab4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: VolverPressed
+      value: BackMenu
       objectReference: {fileID: 0}
     - target: {fileID: 2016817541310927080, guid: f87ef9def4c7f494c8c6816e776b3ab4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
@@ -2950,7 +2980,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3813030011130595635, guid: f87ef9def4c7f494c8c6816e776b3ab4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ImportarPreguntas
+      value: ImportQuestions
       objectReference: {fileID: 0}
     - target: {fileID: 3813030011130595635, guid: f87ef9def4c7f494c8c6816e776b3ab4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
@@ -2978,7 +3008,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4416660112420859463, guid: f87ef9def4c7f494c8c6816e776b3ab4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: AceptarPressed
+      value: AcceptPressed
       objectReference: {fileID: 0}
     - target: {fileID: 4416660112420859463, guid: f87ef9def4c7f494c8c6816e776b3ab4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
@@ -3018,7 +3048,7 @@ PrefabInstance:
       objectReference: {fileID: 817757300}
     - target: {fileID: 7000924190697859646, guid: f87ef9def4c7f494c8c6816e776b3ab4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: HistorialPressed
+      value: HistoryPressed
       objectReference: {fileID: 0}
     - target: {fileID: 7000924190697859646, guid: f87ef9def4c7f494c8c6816e776b3ab4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName

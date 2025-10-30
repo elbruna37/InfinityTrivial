@@ -1,152 +1,202 @@
 ﻿using DG.Tweening;
-using Newtonsoft.Json.Bson;
-using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Handles the main menu UI logic, including button animations, camera transitions, 
+/// and scene navigation.
+/// </summary>
 public class UIMenuManager : MonoBehaviour
 {
-    [SerializeField] private float velocidad = 50f;   
+    [Header("Rotation Settings")]
+    [SerializeField] private float rotationSpeed = 10f;
+    private bool canRotate = true;
 
-    [Header("Botones")]
-    public GameObject menuButtons;
-    public GameObject maxPlayerMenu;
-    public GameObject confirmButtons;
-    bool canRotate = true;
+    [Header("Menu Panels")]
+    [SerializeField] private GameObject mainMenuPanel;
+    [SerializeField] private GameObject maxPlayersPanel;
+    [SerializeField] private GameObject confirmExitPanel;
 
-    [Header("UI")]
-    public Image logo;
-    public GameObject leftButtons;
-    public GameObject playButton;
+    [Header("UI Elements")]
+    [SerializeField] private Image logoImage;
+    [SerializeField] private GameObject leftButtons;
+    [SerializeField] private GameObject playButton;
 
-    [SerializeField] private GameObject camara;
+    [Header("Camera Reference")]
+    [SerializeField] private GameObject mainCamera;
 
+    #region Unity Lifecycle
+
+    /// <summary>
+    /// Initializes UI state and triggers the opening animation sequence.
+    /// </summary>
     private void Start()
     {
         canRotate = true;
-
-        menuButtons.SetActive(true);
-
-        EmergenceMenu();
+        mainMenuPanel.SetActive(true);
+        PlayMenuEntranceAnimation();
     }
 
-    void Update()
+    /// <summary>
+    /// Rotates the menu UI slowly for visual appeal.
+    /// </summary>
+    private void Update()
     {
         if (canRotate)
         {
-            transform.Rotate(0f, velocidad * Time.deltaTime, 0f);
+            transform.Rotate(0f, rotationSpeed * Time.deltaTime, 0f);
         }
     }
 
-    void EmergenceMenu()
+    #endregion
+
+    #region UI Animation
+
+    /// <summary>
+    /// Plays the entrance animation for the menu using DOTween sequences.
+    /// </summary>
+    private void PlayMenuEntranceAnimation()
     {
-        Sequence emergence = DOTween.Sequence();
+        Sequence entranceSequence = DOTween.Sequence();
 
-        emergence.Append(leftButtons.transform.DOLocalMoveX(0, 0.5f).SetEase(Ease.OutBounce));
-        emergence.Join(playButton.transform.DOLocalMoveY(-349, 0.5f).SetEase(Ease.OutBounce));
-        emergence.Join(logo.transform.DOScale(5, 0.5f).SetEase(Ease.OutBounce));
-
+        entranceSequence.Append(leftButtons.transform.DOLocalMoveX(0f, 0.5f).SetEase(Ease.OutBounce));
+        entranceSequence.Join(playButton.transform.DOLocalMoveY(-349f, 0.5f).SetEase(Ease.OutBounce));
+        entranceSequence.Join(logoImage.transform.DOScale(5f, 0.5f).SetEase(Ease.OutBounce));
     }
 
-    public void StartPressed()
+    #endregion
+
+    #region Button Callbacks
+
+    /// <summary>
+    /// Called when "Start" is pressed. Opens the player selection menu.
+    /// </summary>
+    public void OnStartPressed()
     {
-        GameManager.Instance.AudioClick();
+        GameManager.Instance.PlayClickSound();
 
-        menuButtons.SetActive(false);
-
-        maxPlayerMenu.SetActive(true);
-
+        mainMenuPanel.SetActive(false);
+        maxPlayersPanel.SetActive(true);
     }
 
-    public void OptionsPressed()
+    /// <summary>
+    /// Called when "Options" is pressed. Moves the camera to the options scene.
+    /// </summary>
+    public void OnOptionsPressed()
     {
-        GameManager.Instance.AudioClick();
-        menuButtons.SetActive(false);
+        GameManager.Instance.PlayClickSound();
+        mainMenuPanel.SetActive(false);
 
-        GameManager.Instance.MoveCamToPoint(camara, new Vector3(13.97f, 2.21f, -1.25f), Quaternion.Euler(36.151f, -72.055f, 0f), "Options");
+        GameManager.Instance.MoveObjectToPoint(
+            mainCamera,
+            new Vector3(13.97f, 2.21f, -1.25f),
+            Quaternion.Euler(36.151f, -72.055f, 0f),
+            "Options"
+        );
     }
 
-    public void QuestionsPressed()
+    /// <summary>
+    /// Called when "Questions" is pressed. Moves the camera to the question importer scene.
+    /// </summary>
+    public void OnQuestionsPressed()
     {
-        GameManager.Instance.AudioClick();
-        menuButtons.SetActive(false);
+        GameManager.Instance.PlayClickSound();
+        mainMenuPanel.SetActive(false);
 
-        GameManager.Instance.MoveCamToPoint(camara, new Vector3(13.97f, 2.21f, -1.25f), Quaternion.Euler(36.151f, -72.055f, 0f), "PreguntasImporter");
+        GameManager.Instance.MoveObjectToPoint(
+            mainCamera,
+            new Vector3(13.97f, 2.21f, -1.25f),
+            Quaternion.Euler(36.151f, -72.055f, 0f),
+            "PreguntasImporter"
+        );
     }
 
-    public void QuitPressed()
+    /// <summary>
+    /// Called when "Quit" is pressed. Opens confirmation panel.
+    /// </summary>
+    public void OnQuitPressed()
     {
-        GameManager.Instance.AudioClick();
+        GameManager.Instance.PlayClickSound();
 
-        confirmButtons.SetActive(true);
-        menuButtons.SetActive(false);
+        confirmExitPanel.SetActive(true);
+        mainMenuPanel.SetActive(false);
     }
 
-    public void NoPressed()
+    /// <summary>
+    /// Called when "No" is pressed in the quit confirmation. Returns to main menu.
+    /// </summary>
+    public void OnCancelQuitPressed()
     {
-        GameManager.Instance.AudioClick();
+        GameManager.Instance.PlayClickSound();
 
-        confirmButtons.SetActive(false);
-        menuButtons.SetActive(true);
+        confirmExitPanel.SetActive(false);
+        mainMenuPanel.SetActive(true);
     }
 
-    public void ExitPressed()
+    /// <summary>
+    /// Called when "Yes" is pressed in the quit confirmation. Exits the game.
+    /// </summary>
+    public void OnConfirmQuitPressed()
     {
-        GameManager.Instance.AudioClick();
+        GameManager.Instance.PlayClickSound();
 
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
-            Application.Quit();
+        Application.Quit();
 #endif
     }
 
-    public void BackPressed()
+    /// <summary>
+    /// Called when "Back" is pressed in the player selection menu. Returns to main menu.
+    /// </summary>
+    public void OnBackPressed()
     {
-        GameManager.Instance.AudioClick();
+        GameManager.Instance.PlayClickSound();
 
-        maxPlayerMenu.SetActive(false);
-
-        menuButtons.SetActive(true);
+        maxPlayersPanel.SetActive(false);
+        mainMenuPanel.SetActive(true);
     }
 
-    public void PlayerMax2()
+    /// <summary>
+    /// Sets max players to 2 and transitions to the Questions scene.
+    /// </summary>
+    public void OnSelect2Players() => HandlePlayerSelection(2);
+
+    /// <summary>
+    /// Sets max players to 3 and transitions to the Questions scene.
+    /// </summary>
+    public void OnSelect3Players() => HandlePlayerSelection(3);
+
+    /// <summary>
+    /// Sets max players to 4 and transitions to the Questions scene.
+    /// </summary>
+    public void OnSelect4Players() => HandlePlayerSelection(4);
+
+    #endregion
+
+    #region Private Helpers
+
+    /// <summary>
+    /// Handles common logic for selecting number of players.
+    /// </summary>
+    private void HandlePlayerSelection(int maxPlayers)
     {
-        GameManager.Instance.AudioClick();
+        GameManager.Instance.PlayClickSound();
 
-        GameManager.Instance.maxPlayer = 2;
+        GameManager.Instance.MaxPlayers = maxPlayers;
 
-        maxPlayerMenu.SetActive(false);
-
+        maxPlayersPanel.SetActive(false);
         canRotate = false;
 
-        GameManager.Instance.MoveCamToPoint(camara, new Vector3(1.42f, 2.84f, 12.31f), Quaternion.Euler(36.512f, 192.58f, 0f), "Questions");
+        GameManager.Instance.MoveObjectToPoint(
+            mainCamera,
+            new Vector3(1.42f, 2.84f, 12.31f),
+            Quaternion.Euler(36.512f, 192.58f, 0f),
+            "Questions"
+        );
     }
 
-    public void PlayerMax3()
-    {
-        GameManager.Instance.AudioClick();
-
-        GameManager.Instance.maxPlayer = 3;
-
-        maxPlayerMenu.SetActive(false);
-
-        canRotate = false;
-
-        GameManager.Instance.MoveCamToPoint(camara, new Vector3(1.42f, 2.84f, 12.31f), Quaternion.Euler(36.512f, 192.58f, 0f), "Questions");
-    }
-
-    public void PlayerMax4()
-    {
-        
-
-        GameManager.Instance.maxPlayer = 4;
-
-        maxPlayerMenu.SetActive(false);
-
-        canRotate = false;
-
-        GameManager.Instance.MoveCamToPoint(camara, new Vector3(1.42f, 2.84f, 12.31f), Quaternion.Euler(36.512f, 192.58f, 0f), "Questions");
-    }
+    #endregion
 }

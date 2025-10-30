@@ -1,47 +1,61 @@
 using UnityEngine;
 
+/// <summary>
+/// Handles spawning player pieces at the start of the game and initializing UI indicators.
+/// </summary>
 public class PlayerSpawner : MonoBehaviour
 {
-    [Header("Prefabs de jugadores")]
-    public GameObject[] playerPrefabs; // arrastra aquí tus 4 prefabs en el inspector
+    [Header("Player Prefabs")]
+    [Tooltip("Assign your player prefabs here.")]
+    public GameObject[] playerPrefabs;
 
-    [Header("Puntos de spawn")]
-    public Transform[] spawnPoints; // posiciones iniciales en el tablero
+    [Header("Spawn Points")]
+    [Tooltip("Initial positions on the board for each player.")]
+    public Transform[] spawnPoints;
 
-    [Header("UIQuesitos")]
+    [Header("UI Panels (Quesitos)")]
+    [Tooltip("Panels showing player indicators.")]
     public GameObject[] quesitosPanel;
 
-
+    /// <summary>
+    /// Spawns all players at the start of the game and registers them in the TurnManager.
+    /// </summary>
     void Start()
     {
-        int numPlayers = GameManager.Instance.maxPlayer;
-
-        for (int i = 0; i < numPlayers && i < playerPrefabs.Length && i < spawnPoints.Length; i++)
-        {
-            GameObject prefab = playerPrefabs[i];
-            Transform spawn = spawnPoints[i];
-
-            GameObject player = Instantiate(prefab, spawn.position, spawn.rotation);
-            player.name = $"Player_{i + 1}";
-
-            // Obtener componente PlayerPiece
-            PlayerPiece piece = player.GetComponent<PlayerPiece>();
-            if (piece != null)
-            {
-                piece.currentNode = BoardManager.Instance.startNode; // asignar nodo inicial
-                BoardManager.Instance.startNode.piecesInNode = numPlayers;
-            }
-
-            // Registrar en TurnManager
-            TurnManager.Instance.RegisterPlayer(piece);
-        }
+        int numPlayers = Mathf.Clamp(GameManager.Instance.MaxPlayers, 0, Mathf.Min(playerPrefabs.Length, spawnPoints.Length));
 
         for (int i = 0; i < numPlayers; i++)
         {
-            // Activa solo los que están dentro del rango
-            quesitosPanel[i].SetActive(true);
+            SpawnPlayer(i);
         }
 
+        // Activate corresponding UI panels
+        for (int i = 0; i < numPlayers; i++)
+        {
+            if (i < quesitosPanel.Length)
+                quesitosPanel[i].SetActive(true);
+        }
+    }
+
+    /// <summary>
+    /// Instantiates a player prefab at its spawn point and initializes its PlayerPiece.
+    /// </summary>
+    /// <param name="index">Index of the player to spawn.</param>
+    private void SpawnPlayer(int index)
+    {
+        GameObject prefab = playerPrefabs[index];
+        Transform spawn = spawnPoints[index];
+
+        GameObject player = Instantiate(prefab, spawn.position, spawn.rotation);
+        player.name = $"Player_{index + 1}";
+
+        PlayerPiece piece = player.GetComponent<PlayerPiece>();
+        if (piece != null)
+        {
+            piece.currentNode = BoardManager.Instance.startNode; // assign starting node
+            BoardManager.Instance.startNode.OccupyNode(); // increment pieces in node instead of assigning directly
+        }
+
+        TurnManager.Instance.RegisterPlayer(piece);
     }
 }
-

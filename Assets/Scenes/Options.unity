@@ -1284,8 +1284,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3772889769201734fb6bfa2edfd51d80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tarjeta: {fileID: 505832152}
-  camara: {fileID: 703941518}
+  card: {fileID: 505832152}
+  cameraObject: {fileID: 703941518}
   languageDropdown: {fileID: 530647574}
   resolutionDropdown: {fileID: 1339275941}
   qualityDropdown: {fileID: 946550883}

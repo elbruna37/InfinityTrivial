@@ -238,7 +238,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 1
-  piecesInNode: 0
   highlightRenderer: {fileID: 1504283627}
 --- !u!65 &100689485
 BoxCollider:
@@ -806,7 +805,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 6
-  piecesInNode: 0
   highlightRenderer: {fileID: 520605140}
 --- !u!65 &196378463
 BoxCollider:
@@ -1352,7 +1350,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 1
-  piecesInNode: 0
   highlightRenderer: {fileID: 1354155487}
 --- !u!65 &290239917
 BoxCollider:
@@ -1427,7 +1424,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 1
-  piecesInNode: 0
   highlightRenderer: {fileID: 1362123425}
 --- !u!65 &306032966
 BoxCollider:
@@ -1719,7 +1715,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 3
-  piecesInNode: 0
   highlightRenderer: {fileID: 1410280280}
 --- !u!65 &369490891
 BoxCollider:
@@ -2020,7 +2015,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 2
   nodeColor: 0
-  piecesInNode: 0
   highlightRenderer: {fileID: 1715527844}
 --- !u!65 &437919997
 BoxCollider:
@@ -2283,7 +2277,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 2
-  piecesInNode: 0
   highlightRenderer: {fileID: 1822938896}
 --- !u!65 &466568396
 BoxCollider:
@@ -2553,7 +2546,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 3
   nodeColor: 0
-  piecesInNode: 0
   highlightRenderer: {fileID: 2449591349040596796}
 --- !u!4 &514332748
 Transform:
@@ -2644,7 +2636,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 5
-  piecesInNode: 0
   highlightRenderer: {fileID: 559444830}
 --- !u!65 &519105559
 BoxCollider:
@@ -3038,7 +3029,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0, y: 0, z: 0, w: -12.035675}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -3148,7 +3139,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 1
   nodeColor: 2
-  piecesInNode: 0
   highlightRenderer: {fileID: 1163891568}
 --- !u!65 &567853904
 BoxCollider:
@@ -3509,7 +3499,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 4
-  piecesInNode: 0
   highlightRenderer: {fileID: 273330736}
 --- !u!65 &619697071
 BoxCollider:
@@ -4265,7 +4254,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 1
   nodeColor: 5
-  piecesInNode: 0
   highlightRenderer: {fileID: 1105714639}
 --- !u!65 &655530120
 BoxCollider:
@@ -4340,7 +4328,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 4
-  piecesInNode: 0
   highlightRenderer: {fileID: 1237772179}
 --- !u!65 &659660246
 BoxCollider:
@@ -4549,7 +4536,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 5
-  piecesInNode: 0
   highlightRenderer: {fileID: 663926595}
 --- !u!65 &681813875
 BoxCollider:
@@ -5331,7 +5317,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 3
-  piecesInNode: 0
   highlightRenderer: {fileID: 1188785095}
 --- !u!65 &769714743
 BoxCollider:
@@ -5692,7 +5677,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 1
   nodeColor: 6
-  piecesInNode: 0
   highlightRenderer: {fileID: 846306366}
 --- !u!65 &790088733
 BoxCollider:
@@ -5767,7 +5751,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 1
-  piecesInNode: 0
   highlightRenderer: {fileID: 1393098012}
 --- !u!65 &792169713
 BoxCollider:
@@ -5956,7 +5939,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53b2b17097dc10a47b733bb37a773e90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  preguntasManager: {fileID: 0}
   diceSpawner: {fileID: 1926024681}
   boardManager: {fileID: 2039084959}
   currentPlayerIndex: 0
@@ -5970,29 +5952,29 @@ MonoBehaviour:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
-  rollAgain:
+  rollAgainText:
     m_TableReference:
-      m_TableCollectionName: GUID:15fc5b3d200de564ca280db633bee336
+      m_TableCollectionName: 
     m_TableEntryReference:
-      m_KeyId: 1098947059245056
+      m_KeyId: 0
       m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
-  wedgeWin:
+  wedgeWinText:
     m_TableReference:
-      m_TableCollectionName: GUID:15fc5b3d200de564ca280db633bee336
+      m_TableCollectionName: 
     m_TableEntryReference:
-      m_KeyId: 1099465466830848
+      m_KeyId: 0
       m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
-  rerollBox:
+  rerollBoxText:
     m_TableReference:
-      m_TableCollectionName: GUID:15fc5b3d200de564ca280db633bee336
+      m_TableCollectionName: 
     m_TableEntryReference:
-      m_KeyId: 1099850948534272
+      m_KeyId: 0
       m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
@@ -6042,7 +6024,7 @@ MonoBehaviour:
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
-  textInformation: {fileID: 2146486884}
+  infoText: {fileID: 2146486884}
   references:
     version: 2
     RefIds: []
@@ -6181,7 +6163,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 1
   nodeColor: 1
-  piecesInNode: 0
   highlightRenderer: {fileID: 985156869}
 --- !u!65 &861922190
 BoxCollider:
@@ -6514,7 +6495,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 6
-  piecesInNode: 0
   highlightRenderer: {fileID: 1927837287}
 --- !u!65 &918146291
 BoxCollider:
@@ -6697,42 +6677,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc555c67da20a8b40bc450f5263d47e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panelPregunta: {fileID: 1225024217}
-  panelRespuestas: {fileID: 1242092890}
-  quesitoPanel: {fileID: 519329697}
-  upRespuestasPanel: {fileID: 334951429}
-  downRespuestasPanel: {fileID: 1652960039}
-  fondo: {fileID: 1802941007}
-  dificultadIcons:
+  questionPanel: {fileID: 1225024217}
+  answersPanel: {fileID: 1242092890}
+  wedgePanel: {fileID: 519329697}
+  answersTopPanel: {fileID: 334951429}
+  answersBottomPanel: {fileID: 1652960039}
+  backgroundImage: {fileID: 1802941007}
+  difficultyIcons:
   - {fileID: 541172852}
   - {fileID: 372959623}
   - {fileID: 786554494}
-  rellenoTemporizador: {fileID: 2117581865}
-  agujaTemporizador: {fileID: 459433344}
-  contadorTMP: {fileID: 1457997491}
-  duracion: 30
-  rotacionInicial: 44.85
-  rotacionFinal: -315
-  enunciadoTMP: {fileID: 784319869}
-  enunciado: {fileID: 784319868}
-  textInformation: {fileID: 2146486884}
-  botonesOpciones:
+  timerFill: {fileID: 2117581865}
+  timerNeedle: {fileID: 459433344}
+  questionDuration: 30
+  needleStartRotation: 0
+  needleEndRotation: -360
+  questionText: {fileID: 784319869}
+  questionTextRect: {fileID: 784319868}
+  optionButtons:
   - {fileID: 633079331}
   - {fileID: 1601029619}
   - {fileID: 1350875504}
   - {fileID: 563754306}
-  textosOpciones:
+  optionTexts:
   - {fileID: 633079329}
   - {fileID: 1601029617}
   - {fileID: 1350875502}
   - {fileID: 563754304}
-  categoriaAzulTMP: {fileID: 1910083473}
-  categoriaAmarilloTMP: {fileID: 1045634597}
-  categoriaNaranjaTMP: {fileID: 2060693168}
-  categoriaRosaTMP: {fileID: 613172013}
-  categoriaMoradoTMP: {fileID: 748448552}
-  categoriaVerdeTMP: {fileID: 135895999}
-  tarjeta: {fileID: 123821982}
+  categoryBlueText: {fileID: 1910083473}
+  categoryYellowText: {fileID: 1045634597}
+  categoryOrangeText: {fileID: 2060693168}
+  categoryPinkText: {fileID: 613172013}
+  categoryPurpleText: {fileID: 748448552}
+  categoryGreenText: {fileID: 135895999}
+  cardTransform: {fileID: 123821982}
 --- !u!1 &956866020
 GameObject:
   m_ObjectHideFlags: 0
@@ -7080,7 +7058,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 6
-  piecesInNode: 0
   highlightRenderer: {fileID: 663081585}
 --- !u!65 &1004439538
 BoxCollider:
@@ -7186,7 +7163,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 3
-  piecesInNode: 0
   highlightRenderer: {fileID: 1462462727}
 --- !u!65 &1011158214
 BoxCollider:
@@ -7740,7 +7716,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 3
-  piecesInNode: 0
   highlightRenderer: {fileID: 1636984992}
 --- !u!65 &1188651216
 BoxCollider:
@@ -8064,7 +8039,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 2
-  piecesInNode: 0
   highlightRenderer: {fileID: 1511165295}
 --- !u!65 &1232196816
 BoxCollider:
@@ -8139,7 +8113,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 4
-  piecesInNode: 0
   highlightRenderer: {fileID: 737774156}
 --- !u!65 &1236169074
 BoxCollider:
@@ -8918,7 +8891,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0, y: 0, z: 0, w: -8.827606}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -9095,7 +9068,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 1
   nodeColor: 3
-  piecesInNode: 0
   highlightRenderer: {fileID: 180405587}
 --- !u!65 &1360834360
 BoxCollider:
@@ -9371,7 +9343,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 5
-  piecesInNode: 0
   highlightRenderer: {fileID: 1831212279}
 --- !u!65 &1433325621
 BoxCollider:
@@ -9446,7 +9417,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 4
-  piecesInNode: 0
   highlightRenderer: {fileID: 620439200}
 --- !u!65 &1439064627
 BoxCollider:
@@ -9732,7 +9702,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 1
-  piecesInNode: 0
   highlightRenderer: {fileID: 1021125564}
 --- !u!65 &1459141499
 BoxCollider:
@@ -10193,7 +10162,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 6
-  piecesInNode: 0
   highlightRenderer: {fileID: 1088342570}
 --- !u!65 &1555478062
 BoxCollider:
@@ -10268,7 +10236,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 6
-  piecesInNode: 0
   highlightRenderer: {fileID: 511935187}
 --- !u!65 &1573085110
 BoxCollider:
@@ -10880,7 +10847,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 5
-  piecesInNode: 0
   highlightRenderer: {fileID: 1191861011}
 --- !u!65 &1628900387
 BoxCollider:
@@ -11428,7 +11394,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 5
-  piecesInNode: 0
   highlightRenderer: {fileID: 63271673}
 --- !u!65 &1794147580
 BoxCollider:
@@ -11571,7 +11536,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 1
-  piecesInNode: 0
   highlightRenderer: {fileID: 1281870013}
 --- !u!65 &1801018693
 BoxCollider:
@@ -11721,7 +11685,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 1
   nodeColor: 4
-  piecesInNode: 0
   highlightRenderer: {fileID: 507668976}
 --- !u!65 &1806881390
 BoxCollider:
@@ -11930,7 +11893,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 5
-  piecesInNode: 0
   highlightRenderer: {fileID: 1815936683}
 --- !u!65 &1823850460
 BoxCollider:
@@ -12684,7 +12646,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 2
-  piecesInNode: 0
   highlightRenderer: {fileID: 751280365}
 --- !u!65 &2060755998
 BoxCollider:
@@ -12953,7 +12914,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 2
   nodeColor: 0
-  piecesInNode: 0
   highlightRenderer: {fileID: 1616534951}
 --- !u!65 &2123365244
 BoxCollider:
@@ -13028,7 +12988,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 2
-  piecesInNode: 0
   highlightRenderer: {fileID: 1307889580}
 --- !u!65 &2139486799
 BoxCollider:
@@ -13239,7 +13198,6 @@ MonoBehaviour:
   actualPieces: []
   nodeType: 0
   nodeColor: 3
-  piecesInNode: 0
   highlightRenderer: {fileID: 183977651}
 --- !u!65 &2146775524
 BoxCollider:
