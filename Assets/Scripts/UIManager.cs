@@ -32,7 +32,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Image timerFill;
     [SerializeField] private Transform timerNeedle;
     [SerializeField] private float questionDuration = 30f;
-    [SerializeField] private float needleStartRotation = 0f;
+    [SerializeField] private float needleStartRotation = 45f;
     [SerializeField] private float needleEndRotation = -360f;
 
     [Header("Question Text")]
@@ -339,7 +339,7 @@ public class UIManager : MonoBehaviour
         }
 
         // Ensure background returns to original color at the end
-        seq.OnComplete(() => backgroundImage.color = _originalBackgroundColor);
+        seq.OnComplete(() => backgroundImage.color = targetColor);
     }
 
     /// <summary>
