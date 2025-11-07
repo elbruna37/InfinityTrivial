@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Singleton GameManager that handles global game data, audio feedback, 
-/// aspect ratio adjustment, and camera transitions between scenes.
+/// aspect ratio adjustment, load settings and camera transitions between scenes.
 /// </summary>
 public class GameManager : MonoBehaviour
 {
@@ -40,6 +40,8 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         Application.targetFrameRate = 60;
+
+        LoadPlayerSettings();
 
         FindMainCamera();
         SceneManager.activeSceneChanged += OnSceneChanged;
@@ -153,7 +155,78 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
-    #region Camera & Aspect Handling
+    #region Camera, Settings & Aspect Handling
+
+
+    /// <summary>
+    /// Load the settings saved in PlayerPrefs
+    /// </summary>
+    private void LoadPlayerSettings()
+    {
+        string savedLang = PlayerPrefs.GetString("language", "");
+        string selectedLang = PlayerPrefs.GetString("language", "Español");
+        string code;
+
+        if (string.IsNullOrEmpty(savedLang))
+        {
+            // Detectar idioma del sistema
+            string systemLang = Application.systemLanguage.ToString();
+            Debug.Log($"System language detected: {systemLang}");
+
+            switch (systemLang)
+            {
+                case "Spanish":
+                case "SpanishLatinAmerica":
+                    selectedLang = "Español";
+                    code = "es";
+                    break;
+                case "English":
+                    selectedLang = "English";
+                    code = "en";
+                    break;
+                default:
+                    selectedLang = "English";
+                    code = "en";
+                    break;
+            }
+
+            PlayerPrefs.SetString("language", selectedLang);
+            PlayerPrefs.Save();
+        }
+        else
+        {
+            selectedLang = savedLang;
+            code = selectedLang == "Español" ? "es" : "en";
+        }
+
+        if (LocaleController.Instance != null)
+        {
+            LocaleController.Instance.SetLocaleCode(code);
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ LocaleController not found at startup. Language will be applied later.");
+        }
+        Debug.Log($"Language loaded: {selectedLang} ({code})");
+
+        int quality = PlayerPrefs.GetInt("quality", 2);
+        QualitySettings.SetQualityLevel(quality);
+
+        float volume = PlayerPrefs.GetFloat("volume", 1f);
+        AudioListener.volume = volume;
+        
+        int resIndex = PlayerPrefs.GetInt("resolution", 0);
+        if (Screen.resolutions.Length > resIndex)
+        {
+            Resolution res = Screen.resolutions[resIndex];
+            Screen.SetResolution(res.width, res.height, FullScreenMode.FullScreenWindow);
+        }
+
+
+        bool vibration = PlayerPrefs.GetInt("vibration", 1) == 1;
+
+        Debug.Log("✅ Player settings loaded at startup");
+    }
 
     /// <summary>
     /// Locates the main camera in the active scene and updates aspect ratio.

@@ -48,7 +48,15 @@ public class UIOptionsManager : MonoBehaviour
     private void Start()
     {
         InitializeDropdowns();
+
+        languageDropdown.onValueChanged.AddListener(delegate { ApplyLanguage(); });
+        resolutionDropdown.onValueChanged.AddListener(delegate { ApplyResolution(); });
+        qualityDropdown.onValueChanged.AddListener(delegate { ApplyQuality(); });
+        volumeSlider.onValueChanged.AddListener(delegate { ApplyVolume(); });
+        vibrationToggle.onValueChanged.AddListener(delegate { ApplyVibration(); });
+
         LoadSettings();
+
         applyButton.onClick.AddListener(ApplySettings);
         AnimateCardEntrance();
     }
@@ -78,16 +86,25 @@ public class UIOptionsManager : MonoBehaviour
     private void LoadSettings()
     {
         selectedLanguage = PlayerPrefs.GetString("language", "Español");
-        selectedResolutionIndex = PlayerPrefs.GetInt("resolution", 0);
-        selectedQuality = PlayerPrefs.GetInt("quality", 1);
-        selectedVolume = PlayerPrefs.GetFloat("volume", 1f);
-        vibrationEnabled = PlayerPrefs.GetInt("vibration", 1) == 1;
+        languageDropdown.value = selectedLanguage == "Español" ? 0 : 1;
 
-        languageDropdown.value = selectedLanguage == "English" ? 1 : 0;
+        selectedResolutionIndex = PlayerPrefs.GetInt("resolution", 0);
         resolutionDropdown.value = selectedResolutionIndex;
+
+        selectedQuality = PlayerPrefs.GetInt("quality", 1);
         qualityDropdown.value = selectedQuality;
+
+        selectedVolume = PlayerPrefs.GetFloat("volume", 1f);
         volumeSlider.value = selectedVolume;
+
+        vibrationEnabled = PlayerPrefs.GetInt("vibration", 1) == 1;
         vibrationToggle.isOn = vibrationEnabled;
+
+        ApplyLanguage();
+        ApplyResolution();
+        ApplyQuality();
+        ApplyVolume();
+        ApplyVibration();
     }
 
     #endregion
@@ -101,11 +118,10 @@ public class UIOptionsManager : MonoBehaviour
     {
         GameManager.Instance.PlayClickSound();
 
-        ApplyLanguage();
-        ApplyResolution();
-        ApplyQuality();
-        ApplyVolume();
-        ApplyVibration();
+        PlayerPrefs.SetInt("resolution", selectedResolutionIndex);
+        PlayerPrefs.SetString("language", selectedLanguage);
+        PlayerPrefs.SetInt("quality", selectedQuality);
+        PlayerPrefs.SetFloat("volume", selectedVolume);
 
         PlayerPrefs.Save();
         AnimateCardExit();
@@ -114,7 +130,6 @@ public class UIOptionsManager : MonoBehaviour
     private void ApplyLanguage()
     {
         selectedLanguage = languageDropdown.value == 0 ? "Español" : "English";
-        PlayerPrefs.SetString("language", selectedLanguage);
         string code = selectedLanguage == "Español" ? "es" : "en";
         LocaleController.Instance.SetLocaleCode(code);
     }
@@ -128,7 +143,6 @@ public class UIOptionsManager : MonoBehaviour
         int height = int.Parse(dims[1]);
 
         Screen.SetResolution(width, height, FullScreenMode.FullScreenWindow);
-        PlayerPrefs.SetInt("resolution", selectedResolutionIndex);
 
         Debug.Log($"Resolution set to: {resText}");
     }
@@ -137,7 +151,6 @@ public class UIOptionsManager : MonoBehaviour
     {
         selectedQuality = qualityDropdown.value;
         QualitySettings.SetQualityLevel(selectedQuality);
-        PlayerPrefs.SetInt("quality", selectedQuality);
 
         Debug.Log($"Quality set to: {qualityDropdown.options[selectedQuality].text}");
     }
@@ -146,7 +159,6 @@ public class UIOptionsManager : MonoBehaviour
     {
         selectedVolume = volumeSlider.value;
         AudioListener.volume = selectedVolume;
-        PlayerPrefs.SetFloat("volume", selectedVolume);
 
         Debug.Log($"Volume set to: {selectedVolume}");
     }
