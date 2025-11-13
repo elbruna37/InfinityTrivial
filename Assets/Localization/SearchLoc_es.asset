@@ -34,6 +34,22 @@ MonoBehaviour:
     m_Localized: dificil
     m_Metadata:
       m_Items: []
+  - m_Id: 4722376207491072
+    m_Localized: Guardar Y Salir
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4722539470774272
+    m_Localized: Continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5085544586928128
+    m_Localized: "\xBFSeguro que quieres borrar el \xFAltimo guardado?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5087938209112064
+    m_Localized: Pausa
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

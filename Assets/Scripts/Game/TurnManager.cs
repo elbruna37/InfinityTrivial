@@ -1,4 +1,5 @@
 ﻿using DG.Tweening;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -8,6 +9,7 @@ using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.SmartFormat.PersistentVariables;
 using UnityEngine.SceneManagement;
 
+
 /// <summary>
 /// Manages player turns, dice rolling, question handling, and win conditions.
 /// </summary>
@@ -15,18 +17,28 @@ public class TurnManager : MonoBehaviour
 {
     public static TurnManager Instance { get; private set; }
 
+    public event Action<int, PlayerPiece> OnPlayerRegistered;
+
     [Header("References")]
-    public DiceSpawner diceSpawner;             // Spawns and throws dice
-    public BoardManager boardManager;           // Moves player pieces
+    public DiceSpawner diceSpawner;            
+    public BoardManager boardManager;           
 
     [Header("Player Pieces")]
     private readonly List<PlayerPiece> playerPieces = new List<PlayerPiece>();
     private int[] wedgesPerPlayer;
+    private Dictionary<int, List<QuesitoColor>> wedgesByPlayer = new();
 
+    [Header("Control")]
     public int currentPlayerIndex = 0;
+
     private bool isWaitingForClick = false;
+    public bool isPause = false;
     private bool gameEnded = false;
     public bool canDestroy = false;
+
+    [SerializeField] private float holdThreshold = 0.4f;
+    private bool isPointerDown = false;
+    private float pointerDownTime = 0f;
 
     [Header("Localization")]
     [SerializeField] private LocalizedString turnText;
@@ -47,6 +59,10 @@ public class TurnManager : MonoBehaviour
     public TMP_Text infoText;
     private float blinkSpeed = 2f;
     private Tween blinkTween;
+    public GameObject pausePanel;
+
+    [Header("Camera Reference")]
+    [SerializeField] private GameObject mainCamera;
 
     private string[] teamNames;
     private readonly string[] teamColors = { "green", "blue", "red", "yellow" };
@@ -76,23 +92,56 @@ public class TurnManager : MonoBehaviour
         };
 
         wedgesPerPlayer = new int[GameManager.Instance.MaxPlayers];
+
         gameEnded = false;
 
         StartTurn();
     }
 
     /// <summary>
-    /// Waits for player click to roll dice.
+    /// Waits for player click to roll dice or hold for pause.
     /// </summary>
-    private void Update()
+    void Update()
     {
-        if (gameEnded) return;
+        bool pointerDown = Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
+        bool pointerHeld = Input.GetMouseButton(0) || (Input.touchCount > 0 && (Input.GetTouch(0).phase == TouchPhase.Stationary || Input.GetTouch(0).phase == TouchPhase.Moved));
+        bool pointerUp = Input.GetMouseButtonUp(0) || (Input.touchCount > 0 && (Input.GetTouch(0).phase == TouchPhase.Ended || Input.GetTouch(0).phase == TouchPhase.Canceled));
 
-        if (isWaitingForClick && (Input.GetMouseButtonDown(0) || Input.touchCount > 0))
+        if (pointerDown)
         {
-            isWaitingForClick = false;
-            UpdateInfoText("");
-            diceSpawner.SpawnAndThrowDice(OnDiceResult);
+            isPointerDown = true;
+            pointerDownTime = Time.time;
+        }
+
+        if (isPointerDown && pointerHeld && !isPause && isWaitingForClick)
+        {
+            float heldTime = Time.time - pointerDownTime;
+            if (heldTime >= holdThreshold && !isPause)
+            {
+                isPointerDown = false;
+                isPause = true;
+                isWaitingForClick = false;
+
+                UpdateInfoText("");
+                ShowPausePanel();
+            }
+        }
+
+        if (pointerUp && !isPause && isWaitingForClick)
+        {
+            if (isPointerDown)
+            {
+                float heldTime = Time.time - pointerDownTime;
+
+                if (heldTime < holdThreshold && isWaitingForClick && !isPause)
+                {
+                    isWaitingForClick = false;
+                    UpdateInfoText("");
+                    diceSpawner.SpawnAndThrowDice(OnDiceResult);
+                }
+
+                isPointerDown = false;
+            }
         }
     }
 
@@ -140,10 +189,22 @@ public class TurnManager : MonoBehaviour
     /// <summary>
     /// Registers a player piece to participate in the turn cycle.
     /// </summary>
-    public void RegisterPlayer(PlayerPiece piece)
+    public void RegisterPlayer(PlayerPiece piece, int index)
     {
-        if (!playerPieces.Contains(piece))
-            playerPieces.Add(piece);
+        while (playerPieces.Count <= index)
+            playerPieces.Add(null);
+
+        playerPieces[index] = piece;
+
+        OnPlayerRegistered?.Invoke(index, piece);
+    }
+
+    public bool TryGetPlayer(int index, out PlayerPiece piece)
+    {
+        piece = null;
+        if (index < 0 || index >= playerPieces.Count) return false;
+        piece = playerPieces[index];
+        return piece != null;
     }
 
     #endregion
@@ -195,6 +256,44 @@ public class TurnManager : MonoBehaviour
                 NextTurn();
                 break;
         }
+    }
+
+    #endregion
+
+    #region PauseLogic
+
+    public void ShowPausePanel()
+    {
+        pausePanel.SetActive(true);
+    }
+
+    public void OnExitSavePressed()
+    {
+        GameManager.Instance.PlayClickSound();
+
+        GameSaveManager.Instance.SaveGame();
+
+        GameManager.Instance.MoveObjectToPoint(mainCamera, new UnityEngine.Vector3(0, 8, -10.7f), UnityEngine.Quaternion.Euler(48.968f, 0f, 0f), "Menu");
+    }
+
+    public void OnContinuePressed()
+    {
+        GameManager.Instance.PlayClickSound();
+
+        pausePanel.SetActive(false);
+
+        StartTurn();
+
+    }
+
+    public void OnOptionsPressed()
+    {
+        GameManager.Instance.PlayClickSound();
+
+        GameSaveManager.Instance.SaveGame();
+
+        GameManager.Instance.MoveObjectToPoint(mainCamera, new UnityEngine.Vector3(13.97f, 2.21f, -1.25f), UnityEngine.Quaternion.Euler(36.151f, -72.055f, 0f), "Options");
+        //HAY QUE AÑADIR UNA FORMA DE VOLVER A ESTA ESCENA DESPUÉS DE IR A LA DE OPCIONES
     }
 
     #endregion
@@ -303,6 +402,12 @@ public class TurnManager : MonoBehaviour
         wedge.gameObject.SetActive(true);
         wedgesPerPlayer[playerIndex]++;
 
+        if (!wedgesByPlayer.ContainsKey(playerIndex))
+            wedgesByPlayer[playerIndex] = new List<QuesitoColor>();
+
+        if (!wedgesByPlayer[playerIndex].Contains(color))
+            wedgesByPlayer[playerIndex].Add(color);
+
         Debug.Log($"Team {teamNames[currentPlayerIndex]} has {wedgesPerPlayer[playerIndex]} wedges.");
 
         if (wedgesPerPlayer[playerIndex] >= 6)
@@ -355,6 +460,47 @@ public class TurnManager : MonoBehaviour
         yield return LocalizationSettings.InitializationOperation;
         string result = localized.GetLocalizedString();
         UpdateInfoText(result);
+
+        yield return new WaitForSeconds(1);
+
+        isPause = false;
+    }
+
+    #endregion
+
+    #region SaveGame
+
+    public Dictionary<int, List<QuesitoColor>> GetWedgesByPlayer()
+    {
+        return wedgesByPlayer;
+    }
+
+    public void SetWedgesByPlayer(Dictionary<int, List<QuesitoColor>> loadedData)
+    {
+        wedgesByPlayer = loadedData;
+
+        // Reactivar visualmente los quesitos en cada jugador
+        foreach (var kvp in wedgesByPlayer)
+        {
+            int playerIndex = kvp.Key;
+            foreach (var color in kvp.Value)
+            {
+                ActivateWedgeForPlayer(playerIndex, color);
+            }
+        }
+    }
+
+    public Dictionary<int, string> GetPlayerPositions()
+    {
+        Dictionary<int, string> positions = new Dictionary<int, string>();
+
+        for (int i = 0; i < playerPieces.Count; i++)
+        {
+            if (playerPieces[i].currentNode != null)
+                positions[i] = playerPieces[i].currentNode.nodeID; // o .name si no hay nodeID
+        }
+
+        return positions;
     }
 
     #endregion

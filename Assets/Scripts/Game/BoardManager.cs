@@ -8,13 +8,47 @@ public class BoardManager : MonoBehaviour
     public static BoardManager Instance;
     public BoardNode startNode;
 
-    private void Awake() => Instance = this;
+    [SerializeField] private List<BoardNode> allNodes = new List<BoardNode>();
+    private Dictionary<string, BoardNode> nodeDictionary;
+    private Dictionary<string, BoardNode> nodeLookup = new Dictionary<string, BoardNode>();
 
     private BoardNode _chosenNode = null;
     private bool _awaitingChoice = false;
     private readonly HashSet<BoardNode> _validChoices = new HashSet<BoardNode>();
 
     Color[] playerColors = { Color.green, Color.blue, Color.red, Color.yellow };
+
+    private bool nodesInitialized = false;
+
+    public bool AreNodesInitialized() => nodesInitialized;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        nodeDictionary = new Dictionary<string, BoardNode>();
+        foreach (var node in allNodes)
+        {
+            if (node != null && !string.IsNullOrEmpty(node.nodeID))
+            {
+                if (!nodeDictionary.ContainsKey(node.nodeID))
+                    nodeDictionary.Add(node.nodeID, node);
+                else
+                    Debug.LogWarning($"Duplicate node ID detected: {node.nodeID}");
+            }
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        InitializeNodes();
+    }
+
+
 
     // ----------------- Movimiento -----------------
 
@@ -425,5 +459,42 @@ public class BoardManager : MonoBehaviour
         {
             node.SetHighlight(active, color);
         }
+    }
+
+    /// <summary>
+    /// Initializes all nodes and builds a lookup dictionary for quick access.
+    /// </summary>
+    private void InitializeNodes()
+    {
+        nodeLookup.Clear();
+
+        foreach (var node in allNodes)
+        {
+            if (node == null) continue;
+
+            // If the node doesn't have an ID, assign one automatically.
+            if (string.IsNullOrEmpty(node.nodeID))
+                node.nodeID = node.gameObject.name;
+
+            // Avoid duplicates and add to lookup.
+            if (!nodeLookup.ContainsKey(node.nodeID))
+                nodeLookup.Add(node.nodeID, node);
+            else
+                Debug.LogWarning($"Duplicate node ID detected: {node.nodeID}");
+        }
+
+        nodesInitialized = true;
+    }
+
+    /// <summary>
+    /// Returns the BoardNode corresponding to a given nodeID.
+    /// </summary>
+    public BoardNode GetNodeByID(string id)
+    {
+        if (nodeDictionary.TryGetValue(id, out var node))
+            return node;
+
+        Debug.LogWarning($"No node found with ID: {id}");
+        return null;
     }
 }

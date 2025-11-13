@@ -1,4 +1,5 @@
 ﻿using DG.Tweening;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,6 +22,9 @@ public class BoardNode : MonoBehaviour
     [Header("Node Configuration")]
     public NodeType nodeType = NodeType.Normal;
     public NodeColor nodeColor = NodeColor.Ninguno;
+    public string nodeID;
+
+    private HashSet<int> appliedPlayerIndices = new HashSet<int>();
 
     [Header("Highlight")]
     [Tooltip("Renderer used for highlighting this node.")]
@@ -61,11 +65,72 @@ public class BoardNode : MonoBehaviour
     private void Awake()
     {
         InitializeHighlight();
+
+        TryApplySavedPositionForExistingPlayers();
     }
 
     private void OnMouseDown()
     {
         BoardManager.Instance.NotifyNodeClicked(this);
+    }
+    private void OnEnable()
+    {
+        // Subscribe to player registration to handle late-registered players
+        if (TurnManager.Instance != null)
+            TurnManager.Instance.OnPlayerRegistered += OnPlayerRegistered;
+    }
+
+    private void OnDisable()
+    {
+        if (TurnManager.Instance != null)
+            TurnManager.Instance.OnPlayerRegistered -= OnPlayerRegistered;
+    }
+
+    private void TryApplySavedPositionForExistingPlayers()
+    {
+        var save = GameSaveManager.Instance?.LoadedSaveData;
+        if (save == null || save.playerPositions == null) return;
+
+        // Recorremos los pares playerIndex -> nodeID y aplicamos si coinciden con este nodeID
+        foreach (var kvp in save.playerPositions)
+        {
+            int playerIndex = kvp.Key;
+            string savedNodeID = kvp.Value;
+            if (string.Equals(savedNodeID, nodeID, StringComparison.Ordinal))
+            {
+                // Si ese player ya está registrado, lo movemos
+                if (TurnManager.Instance.TryGetPlayer(playerIndex, out var piece) && piece != null)
+                {
+                    if (!appliedPlayerIndices.Contains(playerIndex))
+                    {
+                        piece.MoveToNodeInstant(this);
+                        appliedPlayerIndices.Add(playerIndex);
+                        Debug.Log($"[BoardNode] Applied saved position for player {playerIndex} to node {nodeID}");
+                    }
+                }
+                // si no está registrado, esperar al evento OnPlayerRegistered
+            }
+        }
+    }
+
+    // Handler del evento cuando un player se registra más tarde
+    private void OnPlayerRegistered(int playerIndex, PlayerPiece piece)
+    {
+        var save = GameSaveManager.Instance?.LoadedSaveData;
+        if (save == null || save.playerPositions == null) return;
+
+        if (save.playerPositions.TryGetValue(playerIndex, out var savedNodeID))
+        {
+            if (string.Equals(savedNodeID, nodeID, StringComparison.Ordinal))
+            {
+                if (!appliedPlayerIndices.Contains(playerIndex))
+                {
+                    piece.MoveToNodeInstant(this);
+                    appliedPlayerIndices.Add(playerIndex);
+                    Debug.Log($"[BoardNode] Late-applied saved position for player {playerIndex} to node {nodeID}");
+                }
+            }
+        }
     }
 
     #endregion

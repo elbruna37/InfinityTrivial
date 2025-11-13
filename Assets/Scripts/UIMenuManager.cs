@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System.IO;
 
 /// <summary>
 /// Handles the main menu UI logic, including button animations, camera transitions, 
@@ -17,11 +18,13 @@ public class UIMenuManager : MonoBehaviour
     [SerializeField] private GameObject mainMenuPanel;
     [SerializeField] private GameObject maxPlayersPanel;
     [SerializeField] private GameObject confirmExitPanel;
+    [SerializeField] private GameObject confirmDeletePanel;
 
     [Header("UI Elements")]
     [SerializeField] private Image logoImage;
     [SerializeField] private GameObject leftButtons;
     [SerializeField] private GameObject playButton;
+    [SerializeField] private GameObject continueButton;
 
     [Header("Camera Reference")]
     [SerializeField] private GameObject mainCamera;
@@ -58,10 +61,19 @@ public class UIMenuManager : MonoBehaviour
     /// </summary>
     private void PlayMenuEntranceAnimation()
     {
+        string saveFilePath = Path.Combine(Application.persistentDataPath, "savegame.json");
+
         Sequence entranceSequence = DOTween.Sequence();
 
         entranceSequence.Append(leftButtons.transform.DOLocalMoveX(0f, 0.5f).SetEase(Ease.OutBounce));
-        entranceSequence.Join(playButton.transform.DOLocalMoveY(-349f, 0.5f).SetEase(Ease.OutBounce));
+
+        if (File.Exists(saveFilePath))
+        {
+            continueButton.SetActive(true);
+            entranceSequence.Join(playButton.transform.DOLocalMoveY(358f, 0.5f).SetEase(Ease.OutBounce));
+        }
+        else { entranceSequence.Join(playButton.transform.DOLocalMoveY(219f, 0.5f).SetEase(Ease.OutBounce)); }
+        
         entranceSequence.Join(logoImage.transform.DOScale(5f, 0.5f).SetEase(Ease.OutBounce));
     }
 
@@ -81,6 +93,46 @@ public class UIMenuManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Called when "Continue" is pressed. Move the camera to load scene.
+    /// </summary>
+    public void OnContinuePressed()
+    {
+        GameManager.Instance.PlayClickSound();
+
+        mainMenuPanel.SetActive(false);
+
+        GameManager.Instance.MoveObjectToPoint(mainCamera,new Vector3(1.42f, 2.84f, 12.31f), Quaternion.Euler(36.512f, 192.58f, 0f), "QuestionsContinue");
+    }
+
+    /// <summary>
+    /// Called when "Delete" is pressed. Delete the last saved game.
+    /// </summary>
+    public void OnDeletePressed()
+    {
+        GameManager.Instance.PlayClickSound();
+
+        confirmDeletePanel.SetActive(true);
+        mainMenuPanel.SetActive(false);
+    }
+
+    public void OnCancelDeletePressed()
+    {
+        confirmDeletePanel.SetActive(false);
+        mainMenuPanel.SetActive(true);
+    }
+
+    public void OnConfirmDeletePressed()
+    {
+        GameSaveManager.Instance.DeleteSave();
+
+        continueButton.SetActive(false);
+        playButton.transform.DOLocalMoveY(219f, 0.5f).SetEase(Ease.OutBounce);
+
+        confirmDeletePanel.SetActive(false);
+        mainMenuPanel.SetActive(true);
+    }
+
+    /// <summary>
     /// Called when "Options" is pressed. Moves the camera to the options scene.
     /// </summary>
     public void OnOptionsPressed()
@@ -88,12 +140,7 @@ public class UIMenuManager : MonoBehaviour
         GameManager.Instance.PlayClickSound();
         mainMenuPanel.SetActive(false);
 
-        GameManager.Instance.MoveObjectToPoint(
-            mainCamera,
-            new Vector3(13.97f, 2.21f, -1.25f),
-            Quaternion.Euler(36.151f, -72.055f, 0f),
-            "Options"
-        );
+        GameManager.Instance.MoveObjectToPoint(mainCamera,new Vector3(13.97f, 2.21f, -1.25f),Quaternion.Euler(36.151f, -72.055f, 0f),"Options");
     }
 
     /// <summary>

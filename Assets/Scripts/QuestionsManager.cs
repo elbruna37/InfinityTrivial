@@ -20,7 +20,7 @@ public class QuestionsManager : MonoBehaviour
     /// History of asked questions, keyed by "category_difficulty"
     /// to prevent repetition within a session.
     /// </summary>
-    private readonly Dictionary<string, HashSet<int>> questionHistory = new Dictionary<string, HashSet<int>>();
+    public readonly Dictionary<string, HashSet<int>> questionHistory = new Dictionary<string, HashSet<int>>();
 
     #region Unity Lifecycle
 

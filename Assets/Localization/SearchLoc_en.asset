@@ -34,6 +34,22 @@ MonoBehaviour:
     m_Localized: hard
     m_Metadata:
       m_Items: []
+  - m_Id: 4722376207491072
+    m_Localized: Save&Exit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4722539470774272
+    m_Localized: Continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5085544586928128
+    m_Localized: Are you sure you want to delete the last save?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5087938209112064
+    m_Localized: Pause
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

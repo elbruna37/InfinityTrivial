@@ -182,29 +182,6 @@ public class UISelectorCategorias : MonoBehaviour
         });
     }
 
-    /// <summary>
-    /// Moves the quesito to its base circular position with rotation animation.
-    /// Calls onComplete when animation finishes.
-    /// </summary>
-    private void MoveWedgeToBase(int index, Action onComplete)
-    {
-        GameObject quesito = dropdownColorMaps[index].quesitoModel;
-        if (quesito == null) return;
-
-        Vector3 basePos = _basePositions[index];
-        basePos.y = quesito.transform.position.y;
-        Quaternion baseRot = Quaternion.Euler(270, 0, 120 + (index * 60));
-
-        quesito.transform.DOMove(basePos, 1.5f).SetEase(Ease.InOutQuad);
-        quesito.transform.DORotateQuaternion(baseRot, 1.5f).SetEase(Ease.InOutQuad)
-            .OnComplete(() =>
-            {
-                Vector3 finalPos = new Vector3(basePos.x, 0.18f, basePos.z);
-                quesito.transform.DOMove(finalPos, 1f).SetEase(Ease.InOutQuad)
-                    .OnComplete(() => onComplete?.Invoke());
-            });
-    }
-
     #endregion
 
     #region Dropdown Options
@@ -315,7 +292,7 @@ public class UISelectorCategorias : MonoBehaviour
 
     #endregion
 
-    #region Retroceder Selección
+    #region Undo Selection
 
     public void UndoSelection()
     {
@@ -378,7 +355,7 @@ public class UISelectorCategorias : MonoBehaviour
 
     #endregion
 
-    #region Quesito Animations
+    #region Wedge Animations
 
     /// <summary>
     /// Animates a quesito rising + spinning + dropdown activation.
@@ -419,6 +396,29 @@ public class UISelectorCategorias : MonoBehaviour
                 MoveWedgeToBase(index, null);
             }
         });
+    }
+
+    /// <summary>
+    /// Moves the quesito to its base circular position with rotation animation.
+    /// Calls onComplete when animation finishes.
+    /// </summary>
+    private void MoveWedgeToBase(int index, Action onComplete)
+    {
+        GameObject quesito = dropdownColorMaps[index].quesitoModel;
+        if (quesito == null) return;
+
+        Vector3 basePos = _basePositions[index];
+        basePos.y = quesito.transform.position.y;
+        Quaternion baseRot = Quaternion.Euler(270, 0, 120 + (index * 60));
+
+        quesito.transform.DOMove(basePos, 1.5f).SetEase(Ease.InOutQuad);
+        quesito.transform.DORotateQuaternion(baseRot, 1.5f).SetEase(Ease.InOutQuad)
+            .OnComplete(() =>
+            {
+                Vector3 finalPos = new Vector3(basePos.x, 0.18f, basePos.z);
+                quesito.transform.DOMove(finalPos, 1f).SetEase(Ease.InOutQuad)
+                    .OnComplete(() => onComplete?.Invoke());
+            });
     }
 
     /// <summary>

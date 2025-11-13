@@ -11,6 +11,8 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    public bool IsLoadingGame { get; private set; } = false;
+
     [Header("Screen Settings")]
     private readonly float _targetAspect = 16f / 9f;
     private Camera _mainCamera;
@@ -70,6 +72,14 @@ public class GameManager : MonoBehaviour
             FindMainCamera();
         else
             UpdateAspectRatio();
+    }
+
+    /// <summary>
+    /// Public flag to indicate if it is a new game or a loaded one
+    /// </summary>
+    public void SetLoadingGame(bool value)
+    {
+        IsLoadingGame = value;
     }
 
     /// <summary>

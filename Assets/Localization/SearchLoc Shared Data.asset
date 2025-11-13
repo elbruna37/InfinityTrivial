@@ -31,6 +31,22 @@ MonoBehaviour:
     m_Key: hardLoc
     m_Metadata:
       m_Items: []
+  - m_Id: 4722376207491072
+    m_Key: save_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4722539470774272
+    m_Key: continue_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5085544586928128
+    m_Key: DeleteText
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5087938209112064
+    m_Key: PauseText
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

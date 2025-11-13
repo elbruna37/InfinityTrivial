@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -19,6 +20,7 @@ public class PlayerSpawner : MonoBehaviour
 
     /// <summary>
     /// Spawns all players at the start of the game and registers them in the TurnManager.
+    /// If the game is loaded, activate the flag to move the player prefabs to their saved positions.
     /// </summary>
     void Start()
     {
@@ -29,12 +31,14 @@ public class PlayerSpawner : MonoBehaviour
             SpawnPlayer(i);
         }
 
-        // Activate corresponding UI panels
         for (int i = 0; i < numPlayers; i++)
         {
             if (i < quesitosPanel.Length)
                 quesitosPanel[i].SetActive(true);
         }
+
+        if (GameManager.Instance.IsLoadingGame)
+            StartCoroutine(LoadAfterSpawn());
     }
 
     /// <summary>
@@ -56,6 +60,15 @@ public class PlayerSpawner : MonoBehaviour
             BoardManager.Instance.startNode.OccupyNode(); // increment pieces in node instead of assigning directly
         }
 
-        TurnManager.Instance.RegisterPlayer(piece);
+        TurnManager.Instance.RegisterPlayer(piece, index);
+    }
+
+    private IEnumerator LoadAfterSpawn()
+    {
+        // Esperar un frame para garantizar que todo esté inicializado
+        yield return null;
+
+        GameSaveManager.Instance.LoadGame();
+        GameManager.Instance.SetLoadingGame(false);
     }
 }
