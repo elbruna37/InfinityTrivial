@@ -107,7 +107,7 @@ public class Dice : MonoBehaviour
     {
         if (TurnManager.Instance != null && TurnManager.Instance.canDestroy)
         {
-            Destroy(gameObject, destroyDelay);
+            Destroy(gameObject);
             TurnManager.Instance.canDestroy = false;
         }
     }

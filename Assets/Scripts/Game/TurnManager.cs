@@ -60,6 +60,8 @@ public class TurnManager : MonoBehaviour
     private float blinkSpeed = 2f;
     private Tween blinkTween;
     public GameObject pausePanel;
+    public GameObject loadingPanel;
+    public GameObject[] playerWedgeContainers;
 
     [Header("Camera Reference")]
     [SerializeField] private GameObject mainCamera;
@@ -76,6 +78,13 @@ public class TurnManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        if (GameManager.Instance.IsLoadingGame && GameSaveManager.Instance.LoadedSaveData != null)
+        {
+            currentPlayerIndex = GameSaveManager.Instance.LoadedSaveData.currentPlayerIndex;
+            Debug.Log($"[TurnManager] Restored turn index early: {currentPlayerIndex}");
+
+        }
     }
 
     /// <summary>
@@ -95,7 +104,26 @@ public class TurnManager : MonoBehaviour
 
         gameEnded = false;
 
-        StartTurn();
+        if (GameManager.Instance.IsLoadingGame && GameSaveManager.Instance.LoadedSaveData != null)
+        {
+            var save = GameSaveManager.Instance.LoadedSaveData;
+
+            if (save.wedgesByPlayer != null)
+            {
+                SetWedgesByPlayer(save.wedgesByPlayer);
+                Debug.Log("[TurnManager] Wedges restored.");
+            }
+
+            GameManager.Instance.SetLoadingGame(false);
+
+            loadingPanel.SetActive(false);
+        }
+        else
+        {
+            loadingPanel.SetActive(false);
+        }
+
+            StartTurn();
     }
 
     /// <summary>
@@ -272,6 +300,9 @@ public class TurnManager : MonoBehaviour
         GameManager.Instance.PlayClickSound();
 
         GameSaveManager.Instance.SaveGame();
+ 
+        Destroy(QuestionsManager.Instance.gameObject);
+        Destroy(BoardManager.Instance.gameObject);
 
         GameManager.Instance.MoveObjectToPoint(mainCamera, new UnityEngine.Vector3(0, 8, -10.7f), UnityEngine.Quaternion.Euler(48.968f, 0f, 0f), "Menu");
     }
@@ -364,14 +395,7 @@ public class TurnManager : MonoBehaviour
     /// </summary>
     private void ActivateWedgeForPlayer(int playerIndex, QuesitoColor color)
     {
-        string playerObjectName = $"QuesitoPlayer{playerIndex + 1}";
-        GameObject playerObj = GameObject.Find(playerObjectName);
-
-        if (playerObj == null)
-        {
-            Debug.LogWarning($"Could not find object {playerObjectName}");
-            return;
-        }
+        GameObject playerObj = playerWedgeContainers[playerIndex];
 
         string wedgeName = color switch
         {
@@ -389,13 +413,13 @@ public class TurnManager : MonoBehaviour
         Transform wedge = playerObj.transform.Find(wedgeName);
         if (wedge == null)
         {
-            Debug.LogWarning($"Could not find wedge {wedgeName} inside {playerObjectName}");
+            Debug.LogWarning($"Could not find wedge {wedgeName} inside {playerObj}");
             return;
         }
 
         if (wedge.gameObject.activeSelf)
         {
-            Debug.Log($"Wedge {wedgeName} already active for {playerObjectName}");
+            Debug.Log($"Wedge {wedgeName} already active for {playerObj}");
             return;
         }
 
@@ -485,6 +509,7 @@ public class TurnManager : MonoBehaviour
             int playerIndex = kvp.Key;
             foreach (var color in kvp.Value)
             {
+                Debug.Log($"Activating wedge {color} for player {playerIndex}");
                 ActivateWedgeForPlayer(playerIndex, color);
             }
         }

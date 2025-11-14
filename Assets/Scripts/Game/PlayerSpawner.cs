@@ -69,6 +69,6 @@ public class PlayerSpawner : MonoBehaviour
         yield return null;
 
         GameSaveManager.Instance.LoadGame();
-        GameManager.Instance.SetLoadingGame(false);
+        
     }
 }

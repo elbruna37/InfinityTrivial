@@ -35,7 +35,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 4722376207491072
-    m_Localized: Guardar Y Salir
+    m_Localized: Guardar
     m_Metadata:
       m_Items: []
   - m_Id: 4722539470774272
@@ -48,6 +48,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 5087938209112064
     m_Localized: Pausa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6171297018535936
+    m_Localized: Cargando...
     m_Metadata:
       m_Items: []
   references:

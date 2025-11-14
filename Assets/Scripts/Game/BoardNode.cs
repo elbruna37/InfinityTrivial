@@ -1,5 +1,6 @@
 ﻿using DG.Tweening;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -24,7 +25,9 @@ public class BoardNode : MonoBehaviour
     public NodeColor nodeColor = NodeColor.Ninguno;
     public string nodeID;
 
+    //Avoid applying the same position several times to the same player
     private HashSet<int> appliedPlayerIndices = new HashSet<int>();
+    private bool subscribedToTurnManager = false;
 
     [Header("Highlight")]
     [Tooltip("Renderer used for highlighting this node.")]
@@ -76,14 +79,71 @@ public class BoardNode : MonoBehaviour
     private void OnEnable()
     {
         // Subscribe to player registration to handle late-registered players
-        if (TurnManager.Instance != null)
-            TurnManager.Instance.OnPlayerRegistered += OnPlayerRegistered;
+        TrySubscribeToTurnManager();
     }
 
     private void OnDisable()
     {
+        UnsubscribeFromTurnManager();
+    }
+
+    private void Start()
+    {
+        // Try again to see if the players are already registered now
+        TryApplySavedPositionForExistingPlayers();
+    }
+
+    private void TrySubscribeToTurnManager()
+    {
+        if (subscribedToTurnManager) return;
+
         if (TurnManager.Instance != null)
+        {
+            TurnManager.Instance.OnPlayerRegistered += OnPlayerRegistered;
+            subscribedToTurnManager = true;
+            Debug.Log($"[BoardNode:{nodeID}] Subscribed to OnPlayerRegistered.");
+        }
+        else
+        {
+            // If TurnManager does not already exist, start a coroutine to wait for it to exist
+            StartCoroutine(WaitAndSubscribe());
+        }
+    }
+
+    private IEnumerator WaitAndSubscribe()
+    {
+        // Wait until TurnManager.Instance exists (timeout to avoid infinite waits)
+        float timeout = 5f;
+        float timer = 0f;
+
+        while (TurnManager.Instance == null && timer < timeout)
+        {
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        if (TurnManager.Instance != null)
+        {
+            TurnManager.Instance.OnPlayerRegistered += OnPlayerRegistered;
+            subscribedToTurnManager = true;
+            Debug.Log($"[BoardNode:{nodeID}] Subscribed to OnPlayerRegistered after waiting.");
+            // After subscribing, try to apply already registered positions
+            TryApplySavedPositionForExistingPlayers();
+        }
+        else
+        {
+            Debug.LogWarning($"[BoardNode:{nodeID}] Timed out waiting for TurnManager to subscribe.");
+        }
+    }
+
+    private void UnsubscribeFromTurnManager()
+    {
+        if (subscribedToTurnManager && TurnManager.Instance != null)
+        {
             TurnManager.Instance.OnPlayerRegistered -= OnPlayerRegistered;
+            subscribedToTurnManager = false;
+            Debug.Log($"[BoardNode:{nodeID}] Unsubscribed from OnPlayerRegistered.");
+        }
     }
 
     private void TryApplySavedPositionForExistingPlayers()
@@ -91,31 +151,29 @@ public class BoardNode : MonoBehaviour
         var save = GameSaveManager.Instance?.LoadedSaveData;
         if (save == null || save.playerPositions == null) return;
 
-        // Recorremos los pares playerIndex -> nodeID y aplicamos si coinciden con este nodeID
         foreach (var kvp in save.playerPositions)
         {
             int playerIndex = kvp.Key;
             string savedNodeID = kvp.Value;
-            if (string.Equals(savedNodeID, nodeID, StringComparison.Ordinal))
+
+            if (!string.Equals(savedNodeID, nodeID, StringComparison.Ordinal)) continue;
+
+            if (TurnManager.Instance != null && TurnManager.Instance.TryGetPlayer(playerIndex, out var piece) && piece != null)
             {
-                // Si ese player ya está registrado, lo movemos
-                if (TurnManager.Instance.TryGetPlayer(playerIndex, out var piece) && piece != null)
+                if (!appliedPlayerIndices.Contains(playerIndex))
                 {
-                    if (!appliedPlayerIndices.Contains(playerIndex))
-                    {
-                        piece.MoveToNodeInstant(this);
-                        appliedPlayerIndices.Add(playerIndex);
-                        Debug.Log($"[BoardNode] Applied saved position for player {playerIndex} to node {nodeID}");
-                    }
+                    piece.MoveToNodeInstant(this);
+                    appliedPlayerIndices.Add(playerIndex);
+                    Debug.Log($"[BoardNode:{nodeID}] Applied saved position for player {playerIndex} -> node {nodeID}");
                 }
-                // si no está registrado, esperar al evento OnPlayerRegistered
             }
         }
     }
 
-    // Handler del evento cuando un player se registra más tarde
+    // Handler of the event when a player registers later
     private void OnPlayerRegistered(int playerIndex, PlayerPiece piece)
     {
+        // When a player registers, check if this node matches the saved one
         var save = GameSaveManager.Instance?.LoadedSaveData;
         if (save == null || save.playerPositions == null) return;
 
@@ -125,9 +183,15 @@ public class BoardNode : MonoBehaviour
             {
                 if (!appliedPlayerIndices.Contains(playerIndex))
                 {
+                    if (piece == null)
+                    {
+                        Debug.LogWarning($"[BoardNode:{nodeID}] OnPlayerRegistered got null piece for player {playerIndex}");
+                        return;
+                    }
+
                     piece.MoveToNodeInstant(this);
                     appliedPlayerIndices.Add(playerIndex);
-                    Debug.Log($"[BoardNode] Late-applied saved position for player {playerIndex} to node {nodeID}");
+                    Debug.Log($"[BoardNode:{nodeID}] Late-applied saved position for player {playerIndex} -> node {nodeID}");
                 }
             }
         }

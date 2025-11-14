@@ -126,21 +126,24 @@ public class GameSaveManager : MonoBehaviour
 
         try
         {
+
             string json = File.ReadAllText(saveFilePath);
             LoadedSaveData = JsonConvert.DeserializeObject<GameSaveData>(json);
 
+            // Only log positions here — they will be applied later
             if (LoadedSaveData == null)
             {
                 Debug.LogWarning("⚠Failed to parse save file (LoadedSaveData is null).");
                 return;
             }
 
-            // --- TURN DATA (just stored, not applied yet) ---
-            // Positions and wedges will be applied by TurnManager & BoardNode when ready.
+            
             if (LoadedSaveData.playerPositions != null)
                 Debug.Log($"Loaded {LoadedSaveData.playerPositions.Count} player positions from save file.");
 
             Debug.Log($"Game data successfully loaded into memory from: {saveFilePath}");
+
+            
         }
         catch (System.Exception ex)
         {

@@ -47,6 +47,10 @@ MonoBehaviour:
     m_Key: PauseText
     m_Metadata:
       m_Items: []
+  - m_Id: 6171297018535936
+    m_Key: LoadText
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
