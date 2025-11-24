@@ -62,8 +62,26 @@ public class LoadManager : MonoBehaviour
 
         GameSaveManager.Instance.LoadCategories();
 
+        SetTextsWithLoadCategories();
+
+        FadeInWedgeTexts();
     }
 
+    void SetTextsWithLoadCategories()
+    {
+        if (wedgeTexts == null || wedgeTexts.Length < 6)
+        {
+            Debug.LogError("categoryTexts must contain exactly 6 TMP_Text elements.");
+            return;
+        }
+
+        wedgeTexts[0].text = GameManager.Instance.GetCategoryForColor(QuesitoColor.Naranja);
+        wedgeTexts[1].text = GameManager.Instance.GetCategoryForColor(QuesitoColor.Morado);
+        wedgeTexts[2].text = GameManager.Instance.GetCategoryForColor(QuesitoColor.Amarillo);
+        wedgeTexts[3].text = GameManager.Instance.GetCategoryForColor(QuesitoColor.Verde);
+        wedgeTexts[4].text = GameManager.Instance.GetCategoryForColor(QuesitoColor.Azul);
+        wedgeTexts[5].text = GameManager.Instance.GetCategoryForColor(QuesitoColor.Rosa);
+    }
 
     #region Confirm / Back Buttons
 
@@ -116,9 +134,9 @@ public class LoadManager : MonoBehaviour
     {
         GameManager.Instance.PlayClickSound();
 
-        ReturnAllWedgesToOriginalPositions();
-
         confirmButtons.SetActive(false);
+
+        FadeOutWedgeTexts();
 
         GameManager.Instance.MoveObjectToPoint(cameraObject, new Vector3(0, 8, -10.7f), Quaternion.Euler(48.968f, 0f, 0f), "Menu");
   
@@ -200,68 +218,22 @@ public class LoadManager : MonoBehaviour
         return allSeq;
     }
 
-    /// <summary>
-    /// Returns a quesito to its original position and rotation with a smooth parabolic motion.
-    /// </summary>
-    public Tween ReturnAllWedgesToOriginalPositions()
+    void FadeOutWedgeTexts()
     {
-
-        Sequence fullSeq = DOTween.Sequence();
-        float duration = 1f;
-        Ease moveEase = Ease.InOutQuad;
-
-        for (int i = 0; i < wedges.Length; i++)
+        for (int i = 0; i < wedgeTexts.Length; i++)
         {
-            GameObject wedge = wedges[i];
-            if (wedge == null) continue;
-
-            Vector3 currentPos = wedge.transform.position;
-            Quaternion currentRot = wedge.transform.rotation;
-
-            Vector3 basePos = _basePositions[i];
-            Vector3 targetPos = _originalWedgePositions[i];
-            Quaternion targetRot = _originalWedgeRotations[i];
-
-            Tween wedgeTween;
-
-            // Si el wedge está lejos, simplemente lo mueve directo
-            if (Vector3.Distance(currentPos, basePos) > 0.3f)
-            {
-                Sequence seq = DOTween.Sequence();
-                seq.Join(wedge.transform.DOMove(targetPos, duration).SetEase(moveEase));
-                seq.Join(wedge.transform.DORotateQuaternion(targetRot, duration).SetEase(moveEase));
-                wedgeTween = seq;
-            }
-            else
-            {
-                // Movimiento parabólico + rotación
-                Sequence parabolicSeq = DOTween.Sequence();
-                Vector3 liftPos = currentPos + Vector3.up * 1.5f;
-                parabolicSeq.Append(wedge.transform.DOMove(liftPos, 0.35f).SetEase(Ease.OutQuad));
-
-                float arcHeight = Mathf.Max(2f, Vector3.Distance(currentPos, targetPos) * 0.1f);
-                Vector3 midPoint = Vector3.Lerp(liftPos, targetPos, 0.5f);
-                midPoint.y += arcHeight;
-
-                float jumpDuration = 1.0f;
-
-                parabolicSeq.Append(wedge.transform.DOPath(
-                    new Vector3[] { liftPos, midPoint, targetPos },
-                    jumpDuration,
-                    PathType.CatmullRom
-                ).SetEase(Ease.InOutSine));
-
-                parabolicSeq.Join(wedge.transform.DORotateQuaternion(targetRot, jumpDuration + 0.3f)
-                                             .SetEase(Ease.InOutSine));
-
-                wedgeTween = parabolicSeq;
-            }
-
-            // Añadimos cada tween al Sequence principal para que se ejecuten a la vez
-            fullSeq.Join(wedgeTween);
+            TMP_Text text = wedgeTexts[i];
+            text.DOFade(0f, 0.3f).SetEase(Ease.OutQuad);
         }
+    }
 
-        return fullSeq;
+    void FadeInWedgeTexts()
+    {
+        for (int i = 0; i < wedgeTexts.Length; i++)
+        {
+            TMP_Text text = wedgeTexts[i];
+            text.DOFade(1f, 0.3f).SetEase(Ease.OutQuad);
+        }
     }
 
     #endregion

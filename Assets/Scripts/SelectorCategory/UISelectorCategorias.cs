@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using DG.Tweening;
 using UnityEngine.Localization;
-using UnityEngine.Localization.Settings;
+
 
 /// <summary>
 /// Maps a QuesitoColor to its Dropdown and 3D model in the scene.

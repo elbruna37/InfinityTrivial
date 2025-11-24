@@ -367,7 +367,7 @@ public class BoardManager : MonoBehaviour
 
     // ----------------- Reubicación -----------------
 
-    private void ReubicarPiezasEnNodo(BoardNode nodo, PlayerPiece incomingPiece = null)
+    public void ReubicarPiezasEnNodo(BoardNode nodo, PlayerPiece incomingPiece = null)
     {
         if (nodo == null || nodo.actualPieces == null) return;
 

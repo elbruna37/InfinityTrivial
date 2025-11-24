@@ -164,6 +164,7 @@ public class BoardNode : MonoBehaviour
                 {
                     piece.MoveToNodeInstant(this);
                     appliedPlayerIndices.Add(playerIndex);
+                    BoardManager.Instance.ReubicarPiezasEnNodo(this, piece);
                     Debug.Log($"[BoardNode:{nodeID}] Applied saved position for player {playerIndex} -> node {nodeID}");
                 }
             }
@@ -191,6 +192,7 @@ public class BoardNode : MonoBehaviour
 
                     piece.MoveToNodeInstant(this);
                     appliedPlayerIndices.Add(playerIndex);
+                    BoardManager.Instance.ReubicarPiezasEnNodo(this, piece);
                     Debug.Log($"[BoardNode:{nodeID}] Late-applied saved position for player {playerIndex} -> node {nodeID}");
                 }
             }

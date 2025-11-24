@@ -176,7 +176,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Geografia
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a9c87c3101c400a4999bdf40fbfa0d71, type: 2}
   m_sharedMaterial: {fileID: 8972873560891146401, guid: a9c87c3101c400a4999bdf40fbfa0d71, type: 2}
@@ -186,7 +186,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4291531340
-  m_fontColor: {r: 0.29803923, g: 0.57254905, b: 0.7960785, a: 1}
+  m_fontColor: {r: 0.29803923, g: 0.57254905, b: 0.7960785, a: 0}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -281,7 +281,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 36735198}
   m_LocalRotation: {x: -0.57296747, y: 0.053297345, z: -0.075748645, w: 0.8143279}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 22}
   m_LocalScale: {x: 0.41101998, y: 0.41101998, z: 0.41101998}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -289,7 +289,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -98.1, y: -139.2}
+  m_AnchoredPosition: {x: -98.1, y: -139}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &36735200
@@ -312,7 +312,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Deportes Y Pasatiempos
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a9c87c3101c400a4999bdf40fbfa0d71, type: 2}
   m_sharedMaterial: {fileID: 8972873560891146401, guid: a9c87c3101c400a4999bdf40fbfa0d71, type: 2}
@@ -321,8 +321,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4290536079
-  m_fontColor: {r: 0.56078434, g: 0.38431376, b: 0.7372549, a: 1}
+    rgba: 12345999
+  m_fontColor: {r: 0.56078434, g: 0.38431376, b: 0.7372549, a: 0}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -461,7 +461,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 108622361}
   m_LocalRotation: {x: -0.57296747, y: 0.053297345, z: -0.075748645, w: 0.8143279}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 7}
   m_LocalScale: {x: 0.41101998, y: 0.41101998, z: 0.41101998}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -469,7 +469,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -213, y: -137}
+  m_AnchoredPosition: {x: -222, y: -137}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &108622363
@@ -492,7 +492,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Artes Y Literatura
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a9c87c3101c400a4999bdf40fbfa0d71, type: 2}
   m_sharedMaterial: {fileID: 8972873560891146401, guid: a9c87c3101c400a4999bdf40fbfa0d71, type: 2}
@@ -502,7 +502,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4284724102
-  m_fontColor: {r: 0.5254902, g: 0.7019608, b: 0.38823533, a: 1}
+  m_fontColor: {r: 0.5254902, g: 0.7019608, b: 0.38823533, a: 0}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1558,7 +1558,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Ciencia Y Naturaleza
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a9c87c3101c400a4999bdf40fbfa0d71, type: 2}
   m_sharedMaterial: {fileID: 8972873560891146401, guid: a9c87c3101c400a4999bdf40fbfa0d71, type: 2}
@@ -1567,8 +1567,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4286662629
-  m_fontColor: {r: 0.8980393, g: 0.2784314, b: 0.5058824, a: 1}
+    rgba: 8472549
+  m_fontColor: {r: 0.8980393, g: 0.2784314, b: 0.5058824, a: 0}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2224,7 +2224,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -12.8, y: -32}
+  m_AnchoredPosition: {x: -17, y: -32}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &745576427
@@ -2247,7 +2247,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Historia
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a9c87c3101c400a4999bdf40fbfa0d71, type: 2}
   m_sharedMaterial: {fileID: 8972873560891146401, guid: a9c87c3101c400a4999bdf40fbfa0d71, type: 2}
@@ -2256,8 +2256,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4281432006
-  m_fontColor: {r: 0.77647066, g: 0.4666667, b: 0.19215688, a: 1}
+    rgba: 3241926
+  m_fontColor: {r: 0.77647066, g: 0.4666667, b: 0.19215688, a: 0}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -4051,7 +4051,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1610529709}
   m_LocalRotation: {x: -0.57296747, y: 0.053297345, z: -0.075748645, w: 0.8143279}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalPosition: {x: 0, y: 0, z: 6}
   m_LocalScale: {x: 0.41101998, y: 0.41101998, z: 0.41101998}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4082,7 +4082,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Entretenimiento
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a9c87c3101c400a4999bdf40fbfa0d71, type: 2}
   m_sharedMaterial: {fileID: 8972873560891146401, guid: a9c87c3101c400a4999bdf40fbfa0d71, type: 2}
@@ -4091,8 +4091,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4282889947
-  m_fontColor: {r: 0.8588236, g: 0.7137255, b: 0.2784314, a: 1}
+    rgba: 4699867
+  m_fontColor: {r: 0.8588236, g: 0.7137255, b: 0.2784314, a: 0}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

@@ -224,13 +224,16 @@ public class GameManager : MonoBehaviour
 
         float volume = PlayerPrefs.GetFloat("volume", 1f);
         AudioListener.volume = volume;
-        
+
         int resIndex = PlayerPrefs.GetInt("resolution", 0);
-        if (Screen.resolutions.Length > resIndex)
-        {
-            Resolution res = Screen.resolutions[resIndex];
-            Screen.SetResolution(res.width, res.height, FullScreenMode.FullScreenWindow);
-        }
+
+        int[,] resolutions = new int[,]
+        {{1920, 1080},{1600, 900},{1366, 768},{1280, 720}};
+
+        int width = resolutions[resIndex, 0];
+        int height = resolutions[resIndex, 1];
+
+        Screen.SetResolution(width, height, FullScreenMode.FullScreenWindow);
 
 
         bool vibration = PlayerPrefs.GetInt("vibration", 1) == 1;
@@ -328,6 +331,46 @@ public class GameManager : MonoBehaviour
                 SceneManager.LoadScene(targetScene);
             });
         });
+    }
+
+    public void AnimateCameraAfterSceneLoad(GameObject camera, Vector3 targetPosition, Quaternion targetRotation, string targetScene)
+    {
+        const float moveDuration = 1.5f; 
+        const float parabolaHeight = 3f;
+        
+        Vector3 cameraPos = camera.transform.position; 
+        Quaternion cameraRot = camera.transform.rotation; 
+        
+        SceneManager.LoadScene(targetScene); 
+        SceneManager.sceneLoaded += OnSceneLoaded; 
+        
+        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (scene.name != targetScene) return; 
+            SceneManager.sceneLoaded -= OnSceneLoaded; 
+            // 1. Buscar MainCamera en la nueva escena
+            GameObject cameraObj = Camera.main.gameObject; 
+            if (cameraObj == null) 
+            { 
+                Debug.LogError("No Main Camera found in the loaded scene!"); 
+                return; 
+            } 
+            
+            cameraObj.transform.position = cameraPos; 
+            cameraObj.transform.rotation = cameraRot;
+
+            // 2. Animar con DOTween sin errores
+            Vector3 startPosition = cameraObj.transform.position; 
+            Quaternion startRotation = cameraObj.transform.rotation; 
+            Sequence seq = DOTween.Sequence(); 
+            seq.Append( DOVirtual.Float(0f, 1f, moveDuration, t => 
+            { 
+                Vector3 linear = Vector3.Lerp(startPosition, targetPosition, t); 
+                float parabola = 4f * parabolaHeight * t * (1f - t); linear.y += parabola; 
+                cameraObj.transform.position = linear; 
+                cameraObj.transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t); 
+            }) .SetEase(Ease.InOutQuad) ); 
+        } 
     }
 
     /// <summary>

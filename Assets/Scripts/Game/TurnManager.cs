@@ -118,12 +118,10 @@ public class TurnManager : MonoBehaviour
 
             loadingPanel.SetActive(false);
         }
-        else
-        {
-            loadingPanel.SetActive(false);
-        }
+        
+        loadingPanel.SetActive(false);
 
-            StartTurn();
+        StartTurn();
     }
 
     /// <summary>
@@ -304,7 +302,7 @@ public class TurnManager : MonoBehaviour
         Destroy(QuestionsManager.Instance.gameObject);
         Destroy(BoardManager.Instance.gameObject);
 
-        GameManager.Instance.MoveObjectToPoint(mainCamera, new UnityEngine.Vector3(0, 8, -10.7f), UnityEngine.Quaternion.Euler(48.968f, 0f, 0f), "Menu");
+        GameManager.Instance.AnimateCameraAfterSceneLoad(mainCamera, new Vector3(0, 8, -10.7f), Quaternion.Euler(48.968f, 0f, 0f), "Menu");
     }
 
     public void OnContinuePressed()
@@ -522,7 +520,7 @@ public class TurnManager : MonoBehaviour
         for (int i = 0; i < playerPieces.Count; i++)
         {
             if (playerPieces[i].currentNode != null)
-                positions[i] = playerPieces[i].currentNode.nodeID; // o .name si no hay nodeID
+                positions[i] = playerPieces[i].currentNode.nodeID; 
         }
 
         return positions;
