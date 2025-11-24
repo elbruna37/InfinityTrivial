@@ -68,135 +68,151 @@ public class BoardNode : MonoBehaviour
     private void Awake()
     {
         InitializeHighlight();
+    }
 
-        TryApplySavedPositionForExistingPlayers();
+    /// <summary>
+    /// Attempts to apply saved player positions after startup.
+    /// Useful if TurnManager already exists when the scene loads.
+    /// </summary>
+    private void Start()
+    {
+        TryApplySavedPositions();          
+    }
+
+    /// <summary>
+    /// Attempts to subscribe to the TurnManager event when this component becomes enabled.
+    /// </summary>
+    private void OnEnable()
+    {
+        TrySubscribeToTurnManager();      
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeFromTurnManager();    
     }
 
     private void OnMouseDown()
     {
         BoardManager.Instance.NotifyNodeClicked(this);
     }
-    private void OnEnable()
-    {
-        // Subscribe to player registration to handle late-registered players
-        TrySubscribeToTurnManager();
-    }
+    #endregion
 
-    private void OnDisable()
-    {
-        UnsubscribeFromTurnManager();
-    }
+    #region Subscribe Methods
 
-    private void Start()
-    {
-        // Try again to see if the players are already registered now
-        TryApplySavedPositionForExistingPlayers();
-    }
-
+    /// <summary>
+    /// Attempts to register for TurnManager events.
+    /// If TurnManager is not yet available, starts a coroutine to wait for it.
+    /// </summary>
     private void TrySubscribeToTurnManager()
     {
         if (subscribedToTurnManager) return;
 
         if (TurnManager.Instance != null)
-        {
-            TurnManager.Instance.OnPlayerRegistered += OnPlayerRegistered;
-            subscribedToTurnManager = true;
-            Debug.Log($"[BoardNode:{nodeID}] Subscribed to OnPlayerRegistered.");
-        }
+            Subscribe();
         else
-        {
-            // If TurnManager does not already exist, start a coroutine to wait for it to exist
-            StartCoroutine(WaitAndSubscribe());
-        }
+            StartCoroutine(WaitForTurnManagerAndSubscribe());
     }
 
-    private IEnumerator WaitAndSubscribe()
+    private IEnumerator WaitForTurnManagerAndSubscribe()
     {
-        // Wait until TurnManager.Instance exists (timeout to avoid infinite waits)
-        float timeout = 5f;
-        float timer = 0f;
+        const float timeout = 5f;
+        float elapsed = 0f;
 
-        while (TurnManager.Instance == null && timer < timeout)
+        while (TurnManager.Instance == null && elapsed < timeout)
         {
-            timer += Time.deltaTime;
+            elapsed += Time.deltaTime;
             yield return null;
         }
 
         if (TurnManager.Instance != null)
         {
-            TurnManager.Instance.OnPlayerRegistered += OnPlayerRegistered;
-            subscribedToTurnManager = true;
-            Debug.Log($"[BoardNode:{nodeID}] Subscribed to OnPlayerRegistered after waiting.");
-            // After subscribing, try to apply already registered positions
-            TryApplySavedPositionForExistingPlayers();
+            Subscribe();
+            TryApplySavedPositions();      
         }
         else
         {
-            Debug.LogWarning($"[BoardNode:{nodeID}] Timed out waiting for TurnManager to subscribe.");
+            Debug.LogWarning($"[BoardNode:{nodeID}] Timeout waiting for TurnManager.");
         }
+    }
+
+    private void Subscribe()
+    {
+        TurnManager.Instance.OnPlayerRegistered += OnPlayerRegistered;
+        subscribedToTurnManager = true;
+        Debug.Log($"[BoardNode:{nodeID}] Subscribed to OnPlayerRegistered.");
     }
 
     private void UnsubscribeFromTurnManager()
     {
-        if (subscribedToTurnManager && TurnManager.Instance != null)
-        {
-            TurnManager.Instance.OnPlayerRegistered -= OnPlayerRegistered;
-            subscribedToTurnManager = false;
-            Debug.Log($"[BoardNode:{nodeID}] Unsubscribed from OnPlayerRegistered.");
-        }
+        if (!subscribedToTurnManager || TurnManager.Instance == null) return;
+
+        TurnManager.Instance.OnPlayerRegistered -= OnPlayerRegistered;
+        subscribedToTurnManager = false;
+
+        Debug.Log($"[BoardNode:{nodeID}] Unsubscribed from OnPlayerRegistered.");
     }
 
-    private void TryApplySavedPositionForExistingPlayers()
+    /// <summary>
+    /// Attempts to apply all saved player positions that correspond to this node.
+    /// Only applies positions if the TurnManager and player pieces exist.
+    /// </summary>
+    private void TryApplySavedPositions()
     {
         var save = GameSaveManager.Instance?.LoadedSaveData;
-        if (save == null || save.playerPositions == null) return;
+        if (save?.playerPositions == null) return;
 
-        foreach (var kvp in save.playerPositions)
+        foreach (var (playerIndex, savedNodeID) in save.playerPositions)
         {
-            int playerIndex = kvp.Key;
-            string savedNodeID = kvp.Value;
+            if (!IsMySavedNode(savedNodeID)) continue;
 
-            if (!string.Equals(savedNodeID, nodeID, StringComparison.Ordinal)) continue;
-
-            if (TurnManager.Instance != null && TurnManager.Instance.TryGetPlayer(playerIndex, out var piece) && piece != null)
+            if (TurnManager.Instance != null &&
+                TurnManager.Instance.TryGetPlayer(playerIndex, out var piece))
             {
-                if (!appliedPlayerIndices.Contains(playerIndex))
-                {
-                    piece.MoveToNodeInstant(this);
-                    appliedPlayerIndices.Add(playerIndex);
-                    BoardManager.Instance.ReubicarPiezasEnNodo(this, piece);
-                    Debug.Log($"[BoardNode:{nodeID}] Applied saved position for player {playerIndex} -> node {nodeID}");
-                }
+                ApplySavedPosition(playerIndex, piece);
             }
         }
     }
 
-    // Handler of the event when a player registers later
+
+    /// <summary>
+    /// Checks if the saved node ID matches this board node.
+    /// </summary>
+    /// <param name="savedNodeID">The node ID stored in the save file.</param>
+    /// <returns>True if it matches this node's ID, otherwise false.</returns>
+    private bool IsMySavedNode(string savedNodeID) =>
+    string.Equals(savedNodeID, nodeID, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Instantly moves the player piece to this node and records that this save
+    /// position has already been applied.
+    /// </summary>
+    private void ApplySavedPosition(int playerIndex, PlayerPiece piece)
+    {
+        if (piece == null || appliedPlayerIndices.Contains(playerIndex)) return;
+
+        piece.MoveToNodeInstant(this);
+        appliedPlayerIndices.Add(playerIndex);
+        BoardManager.Instance.ReubicarPiezasEnNodo(this, piece);
+
+        Debug.Log($"[BoardNode:{nodeID}] Applied saved position for player {playerIndex}");
+    }
+
+    /// <summary>
+    /// Handles late player registrations by applying saved position
+    /// if this node matches the player's saved node.
+    /// </summary>
+    /// <param name="playerIndex">The index of the registered player.</param>
+    /// <param name="piece">The player's piece instance.</param>
     private void OnPlayerRegistered(int playerIndex, PlayerPiece piece)
     {
-        // When a player registers, check if this node matches the saved one
         var save = GameSaveManager.Instance?.LoadedSaveData;
-        if (save == null || save.playerPositions == null) return;
+        if (save?.playerPositions == null) return;
 
-        if (save.playerPositions.TryGetValue(playerIndex, out var savedNodeID))
-        {
-            if (string.Equals(savedNodeID, nodeID, StringComparison.Ordinal))
-            {
-                if (!appliedPlayerIndices.Contains(playerIndex))
-                {
-                    if (piece == null)
-                    {
-                        Debug.LogWarning($"[BoardNode:{nodeID}] OnPlayerRegistered got null piece for player {playerIndex}");
-                        return;
-                    }
+        if (!save.playerPositions.TryGetValue(playerIndex, out var savedNodeID)) return;
+        if (!IsMySavedNode(savedNodeID)) return;
 
-                    piece.MoveToNodeInstant(this);
-                    appliedPlayerIndices.Add(playerIndex);
-                    BoardManager.Instance.ReubicarPiezasEnNodo(this, piece);
-                    Debug.Log($"[BoardNode:{nodeID}] Late-applied saved position for player {playerIndex} -> node {nodeID}");
-                }
-            }
-        }
+        ApplySavedPosition(playerIndex, piece);
     }
 
     #endregion

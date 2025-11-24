@@ -10,13 +10,12 @@ public class CategoryCircularSelector : MonoBehaviour
     public Button upButton;
     public Button downButton;
 
-    [Header("Color asignado a este selector")]
+    [Header("Color assigned to this selector")]
     public QuesitoColor color;
 
     private List<string> categories;
     private int index;
 
-    // Categorías tomadas por todos los selectores
     public static HashSet<string> categoriesSelected = new HashSet<string>();
 
     private string actualCategory => categories[index];
@@ -25,11 +24,11 @@ public class CategoryCircularSelector : MonoBehaviour
     {
         categories = QuestionsManager.Instance.availableCategories;
 
-        // Buscar una categoría libre para empezar
         index = FindFirstFreeIndex();
 
         categoriesSelected.Add(actualCategory);
         UpdateLabel();
+        GameManager.Instance.SetCategoryForColor(color, actualCategory);
 
         upButton.onClick.AddListener(() => ChangeCategory(+1));
         downButton.onClick.AddListener(() => ChangeCategory(-1));
@@ -41,13 +40,12 @@ public class CategoryCircularSelector : MonoBehaviour
             if (!categoriesSelected.Contains(categories[i]))
                 return i;
 
-        Debug.LogError("No hay categorías libres para asignar.");
+        Debug.LogError("There are no free categories to assign.");
         return 0;
     }
 
     private void ChangeCategory(int dir)
     {
-        // Liberar categoría previa
         categoriesSelected.Remove(actualCategory);
 
         int startIndex = index;
@@ -56,13 +54,11 @@ public class CategoryCircularSelector : MonoBehaviour
         {
             index = (index + dir + categories.Count) % categories.Count;
 
-            // Si damos la vuelta y todo está ocupado
             if (index == startIndex)
                 break;
 
         } while (categoriesSelected.Contains(categories[index]));
 
-        // Seleccionar nueva
         categoriesSelected.Add(actualCategory);
 
         UpdateLabel();

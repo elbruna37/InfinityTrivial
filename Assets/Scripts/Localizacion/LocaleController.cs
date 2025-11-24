@@ -12,7 +12,6 @@ public class LocaleController : MonoBehaviour
 
     private void Awake()
     {
-        // Patrón Singleton básico
         if (Instance == null)
         {
             Instance = this;
@@ -48,13 +47,13 @@ public class LocaleController : MonoBehaviour
         if (locale != null)
         {
             LocalizationSettings.SelectedLocale = locale;
-            Debug.Log("Locale cambiado a: " + locale.LocaleName + " (" + locale.Identifier.Code + ")");
+            Debug.Log("Locale change to: " + locale.LocaleName + " (" + locale.Identifier.Code + ")");
 
             OnLanguageChanged?.Invoke();
         }
         else
         {
-            Debug.LogWarning("Locale no encontrado para: " + code);
+            Debug.LogWarning("Locale not found for: " + code);
         }
     }
 }

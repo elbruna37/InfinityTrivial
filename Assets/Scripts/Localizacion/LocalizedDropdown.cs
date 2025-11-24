@@ -47,7 +47,7 @@ public class LocalizedDropdown : MonoBehaviour
 
         if (tableOp.Result == null)
         {
-            Debug.LogWarning("Tabla de localización no encontrada: " + stringTable.TableReference);
+            Debug.LogWarning("Location table not found: " + stringTable.TableReference);
             yield break;
         }
 

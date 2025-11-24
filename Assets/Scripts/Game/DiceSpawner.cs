@@ -125,7 +125,7 @@ public class DiceSpawner : MonoBehaviour
 
         if (dice != null) Destroy(dice);
 
-        Debug.LogWarning("⚠️ Dice timeout reached. Retrying...");
+        Debug.LogWarning("Dice timeout reached. Retrying...");
         SpawnAndThrowDice(onResult);
     }
 

@@ -103,7 +103,7 @@ public class QuestionsManager : MonoBehaviour
         TextAsset jsonFile = Resources.Load<TextAsset>(path);
         if (jsonFile == null)
         {
-            Debug.LogError($"❌ Could not find {path}.json in Resources.");
+            Debug.LogError($"Could not find {path}.json in Resources.");
             return;
         }
 
@@ -116,7 +116,7 @@ public class QuestionsManager : MonoBehaviour
             .Distinct()
             .ToList();
 
-        Debug.Log($"✅ Loaded {allQuestions.Length} questions across {availableCategories.Count} categories.");
+        Debug.Log($"Loaded {allQuestions.Length} questions across {availableCategories.Count} categories.");
     }
 
     /// <summary>
@@ -142,7 +142,7 @@ public class QuestionsManager : MonoBehaviour
         // If all used, reset history for this group
         if (available.Count == 0)
         {
-            Debug.Log($"⚠️ Exhausted questions for {key}. Resetting its history.");
+            Debug.Log($"Exhausted questions for {key}. Resetting its history.");
             questionHistory[key].Clear();
             available = filtered;
         }

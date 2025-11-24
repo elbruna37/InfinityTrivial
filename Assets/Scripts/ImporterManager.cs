@@ -223,7 +223,7 @@ public class ImporterManager : MonoBehaviour
         string rawJson = jsonInput.text.Trim();
         if (string.IsNullOrEmpty(rawJson))
         {
-            Debug.LogWarning("⚠️ No se ha pegado ningún JSON");
+            Debug.LogWarning("No se ha pegado ningún JSON");
             return;
         }
 
@@ -236,7 +236,7 @@ public class ImporterManager : MonoBehaviour
         QuestionArrayWrapper newQuestionsWrapper = JsonUtility.FromJson<QuestionArrayWrapper>(rawJson);
         if (newQuestionsWrapper?.preguntas == null)
         {
-            Debug.LogError("⚠️ El JSON pegado no es válido o no tiene preguntas");
+            Debug.LogError("El JSON pegado no es válido o no tiene preguntas");
             return;
         }
 
@@ -244,7 +244,7 @@ public class ImporterManager : MonoBehaviour
         existingBatch.questions = questionsList.ToArray();
 
         File.WriteAllText(questionsFilePath, JsonUtility.ToJson(existingBatch, true));
-        Debug.Log($"📘 Total de preguntas ahora: {existingBatch.questions.Length}");
+        Debug.Log($"Total de preguntas ahora: {existingBatch.questions.Length}");
 
         jsonInput.text = "";
 
