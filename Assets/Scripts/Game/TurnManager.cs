@@ -2,12 +2,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.SmartFormat.PersistentVariables;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 
 /// <summary>
@@ -65,6 +67,14 @@ public class TurnManager : MonoBehaviour
 
     [Header("Camera Reference")]
     [SerializeField] private GameObject mainCamera;
+
+    [Header("Steal Duel Logic")]
+    private bool isDuelActive = false;
+    private int duelAttacker;
+    private int duelDefender;
+    private int duelCurrent;
+    private QuesitoColor duelColor;
+    string category;
 
     private string[] teamNames;
     private readonly string[] teamColors = { "green", "blue", "red", "yellow" };
@@ -278,8 +288,7 @@ public class TurnManager : MonoBehaviour
                 break;
 
             case BoardNode.NodeType.Start:
-                canDestroy = true;
-                NextTurn();
+                HandleStartNode(landedNode);
                 break;
         }
     }
@@ -334,7 +343,7 @@ public class TurnManager : MonoBehaviour
     /// </summary>
     private void HandleNormalNode(BoardNode node)
     {
-        Debug.Log("Normal node → fetching question...");
+        Debug.Log("Normal node, fetching question...");
         string category = GameManager.Instance.GetCategoryForColor(ConvertNodeColor(node.nodeColor));
 
         QuestionsManager.Instance.AskRandomQuestion(category, correct =>
@@ -356,7 +365,7 @@ public class TurnManager : MonoBehaviour
     /// </summary>
     private void HandleWedgeNode(BoardNode node)
     {
-        Debug.Log($"Wedge node → category {node.nodeColor}");
+        Debug.Log($"Wedge node, category {node.nodeColor}");
         string category = GameManager.Instance.GetCategoryForColor(ConvertNodeColor(node.nodeColor));
 
         QuestionsManager.Instance.AskRandomWedgeQuestion(category, correct =>
@@ -374,6 +383,34 @@ public class TurnManager : MonoBehaviour
         });
     }
 
+    private void HandleStartNode(BoardNode node)
+    {
+        Debug.Log("Start node, choosing player...");
+
+        int attacker = currentPlayerIndex;
+
+        List<int> candidates = new List<int>();
+        for (int i = 0; i < playerPieces.Count; i++)
+        {
+            if (i == attacker) continue;
+            if (wedgesByPlayer.ContainsKey(i) && wedgesByPlayer[i].Count > 0)
+                candidates.Add(i);
+        }
+
+        // Si nadie tiene quesitos → pierde turno
+        if (candidates.Count == 0)
+        {
+            Debug.Log("No opponents have wedges, skip turn.");
+            NextTurn();
+            return;
+        }
+
+        SetupWedgeButtonsForSteal(attacker, candidates);
+
+        int defender = candidates[0];
+        
+    }
+
     /// <summary>
     /// Handles logic when landing on a reroll node.
     /// </summary>
@@ -382,6 +419,126 @@ public class TurnManager : MonoBehaviour
         canDestroy = true;
         StartCoroutine(SetLocalizedText(rerollBoxText));
         isWaitingForClick = true;
+    }
+
+    #endregion
+
+    #region Steal GameMode Methods
+
+    private void SetupWedgeButtonsForSteal(int attacker, List<int> candidates)
+    {
+        foreach (int defenderIndex in candidates)
+        {
+            Transform panel = playerWedgeContainers[defenderIndex].transform;
+
+            foreach (Transform child in panel)
+            {
+                // Ignorar textos o contenedores
+                if (child.name == "Almacen" || child.name.Contains("Text"))
+                    continue;
+
+                // Solo botones visibles (el jugador posee este quesito)
+                if (!child.gameObject.activeSelf)
+                    continue;
+
+                Button b = child.GetComponent<Button>();
+                if (b == null)
+                    b = child.gameObject.AddComponent<Button>();
+
+                b.onClick.RemoveAllListeners();
+
+                QuesitoColor color = ConvertNameToColor(child.name);
+
+                b.onClick.AddListener(() =>
+                {
+                    Debug.Log($"Steal selected defender = {defenderIndex}, color = {color}");
+
+                    // Este jugador se convierte en el defensor
+                    int defender = defenderIndex;
+
+                    // Llamamos al duelo
+                    BeginStealDuel(attacker, defender, color);
+                });
+            }
+        }
+    }
+
+    public void BeginStealDuel(int attacker, int defender, QuesitoColor color)
+    {
+        duelAttacker = attacker;
+        duelDefender = defender;
+
+        duelColor = color;
+        string category = GameManager.Instance.GetCategoryForColor(color);
+
+        Debug.Log($"Starting STEAL DUEL = attacker: {attacker}, defender: {defender}, color: {category}");
+
+        duelCurrent = attacker;
+        isDuelActive = true;
+
+        ContinueStealDuel();
+    }
+
+    private void ContinueStealDuel()
+    {
+        if (!isDuelActive)
+            return;
+
+        Debug.Log($"STEAL TURN Player {duelCurrent}");
+        string category = GameManager.Instance.GetCategoryForColor(duelColor);
+
+        // Pregunta aleatoria del color a robar
+        QuestionsManager.Instance.AskRandomWedgeQuestion(category, (correct) =>
+        {
+            OnStealAnswerReceived(correct);
+        });
+    }
+
+
+    private void OnStealAnswerReceived(bool isCorrect)
+    {
+        if (!isCorrect)
+        {
+            Debug.Log($"STEAL DUEL Player {duelCurrent} FAILED!");
+
+            if (duelCurrent == duelAttacker)
+            {
+                Debug.Log("Attacker failed, turn ends.");
+                isDuelActive = false;
+                NextTurn();
+            }
+            else
+            {
+                Debug.Log("Defender failed, attacker steals the wedge!");
+                GiveWedgeToAttacker(duelAttacker, duelDefender, duelColor);
+                isDuelActive = false;
+                isWaitingForClick = true;
+            }
+
+            return;
+        }
+
+        Debug.Log($"STEAL DUEL Player {duelCurrent} CORRECT!");
+
+        duelCurrent = (duelCurrent == duelAttacker) ? duelDefender : duelAttacker;
+
+        ContinueStealDuel();
+    }
+
+
+
+
+    private QuesitoColor ConvertNameToColor(string name)
+    {
+        if (name.Contains("Azul")) return QuesitoColor.Azul;
+        if (name.Contains("Rosa")) return QuesitoColor.Rosa;
+        if (name.Contains("Amarillo")) return QuesitoColor.Amarillo;
+        if (name.Contains("Naranja")) return QuesitoColor.Naranja;
+        if (name.Contains("Verde")) return QuesitoColor.Verde;
+        if (name.Contains("Morado")) return QuesitoColor.Morado;
+
+        Debug.LogWarning("Color no reconocido: " + name);
+        return QuesitoColor.Azul;
     }
 
     #endregion
@@ -439,6 +596,40 @@ public class TurnManager : MonoBehaviour
             isWaitingForClick = false;
             StartCoroutine(WaitForClickToReturnToMenu());
         }
+    }
+
+    public void DeactivateWedgeForPlayer(int playerIndex, QuesitoColor color)
+    {
+        Transform panel = playerWedgeContainers[playerIndex].transform;
+
+        foreach (Transform child in panel)
+        {
+            if (child.name.Contains(color.ToString()))
+            {
+                child.gameObject.SetActive(false);
+                break;
+            }
+        }
+
+        wedgesPerPlayer[playerIndex]--;
+    }
+
+    private void GiveWedgeToAttacker(int attacker, int defender, QuesitoColor color)
+    {
+        Debug.Log($"TRANSFER {defender} to {attacker} | Color = {color}");
+
+        // Quitar al defensor
+        if (wedgesByPlayer.ContainsKey(defender))
+            wedgesByPlayer[defender].Remove(color);
+
+        // Dar al atacante
+        if (!wedgesByPlayer.ContainsKey(attacker))
+            wedgesByPlayer[attacker] = new List<QuesitoColor>();
+
+        wedgesByPlayer[attacker].Add(color);
+
+        ActivateWedgeForPlayer(attacker, color);
+        DeactivateWedgeForPlayer(defender, color);
     }
 
     #endregion
