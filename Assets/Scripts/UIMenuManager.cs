@@ -101,7 +101,7 @@ public class UIMenuManager : MonoBehaviour
 
         mainMenuPanel.SetActive(false);
 
-        GameManager.Instance.MoveObjectToPoint(mainCamera,new Vector3(1.42f, 2.84f, 12.31f), Quaternion.Euler(36.512f, 192.58f, 0f), "QuestionsContinue");
+        GameManager.Instance.MoveObjectToPoint(mainCamera,new Vector3(2.19f, 2.9f, 12.43f), Quaternion.Euler(36.512f, 191f, 0f), "QuestionsContinue");
     }
 
     /// <summary>
@@ -239,8 +239,8 @@ public class UIMenuManager : MonoBehaviour
 
         GameManager.Instance.MoveObjectToPoint(
             mainCamera,
-            new Vector3(1.42f, 2.84f, 12.31f),
-            Quaternion.Euler(36.512f, 192.58f, 0f),
+            new Vector3(0.86f, 4.0f, 12.3f),
+            Quaternion.Euler(51.8f, 180f, 0f),
             "Questions"
         );
     }

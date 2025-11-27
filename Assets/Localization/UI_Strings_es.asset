@@ -72,7 +72,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 7729873149952
-    m_Localized: Caidad
+    m_Localized: Calidad
     m_Metadata:
       m_Items: []
   - m_Id: 8320422764544
@@ -167,7 +167,8 @@ MonoBehaviour:
   - m_Id: 14217547079680
     m_Localized: Salir
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8685320046573781073
   - m_Id: 1098517109530624
     m_Localized: Turno del equipo <color={teamColor}>{teamName}</color> \nHaz clic
       para lanzar el dado.
@@ -175,7 +176,7 @@ MonoBehaviour:
       m_Items:
       - rid: 8685320046573781073
   - m_Id: 1098947059245056
-    m_Localized: Vuelve a tirar equipo<color={teamColor}>{teamName}</color>
+    m_Localized: Vuelve a tirar equipo <color={teamColor}>{teamName}</color>
     m_Metadata:
       m_Items:
       - rid: 8685320046573781073
@@ -216,6 +217,47 @@ MonoBehaviour:
     m_Localized: Selecciona una categoria
     m_Metadata:
       m_Items: []
+  - m_Id: 11702701034823680
+    m_Localized: Elige el Quesito que quieres robar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11703045135523840
+    m_Localized: Quesito robado \nEl equipo <color={teamColor}>{teamName}</color>
+      gana quesito \ny vuelve a tirar
+    m_Metadata:
+      m_Items:
+      - rid: 8685320046573781073
+  - m_Id: 11705493791170560
+    m_Localized: No hay Quesitos que robar. \nPierdes el turno
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11709433983262720
+    m_Localized: El equipo <color={attackerColor}>{attackerName}</color> le inenta
+      robar Quesito al Equipo <color={defenderColor}>{defenderName}</color>
+    m_Metadata:
+      m_Items:
+      - rid: 8685320046573781073
+  - m_Id: 11718283935342592
+    m_Localized: El equipo <color={attackerColorVar}>{attackerVar}</color> ha fallado
+      y pierde turno
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12341964772466688
+    m_Localized: Equipo <color=green>Verde</color>
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12341967045779456
+    m_Localized: Equipo <color=blue>Azul</color>
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12341969205846016
+    m_Localized: Equipo <color=red>Rojo</color>
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12341971294609408
+    m_Localized: Equipo <color=yellow>Amarillo</color>
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds:
@@ -228,3 +270,6 @@ MonoBehaviour:
         - id: 1098947059245056
         - id: 1099465466830848
         - id: 1099850948534272
+        - id: 11703045135523840
+        - id: 11709433983262720
+        - id: 14217547079680

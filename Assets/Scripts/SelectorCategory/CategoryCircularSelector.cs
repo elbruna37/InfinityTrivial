@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System;
 using System.Collections.Generic;
 using TMPro;
@@ -9,6 +10,7 @@ public class CategoryCircularSelector : MonoBehaviour
     public TextMeshProUGUI label;
     public Button upButton;
     public Button downButton;
+    public CanvasGroup CircularSelector;
 
     [Header("Color assigned to this selector")]
     public QuesitoColor color;
@@ -22,6 +24,8 @@ public class CategoryCircularSelector : MonoBehaviour
 
     private void Start()
     {
+        CircularSelector.DOFade(1f, 0.3f).SetEase(Ease.OutQuad);
+
         categories = QuestionsManager.Instance.availableCategories;
 
         index = FindFirstFreeIndex();

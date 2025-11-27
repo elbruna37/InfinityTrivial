@@ -117,7 +117,7 @@ public class UISelectorCategorias : MonoBehaviour
         });
     }
 
-    #endregion
+    #endregion 
 
     #region Wedge Animations
 

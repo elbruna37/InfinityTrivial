@@ -49,13 +49,36 @@ public class TurnManager : MonoBehaviour
     [SerializeField] private LocalizedString rerollBoxText;
     [SerializeField] private LocalizedString winText;
 
+    [SerializeField] private LocalizedString selectWedgeText;
+    [SerializeField] private LocalizedString wedgeStolenText;
+    [SerializeField] private LocalizedString duelStartText;
+    [SerializeField] private LocalizedString couldntStolenText;
+    [SerializeField] private LocalizedString heistFailedText;
+
     [SerializeField] private LocalizedString teamGreen;
     [SerializeField] private LocalizedString teamBlue;
     [SerializeField] private LocalizedString teamRed;
     [SerializeField] private LocalizedString teamYellow;
 
+    //[SerializeField] private LocalizedString wedgeYellow;
+    //[SerializeField] private LocalizedString wedgeGreen;
+    //[SerializeField] private LocalizedString wedgeBlue;
+   // [SerializeField] private LocalizedString wedgePink;
+    //[SerializeField] private LocalizedString wedgePurple;
+    //[SerializeField] private LocalizedString wedgeOrange;
+
     private StringVariable teamNameVar;
     private StringVariable teamColorVar;
+
+    private StringVariable attackerVar;
+    private StringVariable attackerColorVar;
+
+    private StringVariable defenderVar;
+    private StringVariable defenderColorVar;
+
+    private StringVariable wedgeVar;
+    private StringVariable wedgeColorVar;
+
 
     [Header("UI")]
     public TMP_Text infoText;
@@ -70,15 +93,19 @@ public class TurnManager : MonoBehaviour
 
     [Header("Steal Duel Logic")]
     private bool isDuelActive = false;
-    private int duelAttacker;
-    private int duelDefender;
+    private int duelAttacker = 0;
+    private int duelDefender = 0;
     private int duelCurrent;
     private QuesitoColor duelColor;
     string category;
+    private int wedgeIndex;
 
     private string[] teamNames;
     private readonly string[] teamColors = { "green", "blue", "red", "yellow" };
 
+    private string[] wedgeNames;
+    private readonly string[] wedgeColors = { "blue", "pink", "orange", "yellow","green","purple" };
+    
     #region Unity Lifecycle
 
     /// <summary>
@@ -93,7 +120,6 @@ public class TurnManager : MonoBehaviour
         {
             currentPlayerIndex = GameSaveManager.Instance.LoadedSaveData.currentPlayerIndex;
             Debug.Log($"[TurnManager] Restored turn index early: {currentPlayerIndex}");
-
         }
     }
 
@@ -108,6 +134,16 @@ public class TurnManager : MonoBehaviour
             teamBlue.GetLocalizedString(),
             teamRed.GetLocalizedString(),
             teamYellow.GetLocalizedString()
+        };
+
+        wedgeNames = new string[]
+        {
+            //wedgeBlue.GetLocalizedString(),
+           // wedgePink.GetLocalizedString(),
+           // wedgeOrange.GetLocalizedString(),
+           // wedgeYellow.GetLocalizedString(),
+            //wedgeGreen.GetLocalizedString(),
+            //wedgePurple.GetLocalizedString()
         };
 
         wedgesPerPlayer = new int[GameManager.Instance.MaxPlayers];
@@ -140,7 +176,7 @@ public class TurnManager : MonoBehaviour
     void Update()
     {
         bool pointerDown = Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
-        bool pointerHeld = Input.GetMouseButton(0) || (Input.touchCount > 0 && (Input.GetTouch(0).phase == TouchPhase.Stationary || Input.GetTouch(0).phase == TouchPhase.Moved));
+        bool pointerHeld = Input.GetKeyDown(KeyCode.Escape) || (Input.touchCount > 0 && (Input.GetTouch(0).phase == TouchPhase.Stationary || Input.GetTouch(0).phase == TouchPhase.Moved));
         bool pointerUp = Input.GetMouseButtonUp(0) || (Input.touchCount > 0 && (Input.GetTouch(0).phase == TouchPhase.Ended || Input.GetTouch(0).phase == TouchPhase.Canceled));
 
         if (pointerDown)
@@ -192,14 +228,7 @@ public class TurnManager : MonoBehaviour
     {
         if (gameEnded) return;
 
-        teamNameVar = new StringVariable { Value = teamNames[currentPlayerIndex] };
-        teamColorVar = new StringVariable { Value = teamColors[currentPlayerIndex] };
-
-        AddLocalizationVariables(turnText);
-        AddLocalizationVariables(rollAgainText);
-        AddLocalizationVariables(wedgeWinText);
-        AddLocalizationVariables(rerollBoxText);
-        AddLocalizationVariables(winText);
+        InitialaizeLocation();
 
         StartCoroutine(SetLocalizedText(turnText));
         isWaitingForClick = true;
@@ -401,6 +430,7 @@ public class TurnManager : MonoBehaviour
         if (candidates.Count == 0)
         {
             Debug.Log("No opponents have wedges, skip turn.");
+            StartCoroutine(SetLocalizedText(couldntStolenText));
             NextTurn();
             return;
         }
@@ -427,6 +457,8 @@ public class TurnManager : MonoBehaviour
 
     private void SetupWedgeButtonsForSteal(int attacker, List<int> candidates)
     {
+        StartCoroutine(SetLocalizedText(selectWedgeText));
+
         foreach (int defenderIndex in candidates)
         {
             Transform panel = playerWedgeContainers[defenderIndex].transform;
@@ -465,6 +497,7 @@ public class TurnManager : MonoBehaviour
 
     public void BeginStealDuel(int attacker, int defender, QuesitoColor color)
     {
+
         duelAttacker = attacker;
         duelDefender = defender;
 
@@ -476,7 +509,14 @@ public class TurnManager : MonoBehaviour
         duelCurrent = attacker;
         isDuelActive = true;
 
-        ContinueStealDuel();
+        InitialaizeStealLocation();
+
+        StartCoroutine(SetLocalizedText(duelStartText));
+
+        WaitForPlayerTap(() =>
+        {
+            ContinueStealDuel();
+        });
     }
 
     private void ContinueStealDuel()
@@ -504,12 +544,14 @@ public class TurnManager : MonoBehaviour
             if (duelCurrent == duelAttacker)
             {
                 Debug.Log("Attacker failed, turn ends.");
+                StartCoroutine(SetLocalizedText(heistFailedText));
                 isDuelActive = false;
                 NextTurn();
             }
             else
             {
                 Debug.Log("Defender failed, attacker steals the wedge!");
+                StartCoroutine(SetLocalizedText(wedgeStolenText));
                 GiveWedgeToAttacker(duelAttacker, duelDefender, duelColor);
                 isDuelActive = false;
                 isWaitingForClick = true;
@@ -636,6 +678,19 @@ public class TurnManager : MonoBehaviour
 
     #region Localization & UI
 
+    private void InitialaizeLocation()
+    {
+        teamNameVar = new StringVariable { Value = teamNames[currentPlayerIndex] };
+        teamColorVar = new StringVariable { Value = teamColors[currentPlayerIndex] };
+
+
+        AddLocalizationVariables(turnText);
+        AddLocalizationVariables(rollAgainText);
+        AddLocalizationVariables(wedgeWinText);
+        AddLocalizationVariables(rerollBoxText);
+        AddLocalizationVariables(winText);
+    }
+
     /// <summary>
     /// Adds team name and color variables to a LocalizedString.
     /// </summary>
@@ -643,15 +698,35 @@ public class TurnManager : MonoBehaviour
     {
         localized.Add("teamName", teamNameVar);
         localized.Add("teamColor", teamColorVar);
+  
+    }
+
+    private void InitialaizeStealLocation()
+    {
+        attackerVar = new StringVariable { Value = teamNames[duelAttacker] };
+        attackerColorVar = new StringVariable { Value = teamColors[duelAttacker] };
+        defenderVar = new StringVariable { Value = teamNames[duelDefender] };
+        defenderColorVar = new StringVariable { Value = teamColors[duelDefender] };
+
+        duelStartText.Add("attackerName", attackerVar);
+        duelStartText.Add("attackerColor", attackerColorVar);
+
+        duelStartText.Add("defenderName", defenderVar);
+        duelStartText.Add("defenderColor", defenderColorVar);
+
+        Debug.Log($"Atacante: {attackerVar.Value} Color: {attackerColorVar.Value}");
+        Debug.Log($"El equipo defensor es {defenderVar} es de color {defenderColorVar}");
     }
 
     /// <summary>
     /// Updates the info text UI with localized content and blinking effect.
     /// </summary>
     public void UpdateInfoText(string newText)
-    {
-        infoText.text = newText;
+    { 
         blinkTween?.Kill();
+        infoText.alpha = 1f;
+
+        infoText.text = newText;
 
         if (string.IsNullOrEmpty(newText))
         {
@@ -751,6 +826,24 @@ public class TurnManager : MonoBehaviour
         Destroy(UIManager.Instance.gameObject);
 
         SceneManager.LoadScene("Menu");
+    }
+
+    public void WaitForPlayerTap(Action callback)
+    {
+        StartCoroutine(WaitForTapCoroutine(callback));
+    }
+
+    private IEnumerator WaitForTapCoroutine(Action callback)
+    {
+        
+        while (!Input.GetMouseButtonDown(0) && Input.touchCount == 0)
+        {
+            yield return null; 
+        }
+
+        UpdateInfoText("");
+
+        callback?.Invoke();
     }
 
     #endregion

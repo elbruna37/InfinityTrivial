@@ -167,7 +167,8 @@ MonoBehaviour:
   - m_Id: 14217547079680
     m_Localized: Exit
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8685320046573781072
   - m_Id: 1098517109530624
     m_Localized: Turn of team <color={teamColor}>{teamName}</color>. \nClick to roll
       the dice.
@@ -216,6 +217,47 @@ MonoBehaviour:
     m_Localized: Select a category
     m_Metadata:
       m_Items: []
+  - m_Id: 11702701034823680
+    m_Localized: Choose the cheese Wedge you want to steal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11703045135523840
+    m_Localized: Stolen Wedge \n<color={teamColor}>{teamName}</color> team rolls
+      the dice again
+    m_Metadata:
+      m_Items:
+      - rid: 8685320046573781072
+  - m_Id: 11705493791170560
+    m_Localized: There are no Wedges to steal. \n Lose the turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11709433983262720
+    m_Localized: <color={attackerColor}>{attackerName}</color> Team tries to steal
+      Wedge from the <color={defenderColor}>{defenderName}</color> Team
+    m_Metadata:
+      m_Items:
+      - rid: 8685320046573781072
+  - m_Id: 11718283935342592
+    m_Localized: <color={attackerColorVar}>{attackerVar}</color> Team has failed
+      and loses turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12341964772466688
+    m_Localized: <color=green>Green</color> team
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12341967045779456
+    m_Localized: <color=blue>Blue</color> team
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12341969205846016
+    m_Localized: <color=red>Red</color> team
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12341971294609408
+    m_Localized: <color=yellow>Yellow</color> team
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds:
@@ -228,3 +270,6 @@ MonoBehaviour:
         - id: 1098947059245056
         - id: 1099465466830848
         - id: 1099850948534272
+        - id: 11703045135523840
+        - id: 11709433983262720
+        - id: 14217547079680
