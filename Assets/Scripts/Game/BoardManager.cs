@@ -49,7 +49,6 @@ public class BoardManager : MonoBehaviour
     }
 
 
-
     // ----------------- Movimiento -----------------
 
     public IEnumerator MoveRoutine(PlayerPiece piece, int steps)
@@ -288,6 +287,7 @@ public class BoardManager : MonoBehaviour
 
         yield return new WaitUntil(() => _chosenNode != null);
 
+        TurnManager.Instance.canDestroy = true;
         _awaitingChoice = false;
         _validChoices.Clear();
     }
@@ -297,7 +297,6 @@ public class BoardManager : MonoBehaviour
         if (_awaitingChoice && node != null && _validChoices.Contains(node))
         {
             _chosenNode = node;
-            //TurnManager.Instance.canDestroy=true;
         }
     }
 

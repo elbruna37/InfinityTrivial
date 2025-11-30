@@ -76,7 +76,7 @@ public class BoardNode : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        TryApplySavedPositions();          
+        if (GameManager.Instance.IsLoadingGame) { TryApplySavedPositions(); }     
     }
 
     /// <summary>
@@ -84,12 +84,12 @@ public class BoardNode : MonoBehaviour
     /// </summary>
     private void OnEnable()
     {
-        TrySubscribeToTurnManager();      
+        if (GameManager.Instance.IsLoadingGame) { TrySubscribeToTurnManager(); }      
     }
 
     private void OnDisable()
     {
-        UnsubscribeFromTurnManager();    
+        UnsubscribeFromTurnManager();
     }
 
     private void OnMouseDown()

@@ -218,7 +218,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11702701034823680
-    m_Localized: Elige el Quesito que quieres robar
+    m_Localized: Elige el Quesito \nque quieres robar
     m_Metadata:
       m_Items: []
   - m_Id: 11703045135523840
@@ -233,7 +233,7 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11709433983262720
     m_Localized: El equipo <color={attackerColor}>{attackerName}</color> le inenta
-      robar Quesito al Equipo <color={defenderColor}>{defenderName}</color>
+      robar <color={categoryColor}>{category}</color> al Equipo <color={defenderColor}>{defenderName}</color>
     m_Metadata:
       m_Items:
       - rid: 8685320046573781073
@@ -241,7 +241,8 @@ MonoBehaviour:
     m_Localized: El equipo <color={attackerColorVar}>{attackerVar}</color> ha fallado
       y pierde turno
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8685320046573781073
   - m_Id: 12341964772466688
     m_Localized: Equipo <color=green>Verde</color>
     m_Metadata:
@@ -273,3 +274,4 @@ MonoBehaviour:
         - id: 11703045135523840
         - id: 11709433983262720
         - id: 14217547079680
+        - id: 11718283935342592

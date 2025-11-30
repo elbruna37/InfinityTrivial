@@ -32,9 +32,10 @@ public class TurnManager : MonoBehaviour
 
     [Header("Control")]
     public int currentPlayerIndex = 0;
-
-    private bool isWaitingForClick = false;
+    bool ignoreNextPointerUp = false;
+    bool isWaitingForClick = false;
     public bool isPause = false;
+
     private bool gameEnded = false;
     public bool canDestroy = false;
 
@@ -59,13 +60,6 @@ public class TurnManager : MonoBehaviour
     [SerializeField] private LocalizedString teamBlue;
     [SerializeField] private LocalizedString teamRed;
     [SerializeField] private LocalizedString teamYellow;
-
-    //[SerializeField] private LocalizedString wedgeYellow;
-    //[SerializeField] private LocalizedString wedgeGreen;
-    //[SerializeField] private LocalizedString wedgeBlue;
-   // [SerializeField] private LocalizedString wedgePink;
-    //[SerializeField] private LocalizedString wedgePurple;
-    //[SerializeField] private LocalizedString wedgeOrange;
 
     private StringVariable teamNameVar;
     private StringVariable teamColorVar;
@@ -97,17 +91,17 @@ public class TurnManager : MonoBehaviour
     private int duelDefender = 0;
     private int duelCurrent;
     private QuesitoColor duelColor;
-    string category;
-    private int wedgeIndex;
+    
 
     private string[] teamNames;
     private readonly string[] teamColors = { "green", "blue", "red", "yellow" };
 
-    private string[] wedgeNames;
-    private readonly string[] wedgeColors = { "blue", "pink", "orange", "yellow","green","purple" };
-    
-    #region Unity Lifecycle
 
+    private readonly string[] wedgeColors = { "#4E93CC", "#E54781", "#C97932", "#DDB748", "#87B464", "#9063BD" };  // blue, pink, orange, yellow, green, purple
+    int wedgeColorsIndex;
+    string wedgeCategory;
+
+    #region Unity Lifecycle
     /// <summary>
     /// Singleton initialization.
     /// </summary>
@@ -136,16 +130,6 @@ public class TurnManager : MonoBehaviour
             teamYellow.GetLocalizedString()
         };
 
-        wedgeNames = new string[]
-        {
-            //wedgeBlue.GetLocalizedString(),
-           // wedgePink.GetLocalizedString(),
-           // wedgeOrange.GetLocalizedString(),
-           // wedgeYellow.GetLocalizedString(),
-            //wedgeGreen.GetLocalizedString(),
-            //wedgePurple.GetLocalizedString()
-        };
-
         wedgesPerPlayer = new int[GameManager.Instance.MaxPlayers];
 
         gameEnded = false;
@@ -159,12 +143,10 @@ public class TurnManager : MonoBehaviour
                 SetWedgesByPlayer(save.wedgesByPlayer);
                 Debug.Log("[TurnManager] Wedges restored.");
             }
-
-            GameManager.Instance.SetLoadingGame(false);
-
-            loadingPanel.SetActive(false);
         }
-        
+
+        GameManager.Instance.SetLoadingGame(false);
+
         loadingPanel.SetActive(false);
 
         StartTurn();
@@ -175,46 +157,7 @@ public class TurnManager : MonoBehaviour
     /// </summary>
     void Update()
     {
-        bool pointerDown = Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
-        bool pointerHeld = Input.GetKeyDown(KeyCode.Escape) || (Input.touchCount > 0 && (Input.GetTouch(0).phase == TouchPhase.Stationary || Input.GetTouch(0).phase == TouchPhase.Moved));
-        bool pointerUp = Input.GetMouseButtonUp(0) || (Input.touchCount > 0 && (Input.GetTouch(0).phase == TouchPhase.Ended || Input.GetTouch(0).phase == TouchPhase.Canceled));
-
-        if (pointerDown)
-        {
-            isPointerDown = true;
-            pointerDownTime = Time.time;
-        }
-
-        if (isPointerDown && pointerHeld && !isPause && isWaitingForClick)
-        {
-            float heldTime = Time.time - pointerDownTime;
-            if (heldTime >= holdThreshold && !isPause)
-            {
-                isPointerDown = false;
-                isPause = true;
-                isWaitingForClick = false;
-
-                UpdateInfoText("");
-                ShowPausePanel();
-            }
-        }
-
-        if (pointerUp && !isPause && isWaitingForClick)
-        {
-            if (isPointerDown)
-            {
-                float heldTime = Time.time - pointerDownTime;
-
-                if (heldTime < holdThreshold && isWaitingForClick && !isPause)
-                {
-                    isWaitingForClick = false;
-                    UpdateInfoText("");
-                    diceSpawner.SpawnAndThrowDice(OnDiceResult);
-                }
-
-                isPointerDown = false;
-            }
-        }
+        ClickController();
     }
 
     #endregion
@@ -431,7 +374,10 @@ public class TurnManager : MonoBehaviour
         {
             Debug.Log("No opponents have wedges, skip turn.");
             StartCoroutine(SetLocalizedText(couldntStolenText));
-            NextTurn();
+            WaitForPlayerTap(() =>
+            {
+                NextTurn();
+            });
             return;
         }
 
@@ -446,7 +392,6 @@ public class TurnManager : MonoBehaviour
     /// </summary>
     private void HandleRerollNode()
     {
-        canDestroy = true;
         StartCoroutine(SetLocalizedText(rerollBoxText));
         isWaitingForClick = true;
     }
@@ -465,17 +410,19 @@ public class TurnManager : MonoBehaviour
 
             foreach (Transform child in panel)
             {
-                // Ignorar textos o contenedores
+                // Ignore texts or containers
                 if (child.name == "Almacen" || child.name.Contains("Text"))
-                    continue;
-
-                // Solo botones visibles (el jugador posee este quesito)
-                if (!child.gameObject.activeSelf)
                     continue;
 
                 Button b = child.GetComponent<Button>();
                 if (b == null)
                     b = child.gameObject.AddComponent<Button>();
+
+                // Only visible buttons (the player owns this wedge)
+                if (child.gameObject.activeSelf)
+                    b.interactable = true;       
+                else
+                    b.interactable = false;     
 
                 b.onClick.RemoveAllListeners();
 
@@ -485,10 +432,21 @@ public class TurnManager : MonoBehaviour
                 {
                     Debug.Log($"Steal selected defender = {defenderIndex}, color = {color}");
 
-                    // Este jugador se convierte en el defensor
                     int defender = defenderIndex;
 
-                    // Llamamos al duelo
+                    wedgeColorsIndex = (int)color;
+
+                    // Deactivate ALL buttons when one is clicked
+                    foreach (var container in playerWedgeContainers)
+                    {
+                        foreach (Transform child in container.transform)
+                        {
+                            Button b = child.GetComponent<Button>();
+                            if (b != null)
+                                b.interactable = false;
+                        }
+                    }
+
                     BeginStealDuel(attacker, defender, color);
                 });
             }
@@ -503,6 +461,7 @@ public class TurnManager : MonoBehaviour
 
         duelColor = color;
         string category = GameManager.Instance.GetCategoryForColor(color);
+        wedgeCategory = category;
 
         Debug.Log($"Starting STEAL DUEL = attacker: {attacker}, defender: {defender}, color: {category}");
 
@@ -546,7 +505,10 @@ public class TurnManager : MonoBehaviour
                 Debug.Log("Attacker failed, turn ends.");
                 StartCoroutine(SetLocalizedText(heistFailedText));
                 isDuelActive = false;
-                NextTurn();
+                WaitForPlayerTap(() =>
+                {
+                    NextTurn();
+                });
             }
             else
             {
@@ -554,7 +516,10 @@ public class TurnManager : MonoBehaviour
                 StartCoroutine(SetLocalizedText(wedgeStolenText));
                 GiveWedgeToAttacker(duelAttacker, duelDefender, duelColor);
                 isDuelActive = false;
-                isWaitingForClick = true;
+                WaitForPlayerTap(() =>
+                {
+                    StartTurn();
+                });
             }
 
             return;
@@ -574,7 +539,7 @@ public class TurnManager : MonoBehaviour
     {
         if (name.Contains("Azul")) return QuesitoColor.Azul;
         if (name.Contains("Rosa")) return QuesitoColor.Rosa;
-        if (name.Contains("Amarillo")) return QuesitoColor.Amarillo;
+        if (name.Contains("Amarillo")) return QuesitoColor.Amarillo; 
         if (name.Contains("Naranja")) return QuesitoColor.Naranja;
         if (name.Contains("Verde")) return QuesitoColor.Verde;
         if (name.Contains("Morado")) return QuesitoColor.Morado;
@@ -689,6 +654,7 @@ public class TurnManager : MonoBehaviour
         AddLocalizationVariables(wedgeWinText);
         AddLocalizationVariables(rerollBoxText);
         AddLocalizationVariables(winText);
+        AddLocalizationVariables(wedgeStolenText);
     }
 
     /// <summary>
@@ -714,8 +680,11 @@ public class TurnManager : MonoBehaviour
         duelStartText.Add("defenderName", defenderVar);
         duelStartText.Add("defenderColor", defenderColorVar);
 
-        Debug.Log($"Atacante: {attackerVar.Value} Color: {attackerColorVar.Value}");
-        Debug.Log($"El equipo defensor es {defenderVar} es de color {defenderColorVar}");
+        wedgeVar = new StringVariable { Value = wedgeCategory };
+        wedgeColorVar = new StringVariable { Value = wedgeColors[wedgeColorsIndex] };
+
+        duelStartText.Add("category", wedgeVar);
+        duelStartText.Add("categoryColor", wedgeColorVar);
     }
 
     /// <summary>
@@ -796,6 +765,17 @@ public class TurnManager : MonoBehaviour
 
     #region Utility
 
+    void ClickController()
+    {
+        if (HandleEscapePause()) return;
+        if (HandleIgnoreNextPointerUp()) return;
+        if (isPause || !isWaitingForClick) return;
+
+        HandlePointerDown();
+        HandleTouchHoldPause();
+        HandlePointerUpTap();
+    }
+
     /// <summary>
     /// Converts board node color to wedge color type.
     /// </summary>
@@ -843,7 +823,105 @@ public class TurnManager : MonoBehaviour
 
         UpdateInfoText("");
 
+        yield return new WaitForSeconds(0.5f);
+
         callback?.Invoke();
+    }
+
+    #endregion
+
+    #region INPUT HANDLERS
+
+    bool HandleEscapePause()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            ActivatePause();
+            return true;
+        }
+        return false;
+    }
+
+    bool HandleIgnoreNextPointerUp()
+    {
+        if (ignoreNextPointerUp)
+        {
+            if (PointerUp())
+                ignoreNextPointerUp = false;
+            return true;
+        }
+        return false;
+    }
+
+    void HandlePointerDown()
+    {
+        if (PointerDown())
+        {
+            isPointerDown = true;
+            pointerDownTime = Time.time;
+        }
+    }
+
+    void HandleTouchHoldPause()
+    {
+        if (!isPointerDown) return;
+        if (!TouchHeld()) return;
+
+        if (Time.time - pointerDownTime >= holdThreshold)
+            ActivatePause();
+    }
+
+    void HandlePointerUpTap()
+    {
+        if (PointerUp() && isPointerDown)
+        {
+            float held = Time.time - pointerDownTime;
+
+            if (held < holdThreshold)
+            {
+                // TAP → lanzar dado
+                isWaitingForClick = false;
+                UpdateInfoText("");
+                diceSpawner.SpawnAndThrowDice(OnDiceResult);
+            }
+
+            isPointerDown = false;
+        }
+    }
+
+    #endregion
+
+    #region INPUT SHORTCUTS
+
+    bool PointerDown() =>
+        Input.GetMouseButtonDown(0) ||
+        (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
+
+    bool PointerUp() =>
+        Input.GetMouseButtonUp(0) ||
+        (Input.touchCount > 0 &&
+        (Input.GetTouch(0).phase == TouchPhase.Ended ||
+         Input.GetTouch(0).phase == TouchPhase.Canceled));
+
+    bool TouchHeld() =>
+        Input.touchCount > 0 &&
+        (Input.GetTouch(0).phase == TouchPhase.Stationary ||
+         Input.GetTouch(0).phase == TouchPhase.Moved);
+
+    #endregion
+
+    #region PAUSE
+
+    void ActivatePause()
+    {
+        isPointerDown = false;
+        isPause = true;
+        isWaitingForClick = false;
+
+        UpdateInfoText("");
+        ShowPausePanel();
+
+        ignoreNextPointerUp = true;
     }
 
     #endregion

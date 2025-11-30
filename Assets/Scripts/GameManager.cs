@@ -264,28 +264,36 @@ public class GameManager : MonoBehaviour
     {
         if (_mainCamera == null) return;
 
+        float targetAspect = _targetAspect; // 16f / 9f
         float windowAspect = (float)Screen.width / Screen.height;
-        float scaleHeight = windowAspect / _targetAspect;
+        float scaleHeight = windowAspect / targetAspect;
 
         Rect rect = _mainCamera.rect;
 
-        if (scaleHeight < 1.0f)
+        if (scaleHeight < 1f)
         {
-            rect.width = 1.0f;
+            // More vertical screen = black bars at the top and bottom
+            rect.width = 1f;
             rect.height = scaleHeight;
-            rect.x = 0;
-            rect.y = (1.0f - scaleHeight) / 2.0f;
+            rect.x = 0f;
+            rect.y = (1f - scaleHeight) * 0.5f;
         }
         else
         {
-            float scaleWidth = 1.0f / scaleHeight;
+            // More horizontal screen = black bars on the sides
+            float scaleWidth = 1f / scaleHeight;
             rect.width = scaleWidth;
-            rect.height = 1.0f;
-            rect.x = (1.0f - scaleWidth) / 2.0f;
-            rect.y = 0;
+            rect.height = 1f;
+            rect.x = (1f - scaleWidth) * 0.5f;
+            rect.y = 0f;
         }
 
         _mainCamera.rect = rect;
+        _mainCamera.clearFlags = CameraClearFlags.SolidColor;
+        _mainCamera.backgroundColor = Color.black;
+
+        // This prevents a gray visual "trail" from being left where the camera was cropped.
+        GL.Clear(true, true, Color.black);
     }
 
     #endregion

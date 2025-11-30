@@ -218,7 +218,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11702701034823680
-    m_Localized: Choose the cheese Wedge you want to steal
+    m_Localized: Choose the Wedge \nyou want to steal
     m_Metadata:
       m_Items: []
   - m_Id: 11703045135523840
@@ -233,7 +233,8 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11709433983262720
     m_Localized: <color={attackerColor}>{attackerName}</color> Team tries to steal
-      Wedge from the <color={defenderColor}>{defenderName}</color> Team
+      <color={categoryColor}>{category}</color> from the <color={defenderColor}>{defenderName}</color>
+      Team
     m_Metadata:
       m_Items:
       - rid: 8685320046573781072
@@ -241,7 +242,8 @@ MonoBehaviour:
     m_Localized: <color={attackerColorVar}>{attackerVar}</color> Team has failed
       and loses turn
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8685320046573781072
   - m_Id: 12341964772466688
     m_Localized: <color=green>Green</color> team
     m_Metadata:
@@ -273,3 +275,4 @@ MonoBehaviour:
         - id: 11703045135523840
         - id: 11709433983262720
         - id: 14217547079680
+        - id: 11718283935342592

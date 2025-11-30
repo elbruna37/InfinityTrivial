@@ -209,7 +209,6 @@ public class UIManager : MonoBehaviour
 
         questionText.fontSize = 70;
         questionText.text = _currentQuestion.enunciado;
-        TurnManager.Instance.canDestroy = true;
 
         // pop-in scale for the question text rect
         questionTextRect.localScale = Vector3.zero;
@@ -355,11 +354,11 @@ public class UIManager : MonoBehaviour
 
         GameManager.Instance.PlayTimerSound();
 
-        timerNeedle.rotation = Quaternion.Euler(0f, 0f, needleStartRotation);
+        timerNeedle.localRotation = Quaternion.Euler(0f, 0f, needleStartRotation);
         timerFill.fillAmount = 0f;
 
         _needleTween = timerNeedle
-            .DORotate(new Vector3(0f, 0f, needleEndRotation), durationSeconds, RotateMode.FastBeyond360)
+            .DOLocalRotate(new Vector3(0f, 0f, needleEndRotation), durationSeconds, RotateMode.FastBeyond360)
             .SetEase(Ease.Linear)
             .OnComplete(() => OnOptionSelected(-1));
 

@@ -2015,7 +2015,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -0.69, y: 0.69}
+  m_AnchoredPosition: {x: -0.23, y: 0.69}
   m_SizeDelta: {x: 176.46, y: 267.8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &460119210
@@ -2026,7 +2026,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 460119204}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -2551,7 +2551,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 511048358}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -3661,9 +3661,9 @@ Canvas:
   m_GameObject: {fileID: 934456820}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
+  m_RenderMode: 1
+  m_Camera: {fileID: 842800694}
+  m_PlaneDistance: 1
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
@@ -6417,7 +6417,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5632377855890875756, guid: 5e6aba9da1e53524faf7acfa2d94ab28, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.9296996
+      value: -0.46969962
       objectReference: {fileID: 0}
     - target: {fileID: 5632377855890875756, guid: 5e6aba9da1e53524faf7acfa2d94ab28, type: 3}
       propertyPath: m_LocalPosition.y
