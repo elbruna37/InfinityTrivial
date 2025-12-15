@@ -11,7 +11,7 @@ using UnityEngine.Localization;
 
 /// <summary>
 /// Manages the UI for selecting categories for each colored wedge (quesito).
-/// Handles dropdown selection, 3D animations, confirm/back buttons, and camera movement.
+/// Handles 3D animations, confirm/back buttons, and camera movement.
 /// </summary>
 public class UISelectorCategorias : MonoBehaviour
 {
@@ -70,13 +70,16 @@ public class UISelectorCategorias : MonoBehaviour
     public void ConfirmCategories()
     {
         GameManager.Instance.PlayClickSound();
-
         canvas.SetActive(false); 
 
         Sequence camSequence = DOTween.Sequence();
         camSequence.Append(cameraObject.transform.DOMove(new Vector3(0, 8.7f, 0), 1f).SetEase(Ease.InOutQuad));
+        MusicManager.Instance.StopMusic();
         camSequence.Join(cameraObject.transform.DORotate(new Vector3(90, 360, 0), 1f, RotateMode.FastBeyond360).SetEase(Ease.InOutQuad));
-        camSequence.OnComplete(() => SceneManager.LoadScene("Game"));
+        camSequence.OnComplete(() =>
+        { 
+            SceneManager.LoadScene("Game");
+        });
     }
 
     public void BackToMenu()

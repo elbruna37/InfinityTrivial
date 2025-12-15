@@ -52,7 +52,7 @@ public class QuestionsManager : MonoBehaviour
     /// </summary>
     /// <param name="category">Category of the question.</param>
     /// <param name="onAnswered">Callback invoked with true/false when answered.</param>
-    public void AskRandomQuestion(string category, System.Action<bool> onAnswered)
+    public void AskRandomQuestion(string category,int slot, System.Action<bool> onAnswered)
     {
         string difficulty = ChooseRandomDifficulty();
         Question selected = GetNonRepeatedQuestion(category, difficulty);
@@ -65,14 +65,14 @@ public class QuestionsManager : MonoBehaviour
         }
 
         Debug.Log($"Selected question ({category}, {difficulty}): {selected.enunciado}");
-        UIManager.Instance.ShowQuestion(selected, difficulty, onAnswered);
+        UIManager.Instance.ShowQuestion(selected, difficulty, onAnswered,slot);
     }
 
     /// <summary>
     /// Asks a random "wedge" (Quesito) question for a category.
     /// Uses a different difficulty distribution favoring harder questions.
     /// </summary>
-    public void AskRandomWedgeQuestion(string category, System.Action<bool> onAnswered)
+    public void AskRandomWedgeQuestion(string category,int slot, System.Action<bool> onAnswered)
     {
         string difficulty = ChooseWedgeDifficulty();
         Question selected = GetNonRepeatedQuestion(category, difficulty);
@@ -85,7 +85,27 @@ public class QuestionsManager : MonoBehaviour
         }
 
         Debug.Log($"Selected wedge question ({category}, {difficulty}): {selected.enunciado}");
-        UIManager.Instance.ShowQuestion(selected, difficulty, onAnswered);
+        UIManager.Instance.ShowQuestion(selected, difficulty, onAnswered,slot);
+    }
+
+    /// <summary>
+    /// Asks a random "wedge" (Quesito) question for a category.
+    /// Uses a different difficulty distribution favoring harder questions.
+    /// </summary>
+    public void AskRandomStolenQuestion(string category,int slot, System.Action<bool> onAnswered)
+    { 
+        string difficulty = ChooseWedgeDifficulty();
+        Question selected = GetNonRepeatedQuestion(category, difficulty);
+
+        if (selected == null)
+        {
+            Debug.LogWarning($"No questions available for {category} [{difficulty}]");
+            onAnswered?.Invoke(false);
+            return;
+        }
+
+        Debug.Log($"Selected wedge question ({category}, {difficulty}): {selected.enunciado}");
+        UIManager.Instance.ShowQuestion(selected, difficulty, onAnswered, slot);
     }
 
     #endregion

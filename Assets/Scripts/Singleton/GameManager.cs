@@ -13,10 +13,6 @@ public class GameManager : MonoBehaviour
 
     public bool IsLoadingGame { get; private set; } = false;
 
-    [Header("Screen Settings")]
-    private readonly float _targetAspect = 16f / 9f;
-    private Camera _mainCamera;
-
     [Header("Game Data")]
     // Mapping from color to category
     private readonly Dictionary<QuesitoColor, string> _categoriesByColor = new Dictionary<QuesitoColor, string>();
@@ -45,10 +41,6 @@ public class GameManager : MonoBehaviour
 
         LoadPlayerSettings();
 
-        FindMainCamera();
-        SceneManager.activeSceneChanged += OnSceneChanged;
-        UpdateAspectRatio();
-
         // Singleton pattern
         if (Instance != null && Instance != this)
         {
@@ -64,30 +56,11 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Keeps aspect ratio updated if the camera changes or screen size adjusts.
-    /// </summary>
-    private void Update()
-    {
-        if (_mainCamera == null)
-            FindMainCamera();
-        else
-            UpdateAspectRatio();
-    }
-
-    /// <summary>
     /// Public flag to indicate if it is a new game or a loaded one
     /// </summary>
     public void SetLoadingGame(bool value)
     {
         IsLoadingGame = value;
-    }
-
-    /// <summary>
-    /// Unsubscribes from scene change events when destroyed.
-    /// </summary>
-    private void OnDestroy()
-    {
-        SceneManager.activeSceneChanged -= OnSceneChanged;
     }
 
     #endregion
@@ -225,75 +198,20 @@ public class GameManager : MonoBehaviour
         float volume = PlayerPrefs.GetFloat("volume", 1f);
         AudioListener.volume = volume;
 
-        int resIndex = PlayerPrefs.GetInt("resolution", 0);
+        //int resIndex = PlayerPrefs.GetInt("resolution", 0);
 
         int[,] resolutions = new int[,]
         {{1920, 1080},{1600, 900},{1366, 768},{1280, 720}};
 
-        int width = resolutions[resIndex, 0];
-        int height = resolutions[resIndex, 1];
+        //int width = resolutions[resIndex, 0];
+        //int height = resolutions[resIndex, 1];
 
-        Screen.SetResolution(width, height, FullScreenMode.FullScreenWindow);
+        //Screen.SetResolution(width, height, FullScreenMode.FullScreenWindow);
 
 
         bool vibration = PlayerPrefs.GetInt("vibration", 1) == 1;
 
         Debug.Log("✅ Player settings loaded at startup");
-    }
-
-    /// <summary>
-    /// Locates the main camera in the active scene and updates aspect ratio.
-    /// </summary>
-    private void FindMainCamera()
-    {
-        _mainCamera = Camera.main;
-
-        if (_mainCamera == null)
-        {
-            Debug.LogWarning("⚠️ Main camera not found in the current scene.");
-            return;
-        }
-
-        UpdateAspectRatio();
-    }
-
-    /// <summary>
-    /// Adjusts the camera viewport to maintain a fixed 16:9 aspect ratio.
-    /// </summary>
-    private void UpdateAspectRatio()
-    {
-        if (_mainCamera == null) return;
-
-        float targetAspect = _targetAspect; // 16f / 9f
-        float windowAspect = (float)Screen.width / Screen.height;
-        float scaleHeight = windowAspect / targetAspect;
-
-        Rect rect = _mainCamera.rect;
-
-        if (scaleHeight < 1f)
-        {
-            // More vertical screen = black bars at the top and bottom
-            rect.width = 1f;
-            rect.height = scaleHeight;
-            rect.x = 0f;
-            rect.y = (1f - scaleHeight) * 0.5f;
-        }
-        else
-        {
-            // More horizontal screen = black bars on the sides
-            float scaleWidth = 1f / scaleHeight;
-            rect.width = scaleWidth;
-            rect.height = 1f;
-            rect.x = (1f - scaleWidth) * 0.5f;
-            rect.y = 0f;
-        }
-
-        _mainCamera.rect = rect;
-        _mainCamera.clearFlags = CameraClearFlags.SolidColor;
-        _mainCamera.backgroundColor = Color.black;
-
-        // This prevents a gray visual "trail" from being left where the camera was cropped.
-        GL.Clear(true, true, Color.black);
     }
 
     #endregion
@@ -380,14 +298,5 @@ public class GameManager : MonoBehaviour
             }) .SetEase(Ease.InOutQuad) ); 
         } 
     }
-
-    /// <summary>
-    /// Called when the active scene changes; re-finds the main camera.
-    /// </summary>
-    private void OnSceneChanged(Scene oldScene, Scene newScene)
-    {
-        FindMainCamera();
-    }
-
     #endregion
 }

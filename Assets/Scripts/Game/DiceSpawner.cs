@@ -44,12 +44,6 @@ public class DiceSpawner : MonoBehaviour
         GameManager.Instance.PlayDiceSound();
 
         Rigidbody rb = dice.GetComponent<Rigidbody>();
-        if (rb == null)
-        {
-            Debug.LogError("Dice prefab must have a Rigidbody.");
-            Destroy(dice);
-            return;
-        }
 
         SetupDiceCallback(dice, onResult);
         ApplyRandomForceAndTorque(rb);

@@ -76,7 +76,6 @@ public class TurnManager : MonoBehaviour
 
     [Header("UI")]
     public TMP_Text infoText;
-    private float blinkSpeed = 2f;
     private Tween blinkTween;
     public GameObject pausePanel;
     public GameObject loadingPanel;
@@ -86,7 +85,7 @@ public class TurnManager : MonoBehaviour
     [SerializeField] private GameObject mainCamera;
 
     [Header("Steal Duel Logic")]
-    private bool isDuelActive = false;
+    public bool isDuelActive = false;
     private int duelAttacker = 0;
     private int duelDefender = 0;
     private int duelCurrent;
@@ -97,7 +96,7 @@ public class TurnManager : MonoBehaviour
     private readonly string[] teamColors = { "green", "blue", "red", "yellow" };
 
 
-    private readonly string[] wedgeColors = { "#4E93CC", "#E54781", "#C97932", "#DDB748", "#87B464", "#9063BD" };  // blue, pink, orange, yellow, green, purple
+    private readonly string[] wedgeColors = { "#4C92CB", "#E54781", "#C67731", "#EDCB34", "#86B363", "#8F62BC" };  // blue, pink, orange, yellow, green, purple
     int wedgeColorsIndex;
     string wedgeCategory;
 
@@ -148,6 +147,8 @@ public class TurnManager : MonoBehaviour
         GameManager.Instance.SetLoadingGame(false);
 
         loadingPanel.SetActive(false);
+
+        MusicManager.Instance.PlayMusic("backgroundMusic");
 
         StartTurn();
     }
@@ -277,7 +278,7 @@ public class TurnManager : MonoBehaviour
     public void OnExitSavePressed()
     {
         GameManager.Instance.PlayClickSound();
-
+        MusicManager.Instance.StopMusic();
         GameSaveManager.Instance.SaveGame();
  
         Destroy(QuestionsManager.Instance.gameObject);
@@ -318,7 +319,7 @@ public class TurnManager : MonoBehaviour
         Debug.Log("Normal node, fetching question...");
         string category = GameManager.Instance.GetCategoryForColor(ConvertNodeColor(node.nodeColor));
 
-        QuestionsManager.Instance.AskRandomQuestion(category, correct =>
+        QuestionsManager.Instance.AskRandomQuestion(category,1, correct =>
         {
             if (correct)
             {
@@ -340,7 +341,7 @@ public class TurnManager : MonoBehaviour
         Debug.Log($"Wedge node, category {node.nodeColor}");
         string category = GameManager.Instance.GetCategoryForColor(ConvertNodeColor(node.nodeColor));
 
-        QuestionsManager.Instance.AskRandomWedgeQuestion(category, correct =>
+        QuestionsManager.Instance.AskRandomWedgeQuestion(category,1, correct =>
         {
             if (correct)
             {
@@ -380,6 +381,8 @@ public class TurnManager : MonoBehaviour
             });
             return;
         }
+        MusicManager.Instance.PauseMusic(1,0);
+        MusicManager.Instance.PlayMusic("stealMusic");
 
         SetupWedgeButtonsForSteal(attacker, candidates);
 
@@ -487,7 +490,7 @@ public class TurnManager : MonoBehaviour
         string category = GameManager.Instance.GetCategoryForColor(duelColor);
 
         // Pregunta aleatoria del color a robar
-        QuestionsManager.Instance.AskRandomWedgeQuestion(category, (correct) =>
+        QuestionsManager.Instance.AskRandomStolenQuestion(category,2, (correct) =>
         {
             OnStealAnswerReceived(correct);
         });
@@ -498,6 +501,7 @@ public class TurnManager : MonoBehaviour
     {
         if (!isCorrect)
         {
+            MusicManager.Instance.ResumeMusic(1);
             Debug.Log($"STEAL DUEL Player {duelCurrent} FAILED!");
 
             if (duelCurrent == duelAttacker)
@@ -522,6 +526,8 @@ public class TurnManager : MonoBehaviour
                 });
             }
 
+            MusicManager.Instance.ResumeMusic(1);
+            
             return;
         }
 
@@ -655,6 +661,7 @@ public class TurnManager : MonoBehaviour
         AddLocalizationVariables(rerollBoxText);
         AddLocalizationVariables(winText);
         AddLocalizationVariables(wedgeStolenText);
+        AddLocalizationVariables(heistFailedText);
     }
 
     /// <summary>
@@ -703,10 +710,9 @@ public class TurnManager : MonoBehaviour
             return;
         }
 
-        blinkTween = infoText
-            .DOFade(0f, blinkSpeed / 3f)
-            .SetLoops(-1, LoopType.Yoyo)
-            .SetEase(Ease.InOutSine);
+        blinkTween = DOTween.Sequence()
+            .AppendInterval(1.5f).Append(infoText.DOFade(0f, 0.5f)).AppendInterval(0.5f)                 
+            .Append(infoText.DOFade(1f, 0.5f)).SetLoops(-1).SetEase(Ease.Linear);
     }
 
     /// <summary>
@@ -879,7 +885,6 @@ public class TurnManager : MonoBehaviour
 
             if (held < holdThreshold)
             {
-                // TAP → lanzar dado
                 isWaitingForClick = false;
                 UpdateInfoText("");
                 diceSpawner.SpawnAndThrowDice(OnDiceResult);

@@ -23,8 +23,8 @@ public enum QuesitoColor
 {
     Azul,
     Rosa,
+    Naranja,
     Amarillo,
     Verde,
-    Naranja,
     Morado
 }

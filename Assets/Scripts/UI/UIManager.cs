@@ -66,6 +66,8 @@ public class UIManager : MonoBehaviour
     private Vector3 _cardStartPosition;
     private Quaternion _cardStartRotation;
 
+    private int slot;
+
     // Tweens and sequences
     private Tween _needleTween;
     private Tween _fillTween;
@@ -112,10 +114,11 @@ public class UIManager : MonoBehaviour
     /// <param name="question">Question data to display.</param>
     /// <param name="difficulty">Difficulty string ("facil"/"media"/"dificil").</param>
     /// <param name="onAnswered">Callback to call when answer is processed.</param>
-    public void ShowQuestion(Question question, string difficulty, Action<bool> onAnswered)
+    public void ShowQuestion(Question question, string difficulty, Action<bool> onAnswered, int slot)
     {
         _currentQuestion = question;
         _answerCallback = onAnswered;
+        this.slot = slot;
 
         DisplayDifficulty(difficulty);
 
@@ -174,6 +177,8 @@ public class UIManager : MonoBehaviour
 
         // Wait a bit to let user read big text
         yield return new WaitForSeconds(5f);
+
+        if (TurnManager.Instance.isDuelActive) MusicManager.Instance.PauseMusic(slot);
 
         // Animate size reduction of the question text smoothly (0.5s)
         yield return AnimateQuestionTextResize(70, 40, 0.5f);
@@ -338,7 +343,7 @@ public class UIManager : MonoBehaviour
         }
 
         // Ensure background returns to original color at the end
-        seq.OnComplete(() => backgroundImage.color = targetColor);
+        seq.OnComplete(() => backgroundImage.color = targetColor);  
     }
 
     /// <summary>
@@ -396,11 +401,10 @@ public class UIManager : MonoBehaviour
         questionPanel.SetActive(false);
         answersPanel.SetActive(false);
         wedgePanel.SetActive(true);
-
+        MusicManager.Instance.ResumeMusic(slot);
         // Card return sequence
         _cardReturnSequence?.Kill();
         _cardReturnSequence = DOTween.Sequence();
-
         _cardReturnSequence.Append(cardTransform.DORotate(new Vector3(-90f, 90f, 0f), 0.5f, RotateMode.FastBeyond360).SetEase(Ease.OutBack));
         _cardReturnSequence.AppendInterval(0.25f);
         _cardReturnSequence.Append(cardTransform.DOMoveY(30f, 0.5f).SetEase(Ease.OutCubic));
@@ -413,6 +417,7 @@ public class UIManager : MonoBehaviour
             // Invoke callback
             _answerCallback?.Invoke(wasCorrect);
         }));
+
     }
 
     #endregion
@@ -436,11 +441,12 @@ public class UIManager : MonoBehaviour
 
         _cardSequence = DOTween.Sequence();
 
+        if (!TurnManager.Instance.isDuelActive) MusicManager.Instance.PauseMusic(slot);
+
         // Step 1: move to mid and spin Z
         _cardSequence.Append(cardTransform.DOMove(midPos, 1.5f).SetEase(Ease.InOutCubic));
         _cardSequence.Join(cardTransform.DORotate(new Vector3(initialEuler.x, initialEuler.y, initialEuler.z + 720f), 1.5f, RotateMode.FastBeyond360).SetEase(Ease.InOutSine));
         _cardSequence.AppendInterval(0.25f);
-
         // Step 2: move higher and continue rotation
         _cardSequence.Append(cardTransform.DOMove(highPos, 2f).SetEase(Ease.OutCubic));
         _cardSequence.Join(cardTransform.DORotate(new Vector3(initialEuler.x + 1080f, initialEuler.y, initialEuler.z), 2f, RotateMode.FastBeyond360).SetEase(Ease.OutCubic));

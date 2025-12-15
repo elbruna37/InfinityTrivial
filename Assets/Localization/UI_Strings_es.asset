@@ -196,7 +196,8 @@ MonoBehaviour:
     m_Localized: "\xA1El equipo <color={teamColor}>{teamName}</color> ha ganado!
       \\nHaz click para volver al men\xFA."
     m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8685320046573781073
   - m_Id: 1108704692264960
     m_Localized: VERDE
     m_Metadata:
@@ -238,8 +239,8 @@ MonoBehaviour:
       m_Items:
       - rid: 8685320046573781073
   - m_Id: 11718283935342592
-    m_Localized: El equipo <color={attackerColorVar}>{attackerVar}</color> ha fallado
-      y pierde turno
+    m_Localized: El equipo <color={teamColor}>{teamName}</color> ha fallado y pierde
+      turno
     m_Metadata:
       m_Items:
       - rid: 8685320046573781073
@@ -275,3 +276,4 @@ MonoBehaviour:
         - id: 11709433983262720
         - id: 14217547079680
         - id: 11718283935342592
+        - id: 1100248618885120

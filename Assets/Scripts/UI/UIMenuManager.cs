@@ -22,7 +22,7 @@ public class UIMenuManager : MonoBehaviour
 
     [Header("UI Elements")]
     [SerializeField] private Image logoImage;
-    [SerializeField] private GameObject leftButtons;
+    [SerializeField] private RectTransform leftButtons;
     [SerializeField] private GameObject playButton;
     [SerializeField] private GameObject continueButton;
 
@@ -36,16 +36,17 @@ public class UIMenuManager : MonoBehaviour
     /// </summary>
     private void Start()
     {
+        MusicManager.Instance.PlayMusic("menuMusic");
         canRotate = true;
         mainMenuPanel.SetActive(true);
-        PlayMenuEntranceAnimation();
+        PlayMenuEntranceAnimation(); 
     }
 
     /// <summary>
     /// Rotates the menu UI slowly for visual appeal.
     /// </summary>
     private void Update()
-    {
+    {  
         if (canRotate)
         {
             transform.Rotate(0f, rotationSpeed * Time.deltaTime, 0f);
@@ -57,7 +58,7 @@ public class UIMenuManager : MonoBehaviour
     #region UI Animation
 
     /// <summary>
-    /// Plays the entrance animation for the menu using DOTween sequences.
+    /// Plays the entrance animation for the menu using DOTween sequences. If there is a save file, also animate the continue button
     /// </summary>
     private void PlayMenuEntranceAnimation()
     {
@@ -65,17 +66,18 @@ public class UIMenuManager : MonoBehaviour
 
         Sequence entranceSequence = DOTween.Sequence();
 
-        entranceSequence.Append(leftButtons.transform.DOLocalMoveX(0f, 0.5f).SetEase(Ease.OutBounce));
+        entranceSequence.Append(leftButtons.transform.DOMoveX(20f, 0.5f).SetEase(Ease.OutBounce));
 
         if (File.Exists(saveFilePath))
         {
             continueButton.SetActive(true);
-            entranceSequence.Join(playButton.transform.DOLocalMoveY(358f, 0.5f).SetEase(Ease.OutBounce));
+            entranceSequence.Join(playButton.transform.DOLocalMoveY(278f, 0.5f).SetEase(Ease.OutBounce));
         }
-        else { entranceSequence.Join(playButton.transform.DOLocalMoveY(219f, 0.5f).SetEase(Ease.OutBounce)); }
+        else { entranceSequence.Join(playButton.transform.DOLocalMoveY(139f, 0.5f).SetEase(Ease.OutBounce)); }
         
-        entranceSequence.Join(logoImage.transform.DOScale(5f, 0.5f).SetEase(Ease.OutBounce));
+        entranceSequence.Join(logoImage.transform.DOScale(4.5f, 0.5f).SetEase(Ease.OutBounce));
     }
+
 
     #endregion
 
@@ -126,7 +128,7 @@ public class UIMenuManager : MonoBehaviour
         GameSaveManager.Instance.DeleteSave();
 
         continueButton.SetActive(false);
-        playButton.transform.DOLocalMoveY(219f, 0.5f).SetEase(Ease.OutBounce);
+        playButton.transform.DOLocalMoveY(139f, 0.5f).SetEase(Ease.OutBounce);
 
         confirmDeletePanel.SetActive(false);
         mainMenuPanel.SetActive(true);

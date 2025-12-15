@@ -70,14 +70,6 @@ public class Dice : MonoBehaviour
 
                 onDiceStopped?.Invoke(currentValue);
             }
-            else
-            {
-                Debug.LogWarning("Dice face collider name is not a number: " + hit.collider.gameObject.name);
-            }
-        }
-        else
-        {
-            Debug.LogWarning("No collider detected above the dice to read its value.");
         }
     }
 

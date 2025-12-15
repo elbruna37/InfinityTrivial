@@ -88,6 +88,7 @@ public class LoadManager : MonoBehaviour
     public void ConfirmCategories()
     {
         GameManager.Instance.PlayClickSound();
+        
 
         canvas.SetActive(false);
 
@@ -95,10 +96,11 @@ public class LoadManager : MonoBehaviour
 
         wedgeSeq.OnComplete(() =>
         {
+            MusicManager.Instance.StopMusic();
             Sequence camSequence = DOTween.Sequence();
             camSequence.Append(cameraObject.transform.DOMove(new Vector3(0, 8.7f, 0), 1f).SetEase(Ease.InOutQuad));
             camSequence.Join(cameraObject.transform.DORotate(new Vector3(90, 360, 0), 1f, RotateMode.FastBeyond360).SetEase(Ease.InOutQuad));
-            camSequence.OnComplete(() => {
+            camSequence.OnComplete(() => { 
                 SceneManager.LoadScene("Game");
                 SceneManager.sceneLoaded += OnGameSceneLoaded;
             });
