@@ -18,7 +18,7 @@ public class GameSaveData
 
     public Dictionary<int, List<QuesitoColor>> wedgesByPlayer;
 
-    public Dictionary<string, List<int>> usedQuestionsByCategory;
+    public Dictionary<string, List<string>> usedQuestionsByCategory;
 
 }
 

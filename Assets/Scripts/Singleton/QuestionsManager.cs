@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Localization;
@@ -16,11 +18,13 @@ public class QuestionsManager : MonoBehaviour
     public Question[] allQuestions;
     public List<string> availableCategories;
 
+    private string historyFilePath;
+
     /// <summary>
     /// History of asked questions, keyed by "category_difficulty"
     /// to prevent repetition within a session.
     /// </summary>
-    public readonly Dictionary<string, HashSet<int>> questionHistory = new Dictionary<string, HashSet<int>>();
+    public readonly Dictionary<string, HashSet<string>> questionHistory = new Dictionary<string, HashSet<string>>();
 
     #region Unity Lifecycle
 
@@ -40,6 +44,8 @@ public class QuestionsManager : MonoBehaviour
             return;
         }
 
+        historyFilePath = Path.Combine(Application.persistentDataPath,"historial_importadas.json");
+
         LoadQuestionsFromLocale();
     }
 
@@ -52,10 +58,12 @@ public class QuestionsManager : MonoBehaviour
     /// </summary>
     /// <param name="category">Category of the question.</param>
     /// <param name="onAnswered">Callback invoked with true/false when answered.</param>
-    public void AskRandomQuestion(string category,int slot, System.Action<bool> onAnswered)
+    public void AskRandomQuestion(string category,int slot,float easy, float medium, System.Action<bool> onAnswered)
     {
-        string difficulty = ChooseRandomDifficulty();
-        Question selected = GetNonRepeatedQuestion(category, difficulty);
+        string normalizedCategory = NormalizeCategory(category);
+        string difficulty = ChooseRandomDifficulty(easy,medium);
+
+        Question selected = GetNonRepeatedQuestion(normalizedCategory, difficulty);
 
         if (selected == null)
         {
@@ -66,46 +74,6 @@ public class QuestionsManager : MonoBehaviour
 
         Debug.Log($"Selected question ({category}, {difficulty}): {selected.enunciado}");
         UIManager.Instance.ShowQuestion(selected, difficulty, onAnswered,slot);
-    }
-
-    /// <summary>
-    /// Asks a random "wedge" (Quesito) question for a category.
-    /// Uses a different difficulty distribution favoring harder questions.
-    /// </summary>
-    public void AskRandomWedgeQuestion(string category,int slot, System.Action<bool> onAnswered)
-    {
-        string difficulty = ChooseWedgeDifficulty();
-        Question selected = GetNonRepeatedQuestion(category, difficulty);
-
-        if (selected == null)
-        {
-            Debug.LogWarning($"No questions available for {category} [{difficulty}]");
-            onAnswered?.Invoke(false);
-            return;
-        }
-
-        Debug.Log($"Selected wedge question ({category}, {difficulty}): {selected.enunciado}");
-        UIManager.Instance.ShowQuestion(selected, difficulty, onAnswered,slot);
-    }
-
-    /// <summary>
-    /// Asks a random "wedge" (Quesito) question for a category.
-    /// Uses a different difficulty distribution favoring harder questions.
-    /// </summary>
-    public void AskRandomStolenQuestion(string category,int slot, System.Action<bool> onAnswered)
-    { 
-        string difficulty = ChooseWedgeDifficulty();
-        Question selected = GetNonRepeatedQuestion(category, difficulty);
-
-        if (selected == null)
-        {
-            Debug.LogWarning($"No questions available for {category} [{difficulty}]");
-            onAnswered?.Invoke(false);
-            return;
-        }
-
-        Debug.Log($"Selected wedge question ({category}, {difficulty}): {selected.enunciado}");
-        UIManager.Instance.ShowQuestion(selected, difficulty, onAnswered, slot);
     }
 
     #endregion
@@ -128,10 +96,46 @@ public class QuestionsManager : MonoBehaviour
         }
 
         QuestionBatch batch = JsonUtility.FromJson<QuestionBatch>(jsonFile.text);
-        allQuestions = batch.questions;
+        List<Question> loadedQuestions = new List<Question>();
+
+        if (batch?.questions != null)
+            loadedQuestions.AddRange(batch.questions);
+
+        if (File.Exists(historyFilePath))
+        {
+            string historyJson = File.ReadAllText(historyFilePath);
+            QuestionArrayWrapper historyWrapper = JsonUtility.FromJson<QuestionArrayWrapper>(historyJson);
+
+            if (historyWrapper?.preguntas != null && historyWrapper.preguntas.Length > 0)
+            {
+                var groupedByCategory = historyWrapper.preguntas
+                    .Where(q => !string.IsNullOrEmpty(q.categoria))
+                    .GroupBy(q => q.categoria);
+
+                foreach (var categoryGroup in groupedByCategory)
+                {
+                    int faciles = categoryGroup.Count(q =>
+                    NormalizeDifficulty(q.dificultad) == "facil");
+
+                    int medias = categoryGroup.Count(q =>
+                        NormalizeDifficulty(q.dificultad) == "media");
+
+                    int dificiles = categoryGroup.Count(q =>
+                        NormalizeDifficulty(q.dificultad) == "dificil");
+
+                    if (faciles >= 30 && medias >= 30 && dificiles >= 30)
+                    {
+                        loadedQuestions.AddRange(categoryGroup);
+                    }
+                }
+            }
+        }
+
+        allQuestions = loadedQuestions.ToArray();
 
         // Extract unique categories
         availableCategories = allQuestions
+            .Where(q => !string.IsNullOrEmpty(q.categoria))
             .Select(q => q.categoria)
             .Distinct()
             .ToList();
@@ -144,20 +148,31 @@ public class QuestionsManager : MonoBehaviour
     /// </summary>
     private Question GetNonRepeatedQuestion(string category, string difficulty)
     {
-        string key = $"{category}_{difficulty}";
-        if (!questionHistory.ContainsKey(key))
-            questionHistory[key] = new HashSet<int>();
+        if (string.IsNullOrEmpty(category) || string.IsNullOrEmpty(difficulty)) 
+            return null;
+
+        string normalizedCategory = category.Trim().ToLower();
+        string normalizedDifficulty = NormalizeDifficulty(difficulty);
+
+        string key = $"{normalizedCategory}_{normalizedDifficulty}";
+
+        if (!questionHistory.ContainsKey(key)) questionHistory[key] = new HashSet<string>();
 
         // Filter questions matching category & difficulty
         var filtered = allQuestions
-            .Select((q, i) => new { Question = q, Index = i })
-            .Where(x => x.Question.categoria == category && x.Question.dificultad == difficulty)
-            .ToList();
+       .Where(q =>
+           !string.IsNullOrEmpty(q.categoria) &&
+           NormalizeDifficulty(q.dificultad) == normalizedDifficulty &&
+           q.categoria.Trim().ToLower() == normalizedCategory
+       ).ToList();
+
+        if (filtered.Count == 0)
+            return null;
 
         // Remove already asked
         var available = filtered
-            .Where(x => !questionHistory[key].Contains(x.Index))
-            .ToList();
+        .Where(q => !questionHistory[key].Contains(GetQuestionUniqueId(q)))
+        .ToList(); ;
 
         // If all used, reset history for this group
         if (available.Count == 0)
@@ -170,28 +185,46 @@ public class QuestionsManager : MonoBehaviour
         if (available.Count == 0) return null; // No questions at all
 
         // Pick random available question
-        var selected = available[Random.Range(0, available.Count)];
-        questionHistory[key].Add(selected.Index);
-        return selected.Question;
+        var selected = available[UnityEngine.Random.Range(0, available.Count)];
+        questionHistory[key].Add(GetQuestionUniqueId(selected));
+
+        return selected;
     }
 
     /// <summary>
-    /// Random difficulty distribution for normal questions.
+    /// Generates a unique ID for a question based on its content.
+    /// This prevents duplicates even if the indexes change.
     /// </summary>
-    private string ChooseRandomDifficulty()
+    private string GetQuestionUniqueId(Question question)
     {
-        float r = Random.value;
-        if (r < 0.5f) return "facil";
-        if (r < 0.9f) return "media";
-        return "dificil";
+        return $"{question.enunciado?.Trim().ToLower()}_{question.categoria?.Trim().ToLower()}_{NormalizeDifficulty(question.dificultad)}";
     }
 
     /// <summary>
-    /// Random difficulty distribution for wedge questions (harder).
+    /// Random difficulty distribution for questions.
     /// </summary>
-    private string ChooseWedgeDifficulty()
+    private string ChooseRandomDifficulty(float easy, float medium)
     {
-        return Random.value < 0.7f ? "dificil" : "media";
+        float r = UnityEngine.Random.value;
+        if (r < easy) return "facil";
+        if (r >= easy && r < medium) return "media";
+        else return "dificil";
+    }
+
+    private string NormalizeCategory(string category)
+    {
+        return string.IsNullOrEmpty(category)
+            ? ""
+            : category.Trim().ToLower();
+    }
+
+    private string NormalizeDifficulty(string d)
+    {
+        return d
+            .ToLower()
+            .Replace("á", "a")
+            .Replace("é", "e")
+            .Replace("í", "i");
     }
 
     #endregion

@@ -140,6 +140,9 @@ public class LoadManager : MonoBehaviour
 
         FadeOutWedgeTexts();
 
+        Destroy(QuestionsManager.Instance.gameObject);
+        Destroy(GameSaveManager.Instance.gameObject);
+        
         GameManager.Instance.MoveObjectToPoint(cameraObject, new Vector3(0, 8, -10.7f), Quaternion.Euler(48.968f, 0f, 0f), "Menu");
   
     }

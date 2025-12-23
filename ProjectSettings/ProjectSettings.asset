@@ -160,8 +160,8 @@ PlayerSettings:
   targetPixelDensity: 30
   resolutionScalingMode: 2
   resetResolutionOnWindowResize: 0
-  androidSupportedAspectRatio: 1
-  androidMaxAspectRatio: 3
+  androidSupportedAspectRatio: 2
+  androidMaxAspectRatio: 2.4
   androidMinAspectRatio: 1.777
   applicationIdentifier:
     Android: com.brunasystems.infinitytrivial

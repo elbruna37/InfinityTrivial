@@ -92,7 +92,7 @@ public class BoardNode : MonoBehaviour
         UnsubscribeFromTurnManager();
     }
 
-    private void OnMouseDown()
+    public void OnMouseDown()
     {
         BoardManager.Instance.NotifyNodeClicked(this);
     }

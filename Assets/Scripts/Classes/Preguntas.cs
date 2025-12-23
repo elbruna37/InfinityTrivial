@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,6 +18,12 @@ public class Question
 public class QuestionBatch
 {
     public Question[] questions;
+}
+
+[Serializable]
+public class QuestionArrayWrapper
+{
+    public Question[] preguntas;
 }
 
 public enum QuesitoColor

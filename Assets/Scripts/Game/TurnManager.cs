@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Localization;
@@ -23,25 +22,27 @@ public class TurnManager : MonoBehaviour
 
     [Header("References")]
     public DiceSpawner diceSpawner;            
-    public BoardManager boardManager;           
+    public BoardManager boardManager;
 
-    [Header("Player Pieces")]
+   [Header("Player Pieces")]
     private readonly List<PlayerPiece> playerPieces = new List<PlayerPiece>();
     private int[] wedgesPerPlayer;
     private Dictionary<int, List<QuesitoColor>> wedgesByPlayer = new();
 
     [Header("Control")]
     public int currentPlayerIndex = 0;
-    bool ignoreNextPointerUp = false;
-    bool isWaitingForClick = false;
     public bool isPause = false;
+    public bool isWedgeQuestion = false;
+    bool tapCancelled;
+
+    //true = PC controller; false = Movil Controller
+    [SerializeField] private bool controller = false;
+    private float touchStartTime;
+    private bool touchActive;
+    private bool pauseTriggered;
 
     private bool gameEnded = false;
     public bool canDestroy = false;
-
-    [SerializeField] private float holdThreshold = 0.4f;
-    private bool isPointerDown = false;
-    private float pointerDownTime = 0f;
 
     [Header("Localization")]
     [SerializeField] private LocalizedString turnText;
@@ -80,8 +81,10 @@ public class TurnManager : MonoBehaviour
     public GameObject pausePanel;
     public GameObject loadingPanel;
     public GameObject[] playerWedgeContainers;
+    [SerializeField] private Button pauseBtn;
 
-    [Header("Camera Reference")]
+
+   [Header("Camera Reference")]
     [SerializeField] private GameObject mainCamera;
 
     [Header("Steal Duel Logic")]
@@ -121,6 +124,8 @@ public class TurnManager : MonoBehaviour
     /// </summary>
     private void Start()
     {
+        pauseBtn.interactable = false;
+
         teamNames = new string[]
         {
             teamGreen.GetLocalizedString(),
@@ -153,14 +158,6 @@ public class TurnManager : MonoBehaviour
         StartTurn();
     }
 
-    /// <summary>
-    /// Waits for player click to roll dice or hold for pause.
-    /// </summary>
-    void Update()
-    {
-        ClickController();
-    }
-
     #endregion
 
     #region Turn Logic
@@ -175,7 +172,11 @@ public class TurnManager : MonoBehaviour
         InitialaizeLocation();
 
         StartCoroutine(SetLocalizedText(turnText));
-        isWaitingForClick = true;
+
+        WaitForPlayer(controller,() =>
+        {
+            diceSpawner.SpawnAndThrowDice(OnDiceResult);
+        });
     }
 
     /// <summary>
@@ -268,47 +269,6 @@ public class TurnManager : MonoBehaviour
 
     #endregion
 
-    #region PauseLogic
-
-    public void ShowPausePanel()
-    {
-        pausePanel.SetActive(true);
-    }
-
-    public void OnExitSavePressed()
-    {
-        GameManager.Instance.PlayClickSound();
-        MusicManager.Instance.StopMusic();
-        GameSaveManager.Instance.SaveGame();
- 
-        Destroy(QuestionsManager.Instance.gameObject);
-        Destroy(BoardManager.Instance.gameObject);
-
-        GameManager.Instance.AnimateCameraAfterSceneLoad(mainCamera, new Vector3(0, 8, -10.7f), Quaternion.Euler(48.968f, 0f, 0f), "Menu");
-    }
-
-    public void OnContinuePressed()
-    {
-        GameManager.Instance.PlayClickSound();
-
-        pausePanel.SetActive(false);
-
-        StartTurn();
-
-    }
-
-    public void OnOptionsPressed()
-    {
-        GameManager.Instance.PlayClickSound();
-
-        GameSaveManager.Instance.SaveGame();
-
-        GameManager.Instance.MoveObjectToPoint(mainCamera, new UnityEngine.Vector3(13.97f, 2.21f, -1.25f), UnityEngine.Quaternion.Euler(36.151f, -72.055f, 0f), "Options");
-        //HAY QUE AÑADIR UNA FORMA DE VOLVER A ESTA ESCENA DESPUÉS DE IR A LA DE OPCIONES
-    }
-
-    #endregion
-
     #region Node Handling
 
     /// <summary>
@@ -317,14 +277,20 @@ public class TurnManager : MonoBehaviour
     private void HandleNormalNode(BoardNode node)
     {
         Debug.Log("Normal node, fetching question...");
+        isWedgeQuestion = false;
         string category = GameManager.Instance.GetCategoryForColor(ConvertNodeColor(node.nodeColor));
 
-        QuestionsManager.Instance.AskRandomQuestion(category,1, correct =>
+        StartCoroutine(PlaySoundDelayed(1,1, () =>
+        {
+            GameManager.Instance.PlayQuestionSound();
+        }));
+
+        QuestionsManager.Instance.AskRandomQuestion(category,1,0.5f,0.9f, correct =>
         {
             if (correct)
             {
                 StartCoroutine(SetLocalizedText(rollAgainText));
-                isWaitingForClick = true;
+                StartTurn();
             }
             else
             {
@@ -339,15 +305,21 @@ public class TurnManager : MonoBehaviour
     private void HandleWedgeNode(BoardNode node)
     {
         Debug.Log($"Wedge node, category {node.nodeColor}");
+        isWedgeQuestion = true;
         string category = GameManager.Instance.GetCategoryForColor(ConvertNodeColor(node.nodeColor));
+       
+        StartCoroutine(PlaySoundDelayed(1,1, () =>
+        {
+            GameManager.Instance.PlayWedgeQuestionSound();
+        }));
 
-        QuestionsManager.Instance.AskRandomWedgeQuestion(category,1, correct =>
+        QuestionsManager.Instance.AskRandomQuestion(category,1,0,0.3f, correct =>
         {
             if (correct)
             {
                 StartCoroutine(SetLocalizedText(wedgeWinText));
                 ActivateWedgeForPlayer(currentPlayerIndex, ConvertNodeColor(node.nodeColor));
-                isWaitingForClick = true;
+                StartTurn();
             }
             else
             {
@@ -375,14 +347,18 @@ public class TurnManager : MonoBehaviour
         {
             Debug.Log("No opponents have wedges, skip turn.");
             StartCoroutine(SetLocalizedText(couldntStolenText));
-            WaitForPlayerTap(() =>
+
+            WaitForPlayer(controller,() =>
             {
                 NextTurn();
             });
             return;
         }
-        MusicManager.Instance.PauseMusic(1,0);
-        MusicManager.Instance.PlayMusic("stealMusic");
+
+        PlaySoundDelayed(0,1, () =>
+        {
+            MusicManager.Instance.PlayMusic("stealMusic");
+        });
 
         SetupWedgeButtonsForSteal(attacker, candidates);
 
@@ -396,7 +372,11 @@ public class TurnManager : MonoBehaviour
     private void HandleRerollNode()
     {
         StartCoroutine(SetLocalizedText(rerollBoxText));
-        isWaitingForClick = true;
+
+        WaitForPlayer(controller,() =>
+        {
+            diceSpawner.SpawnAndThrowDice(OnDiceResult);
+        });
     }
 
     #endregion
@@ -475,7 +455,7 @@ public class TurnManager : MonoBehaviour
 
         StartCoroutine(SetLocalizedText(duelStartText));
 
-        WaitForPlayerTap(() =>
+        WaitForPlayer(controller,() =>
         {
             ContinueStealDuel();
         });
@@ -489,13 +469,11 @@ public class TurnManager : MonoBehaviour
         Debug.Log($"STEAL TURN Player {duelCurrent}");
         string category = GameManager.Instance.GetCategoryForColor(duelColor);
 
-        // Pregunta aleatoria del color a robar
-        QuestionsManager.Instance.AskRandomStolenQuestion(category,2, (correct) =>
+        QuestionsManager.Instance.AskRandomQuestion(category,2,0,0.1f, (correct) =>
         {
             OnStealAnswerReceived(correct);
         });
     }
-
 
     private void OnStealAnswerReceived(bool isCorrect)
     {
@@ -509,7 +487,8 @@ public class TurnManager : MonoBehaviour
                 Debug.Log("Attacker failed, turn ends.");
                 StartCoroutine(SetLocalizedText(heistFailedText));
                 isDuelActive = false;
-                WaitForPlayerTap(() =>
+                
+                WaitForPlayer(controller,() =>
                 {
                     NextTurn();
                 });
@@ -520,7 +499,8 @@ public class TurnManager : MonoBehaviour
                 StartCoroutine(SetLocalizedText(wedgeStolenText));
                 GiveWedgeToAttacker(duelAttacker, duelDefender, duelColor);
                 isDuelActive = false;
-                WaitForPlayerTap(() =>
+
+                WaitForPlayer(controller,() =>
                 {
                     StartTurn();
                 });
@@ -606,7 +586,7 @@ public class TurnManager : MonoBehaviour
         {
             gameEnded = true;
             StartCoroutine(SetLocalizedText(winText));
-            isWaitingForClick = false;
+
             StartCoroutine(WaitForClickToReturnToMenu());
         }
     }
@@ -725,8 +705,6 @@ public class TurnManager : MonoBehaviour
         UpdateInfoText(result);
 
         yield return new WaitForSeconds(1);
-
-        isPause = false;
     }
 
     #endregion
@@ -771,17 +749,6 @@ public class TurnManager : MonoBehaviour
 
     #region Utility
 
-    void ClickController()
-    {
-        if (HandleEscapePause()) return;
-        if (HandleIgnoreNextPointerUp()) return;
-        if (isPause || !isWaitingForClick) return;
-
-        HandlePointerDown();
-        HandleTouchHoldPause();
-        HandlePointerUpTap();
-    }
-
     /// <summary>
     /// Converts board node color to wedge color type.
     /// </summary>
@@ -799,6 +766,21 @@ public class TurnManager : MonoBehaviour
         };
     }
 
+    private IEnumerator PlaySoundDelayed (float timedelayed, int slot,Action callback)
+    {
+        yield return new WaitForSeconds (timedelayed);
+
+        MusicManager.Instance.PauseMusic(slot);
+
+        yield return new WaitForSeconds (1);
+
+        callback?.Invoke();
+    }
+
+    #endregion
+
+    #region INPUT HANDLERS
+
     /// <summary>
     /// Waits for a click and then returns to the main menu scene.
     /// </summary>
@@ -814,104 +796,109 @@ public class TurnManager : MonoBehaviour
         SceneManager.LoadScene("Menu");
     }
 
-    public void WaitForPlayerTap(Action callback)
+    public void WaitForPlayer(bool controller, Action callback)
     {
-        StartCoroutine(WaitForTapCoroutine(callback));
+        tapCancelled = false;
+        if (controller) { StartCoroutine(WaitForClickCoroutine(callback)); }
+        else { StartCoroutine(WaitForTapCoroutine(callback)); }
     }
 
-    private IEnumerator WaitForTapCoroutine(Action callback)
+    private IEnumerator WaitForClickCoroutine(Action callback)
     {
-        
-        while (!Input.GetMouseButtonDown(0) && Input.touchCount == 0)
+
+        while (!Input.GetMouseButtonDown(0))
         {
-            yield return null; 
+            HandleEscapePause();
+            if (tapCancelled)
+                yield break;
+            yield return null;
         }
 
         UpdateInfoText("");
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.3f);
 
         callback?.Invoke();
     }
 
-    #endregion
+    private IEnumerator WaitForTapCoroutine(Action callback)
+    {
+        pauseBtn.interactable = true;
+        
+        while (!IsShortTap())
+        {
+            if (tapCancelled)
+                yield break;
+            yield return null;
+        }
 
-    #region INPUT HANDLERS
+        UpdateInfoText("");
 
-    bool HandleEscapePause()
+        yield return new WaitForSeconds(0.3f);
+
+        callback?.Invoke();
+    }
+
+    void HandleEscapePause()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             ActivatePause();
-            return true;
         }
+    }
+
+    bool IsShortTap()
+    {
+        if (Input.touchCount == 0)
+            return false;
+
+        Touch touch = Input.GetTouch(0);
+
+        switch (touch.phase)
+        {
+            case TouchPhase.Began:
+                touchStartTime = Time.time;
+                pauseTriggered = false;
+                touchActive = true;
+                break;
+
+            case TouchPhase.Stationary:
+            case TouchPhase.Moved:
+                if (touchActive && !pauseTriggered)
+                {
+                    if (Time.time - touchStartTime >= 1f)
+                    {
+                        pauseTriggered = true;
+                        ActivatePause();
+                    }
+                }
+                break;
+
+            case TouchPhase.Ended:
+                if (!touchActive)
+                    return false;
+
+                touchActive = false;
+
+                if (pauseTriggered)
+                    return false;
+
+                float duration = Time.time - touchStartTime;
+
+                if (duration < 1f)
+                {
+                    return true;
+                }
+                break;
+
+            case TouchPhase.Canceled:
+                touchActive = false;
+                pauseTriggered = false;
+                break;
+        }
+
         return false;
     }
-
-    bool HandleIgnoreNextPointerUp()
-    {
-        if (ignoreNextPointerUp)
-        {
-            if (PointerUp())
-                ignoreNextPointerUp = false;
-            return true;
-        }
-        return false;
-    }
-
-    void HandlePointerDown()
-    {
-        if (PointerDown())
-        {
-            isPointerDown = true;
-            pointerDownTime = Time.time;
-        }
-    }
-
-    void HandleTouchHoldPause()
-    {
-        if (!isPointerDown) return;
-        if (!TouchHeld()) return;
-
-        if (Time.time - pointerDownTime >= holdThreshold)
-            ActivatePause();
-    }
-
-    void HandlePointerUpTap()
-    {
-        if (PointerUp() && isPointerDown)
-        {
-            float held = Time.time - pointerDownTime;
-
-            if (held < holdThreshold)
-            {
-                isWaitingForClick = false;
-                UpdateInfoText("");
-                diceSpawner.SpawnAndThrowDice(OnDiceResult);
-            }
-
-            isPointerDown = false;
-        }
-    }
-
-    #endregion
-
-    #region INPUT SHORTCUTS
-
-    bool PointerDown() =>
-        Input.GetMouseButtonDown(0) ||
-        (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
-
-    bool PointerUp() =>
-        Input.GetMouseButtonUp(0) ||
-        (Input.touchCount > 0 &&
-        (Input.GetTouch(0).phase == TouchPhase.Ended ||
-         Input.GetTouch(0).phase == TouchPhase.Canceled));
-
-    bool TouchHeld() =>
-        Input.touchCount > 0 &&
-        (Input.GetTouch(0).phase == TouchPhase.Stationary ||
-         Input.GetTouch(0).phase == TouchPhase.Moved);
 
     #endregion
 
@@ -919,14 +906,39 @@ public class TurnManager : MonoBehaviour
 
     void ActivatePause()
     {
-        isPointerDown = false;
-        isPause = true;
-        isWaitingForClick = false;
-
+        tapCancelled = true;
         UpdateInfoText("");
         ShowPausePanel();
+    }
 
-        ignoreNextPointerUp = true;
+    #endregion
+
+    #region PauseLogic
+
+    public void ShowPausePanel()
+    {
+        pausePanel.SetActive(true);
+    }
+
+    public void OnExitSavePressed()
+    {
+        GameManager.Instance.PlayClickSound();
+        MusicManager.Instance.StopMusic();
+        GameSaveManager.Instance.SaveGame();
+
+        Destroy(QuestionsManager.Instance.gameObject);
+        Destroy(BoardManager.Instance.gameObject);
+
+        GameManager.Instance.AnimateCameraAfterSceneLoad(mainCamera, new Vector3(0, 8, -10.7f), Quaternion.Euler(48.968f, 0f, 0f), "Menu");
+    }
+
+    public void OnContinuePressed()
+    {
+        GameManager.Instance.PlayClickSound();
+
+        pausePanel.SetActive(false);
+
+        StartTurn();
     }
 
     #endregion

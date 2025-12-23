@@ -167,6 +167,9 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private IEnumerator QuestionFlowCoroutine()
     {
+        //Call to avoid bugs in the TMP
+        TurnManager.Instance.UpdateInfoText("");
+
         PlayCardMotion();
 
         // Wait for the card to animate upward
@@ -178,7 +181,7 @@ public class UIManager : MonoBehaviour
         // Wait a bit to let user read big text
         yield return new WaitForSeconds(5f);
 
-        if (TurnManager.Instance.isDuelActive) MusicManager.Instance.PauseMusic(slot);
+        if (TurnManager.Instance.isDuelActive) { MusicManager.Instance.PauseMusic(2); }
 
         // Animate size reduction of the question text smoothly (0.5s)
         yield return AnimateQuestionTextResize(70, 40, 0.5f);
@@ -265,6 +268,8 @@ public class UIManager : MonoBehaviour
     {
         for (int i = 0; i < optionButtons.Length; i++)
         {
+            optionTexts[i].color = Color.white;
+
             if (i < _currentQuestion.opciones.Length)
             {
                 optionTexts[i].text = _currentQuestion.opciones[i];
@@ -307,14 +312,34 @@ public class UIManager : MonoBehaviour
         {
             GameManager.Instance.PlayWrongSound();
             BlinkBackground(Color.red);
+
+            int correctIndex = _currentQuestion.indiceCorrecta;
+            optionTexts[correctIndex].color = Color.green;
+
             if (_questionCoroutine != null) StopCoroutine(_questionCoroutine);
             _questionCoroutine = StartCoroutine(CloseWithDelay(false));
             return;
         }
 
-        // Play feedback sounds
-        if (correct) GameManager.Instance.PlayCorrectSound();
-        else GameManager.Instance.PlayWrongSound();
+        // Play feedback
+        if (correct)
+        {
+            GameManager.Instance.PlayCorrectSound();
+
+            optionTexts[index].color = Color.green;
+        }
+        else
+        {
+            GameManager.Instance.PlayWrongSound();
+
+            // Mark the correct option in green.
+            int correctIndex = _currentQuestion.indiceCorrecta;
+            optionTexts[correctIndex].color = Color.green;
+
+            // Mark the incorrect one in red.
+            optionTexts[index].color = Color.red;
+        }
+
 
         BlinkBackground(correct ? Color.green : Color.red);
 
@@ -441,16 +466,15 @@ public class UIManager : MonoBehaviour
 
         _cardSequence = DOTween.Sequence();
 
-        if (!TurnManager.Instance.isDuelActive) MusicManager.Instance.PauseMusic(slot);
-
         // Step 1: move to mid and spin Z
         _cardSequence.Append(cardTransform.DOMove(midPos, 1.5f).SetEase(Ease.InOutCubic));
         _cardSequence.Join(cardTransform.DORotate(new Vector3(initialEuler.x, initialEuler.y, initialEuler.z + 720f), 1.5f, RotateMode.FastBeyond360).SetEase(Ease.InOutSine));
         _cardSequence.AppendInterval(0.25f);
+
         // Step 2: move higher and continue rotation
         _cardSequence.Append(cardTransform.DOMove(highPos, 2f).SetEase(Ease.OutCubic));
         _cardSequence.Join(cardTransform.DORotate(new Vector3(initialEuler.x + 1080f, initialEuler.y, initialEuler.z), 2f, RotateMode.FastBeyond360).SetEase(Ease.OutCubic));
-        _cardSequence.AppendInterval(0.25f);
+        
 
         // Step 3: final rotation
         _cardSequence.Append(cardTransform.DORotate(finalRotation, 0.5f).SetEase(Ease.OutBack));

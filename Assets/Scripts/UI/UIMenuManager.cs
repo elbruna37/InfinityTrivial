@@ -36,7 +36,6 @@ public class UIMenuManager : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        MusicManager.Instance.PlayMusic("menuMusic");
         canRotate = true;
         mainMenuPanel.SetActive(true);
         PlayMenuEntranceAnimation(); 
@@ -66,7 +65,7 @@ public class UIMenuManager : MonoBehaviour
 
         Sequence entranceSequence = DOTween.Sequence();
 
-        entranceSequence.Append(leftButtons.transform.DOMoveX(20f, 0.5f).SetEase(Ease.OutBounce));
+        entranceSequence.Append(leftButtons.transform.DOLocalMoveX(-915, 0.5f).SetEase(Ease.OutBounce));
 
         if (File.Exists(saveFilePath))
         {

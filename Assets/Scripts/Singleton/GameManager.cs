@@ -1,5 +1,6 @@
 ﻿using DG.Tweening;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -26,6 +27,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AudioClip _tokenClip;
     [SerializeField] private AudioClip _jumpClip;
     [SerializeField] private AudioClip _diceClip;
+    [SerializeField] private AudioClip _wedgeQuestionClip;
+    [SerializeField] private AudioClip _questionClip;
 
     private AudioSource _audioSource;
 
@@ -51,8 +54,12 @@ public class GameManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
+        MusicManager.Instance.PlayMusic("menuMusic");
+
         _audioSource = gameObject.AddComponent<AudioSource>();
         _audioSource.loop = false;
+
+        SceneManager.LoadScene("Menu");
     }
 
     /// <summary>
@@ -121,6 +128,12 @@ public class GameManager : MonoBehaviour
     /// <summary>Plays a dice roll sound.</summary>
     public void PlayDiceSound() => PlaySound(_diceClip);
 
+    /// <summary>Plays a Wedge Question sound.</summary>
+    public void PlayWedgeQuestionSound() => PlaySound(_wedgeQuestionClip);
+
+    /// <summary>Plays a Normal Question sound.</summary>
+    public void PlayQuestionSound() => PlaySound(_questionClip);
+
     /// <summary>
     /// Assigns a clip to the AudioSource and plays it once.
     /// </summary>
@@ -188,7 +201,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("⚠️ LocaleController not found at startup. Language will be applied later.");
+            Debug.LogWarning("LocaleController not found at startup. Language will be applied later.");
         }
         Debug.Log($"Language loaded: {selectedLang} ({code})");
 
@@ -198,20 +211,20 @@ public class GameManager : MonoBehaviour
         float volume = PlayerPrefs.GetFloat("volume", 1f);
         AudioListener.volume = volume;
 
-        //int resIndex = PlayerPrefs.GetInt("resolution", 0);
+        int resIndex = PlayerPrefs.GetInt("resolution", 0);
 
         int[,] resolutions = new int[,]
         {{1920, 1080},{1600, 900},{1366, 768},{1280, 720}};
 
-        //int width = resolutions[resIndex, 0];
-        //int height = resolutions[resIndex, 1];
+        int width = resolutions[resIndex, 0];
+        int height = resolutions[resIndex, 1];
 
-        //Screen.SetResolution(width, height, FullScreenMode.FullScreenWindow);
+        Screen.SetResolution(width, height, FullScreenMode.FullScreenWindow);
 
 
         bool vibration = PlayerPrefs.GetInt("vibration", 1) == 1;
 
-        Debug.Log("✅ Player settings loaded at startup");
+        Debug.Log("Player settings loaded at startup");
     }
 
     #endregion

@@ -47,12 +47,12 @@ public class GameSaveManager : MonoBehaviour
                 currentPlayerIndex = TurnManager.Instance.currentPlayerIndex,
                 wedgesByPlayer = TurnManager.Instance.GetWedgesByPlayer(),
                 playerPositions = TurnManager.Instance.GetPlayerPositions(),
-                usedQuestionsByCategory = new Dictionary<string, List<int>>()
+                usedQuestionsByCategory = new Dictionary<string, List<string>>()
             };
 
             // Convert question history to serializable format
             foreach (var pair in QuestionsManager.Instance.questionHistory)
-                saveData.usedQuestionsByCategory[pair.Key] = new List<int>(pair.Value);
+                saveData.usedQuestionsByCategory[pair.Key] = new List<string>(pair.Value);
 
             // Serialize and write to file
             string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
@@ -98,7 +98,7 @@ public class GameSaveManager : MonoBehaviour
             {
                 QuestionsManager.Instance.questionHistory.Clear();
                 foreach (var pair in LoadedSaveData.usedQuestionsByCategory)
-                    QuestionsManager.Instance.questionHistory[pair.Key] = new HashSet<int>(pair.Value);
+                    QuestionsManager.Instance.questionHistory[pair.Key] = new HashSet<string>(pair.Value);
             }
 
             Debug.Log("Category data and question history loaded successfully.");

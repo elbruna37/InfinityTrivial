@@ -28,13 +28,12 @@ public class ImporterManager : MonoBehaviour
     [SerializeField] private CanvasGroup historyMenuPanel;
 
     [Header("UI / COPY")]
-    [SerializeField] private TMP_InputField questionCountInput;
     [SerializeField] private TMP_InputField categoryInput;
-    [SerializeField] private TMP_Dropdown difficultyDropdown;
     [SerializeField] private Button copyButton;
 
     [Header("UI / PASTE")]
     [SerializeField] private TMP_InputField jsonInput;
+    [SerializeField] private TMP_Text infoText;
 
     [Header("UI / HISTORY")]
     [SerializeField] private Transform contentParent;
@@ -56,12 +55,6 @@ public class ImporterManager : MonoBehaviour
     private Quaternion startCardRotation;
 
     private string localizationText;
-
-    [Serializable]
-    private class QuestionArrayWrapper
-    {
-        public Question[] preguntas;
-    }
 
     [Serializable]
     public class CategoryData
@@ -122,12 +115,6 @@ public class ImporterManager : MonoBehaviour
     /// </summary>
     private void SetupInputFields()
     {
-        if (questionCountInput != null)
-        {
-            questionCountInput.characterLimit = 2;
-            questionCountInput.onValueChanged.AddListener(ValidateNumberInput);
-        }
-
         if (categoryInput != null)
         {
             categoryInput.characterLimit = 20;
@@ -149,16 +136,6 @@ public class ImporterManager : MonoBehaviour
     #region Input Validation
 
     /// <summary>
-    /// Ensures that only numeric characters are entered in the question count input.
-    /// </summary>
-    /// <param name="value">The current input string.</param>
-    private void ValidateNumberInput(string value)
-    {
-        string onlyNumbers = Regex.Replace(value, @"[^0-9]", "");
-        if (onlyNumbers != value) questionCountInput.text = onlyNumbers;
-    }
-
-    /// <summary>
     /// Ensures that only letters and spaces are entered in the category input.
     /// </summary>
     /// <param name="value">The current input string.</param>
@@ -177,38 +154,42 @@ public class ImporterManager : MonoBehaviour
     /// </summary>
     private void CopyPromptToClipboard()
     {
-        string questionCount = questionCountInput != null ? questionCountInput.text : "10";
+        if (categoryInput == null || string.IsNullOrWhiteSpace(categoryInput.text))
+        {
+            infoText.text = "Debes introducir una categoría antes de copiar el prompt";
+            Debug.LogWarning("Intento de copiar prompt sin categoría");
+            return;
+        }
+
         string category = categoryInput != null ? categoryInput.text : "General";
 
         string language = LocalizationSettings.SelectedLocale?.Identifier.CultureInfo.NativeName ?? "español";
-        string difficulty = difficultyDropdown != null ? GetDifficultyText(difficultyDropdown.value) : "fácil";
 
-        string prompt = $"Genera {questionCount} preguntas de trivial en {language} en formato JSON con el siguiente esquema:\n\n" +
-                        $"categoria: \"{category}\".\n" +
+        string prompt = $"Genera preguntas de trivial en {language} en formato JSON con el siguiente esquema:\n\n" +
+                        $"categoria: \"{category}\".\n\n" +
                         $"enunciado: string con la pregunta.\n\n" +
                         $"opciones: array de 4 respuestas posibles.\n\n" +
-                        $"indiceCorrecta: índice 0–3 correcto.\n\n" +
-                        $"dificultad: \"{difficulty}\"\n" +
-                        $"Devuelve un array JSON de objetos, sin explicaciones.";
+                        $"indiceCorrecta: número entero entre 0 y 3 que indica la opción correcta.\n\n" +
+                        $"dificultad: \"fácil\", \"media\" o \"difícil\".\n\n" +
+                        $"Reglas obligatorias:\n\n" +
+                        $"Distribuye el valor de indiceCorrecta de forma equilibrada entre 0, 1, 2 y 3.\n\n" +
+                        $"No repitas sistemáticamente el mismo índice.\n\n" +
+                        $"Evita que el índice correcto sea siempre 0 o mayoritariamente el mismo.\n\n" +
+                        $"Evita la repetición de preguntas.\n\n" +
+                        $"No generes preguntas con el mismo enunciado\n\n" +
+                        $"No reformules preguntas equivalentes con distinto texto.\n\n" +
+                        $"Cada pregunta debe abordar un concepto distinto o un enfoque claramente diferente.\n\n" +
+                        $"Las opciones incorrectas deben ser plausibles, pero claramente falsas frente a la correcta.\n\n" +
+                        $"Cantidad exacta a generar: \n\n" +
+                        $"50 preguntas con dificultad \"fácil\"\n\n" +
+                        $"50 preguntas con dificultad \"media\"\n\n" +
+                        $"50 preguntas con dificultad \"difícil\"\n\n" +
+                        $"Devuelve un único array JSON compacto sin saltos de linea, sin espacios innecesarios, que contenga todas las preguntas, sin explicaciones ni texto adicional.";
+
 
         GUIUtility.systemCopyBuffer = prompt;
-        Debug.Log("✅ Prompt copiado al portapapeles:\n" + prompt);
-    }
-
-    /// <summary>
-    /// Returns the difficulty string based on dropdown index.
-    /// </summary>
-    /// <param name="dropdownIndex">The dropdown selected index.</param>
-    /// <returns>The difficulty string.</returns>
-    private string GetDifficultyText(int dropdownIndex)
-    {
-        return dropdownIndex switch
-        {
-            0 => "fácil",
-            1 => "media",
-            2 => "difícil",
-            _ => "fácil"
-        };
+        Debug.Log("Prompt copiado al portapapeles:\n" + prompt);
+        infoText.text = $"Prompt copiado al portapapeles de la categoría: {category}";
     }
 
     #endregion
@@ -223,32 +204,54 @@ public class ImporterManager : MonoBehaviour
         string rawJson = jsonInput.text.Trim();
         if (string.IsNullOrEmpty(rawJson))
         {
-            Debug.LogWarning("No se ha pegado ningún JSON");
+            infoText.text = "No se ha introducido ningún texto";
             return;
+        }
+
+        if (!rawJson.StartsWith("["))
+        {
+            infoText.text = "El texto pegado no es válido, revisa la respuesta copiada";
+            Debug.LogError("JSON inválido: no es un array");
+            return;
+        }
+
+        string wrappedJson = "{\"preguntas\":" + rawJson + "}";
+
+        QuestionArrayWrapper newQuestionsWrapper;
+        try
+        {
+            newQuestionsWrapper = JsonUtility.FromJson<QuestionArrayWrapper>(wrappedJson);
+        }
+        catch
+        {
+            infoText.text = "Error al leer el texto";
+            return;
+        }
+
+        if (newQuestionsWrapper?.preguntas == null || newQuestionsWrapper.preguntas.Length == 0)
+        {
+            infoText.text = "El texto no contiene preguntas válidas";
+            return;
+        }
+
+        foreach (var q in newQuestionsWrapper.preguntas)
+        {
+            q.categoria = q.categoria?.Trim();
+            q.dificultad = q.dificultad?.Trim().ToLower();
         }
 
         QuestionBatch existingBatch = LoadExistingQuestions();
         List<Question> questionsList = new List<Question>(existingBatch.questions);
 
-        if (rawJson.StartsWith("["))
-            rawJson = "{\"preguntas\":" + rawJson + "}";
-
-        QuestionArrayWrapper newQuestionsWrapper = JsonUtility.FromJson<QuestionArrayWrapper>(rawJson);
-        if (newQuestionsWrapper?.preguntas == null)
-        {
-            Debug.LogError("El JSON pegado no es válido o no tiene preguntas");
-            return;
-        }
-
         questionsList.AddRange(newQuestionsWrapper.preguntas);
         existingBatch.questions = questionsList.ToArray();
 
         File.WriteAllText(questionsFilePath, JsonUtility.ToJson(existingBatch, true));
-        Debug.Log($"Total de preguntas ahora: {existingBatch.questions.Length}");
-
-        jsonInput.text = "";
 
         UpdateImportHistory(newQuestionsWrapper.preguntas);
+
+        infoText.text = $"Preguntas importadas correctamente: {newQuestionsWrapper.preguntas.Length}";
+        jsonInput.text = "";
     }
 
     /// <summary>
@@ -329,6 +332,7 @@ public class ImporterManager : MonoBehaviour
         {
             GameObject item = Instantiate(itemPrefab, contentParent);
             TMP_Text[] texts = item.GetComponentsInChildren<TMP_Text>();
+            Button deleteButton = item.GetComponentInChildren<Button>();
 
             texts[0].text = cat.nombre;
 
@@ -340,7 +344,41 @@ public class ImporterManager : MonoBehaviour
 
             localizationText = difficultyHardOption.GetLocalizedString();
             texts[3].text = $"{localizationText}: {cat.dificiles}";
+
+            deleteButton.onClick.RemoveAllListeners();
+            deleteButton.onClick.AddListener(() =>
+            {
+                DeleteCategoryFromHistory(cat.nombre);
+
+                List<CategoryData> updatedCategories = GetCategories();
+                ShowCategories(updatedCategories);
+            });
         }
+    }
+
+    private void DeleteCategoryFromHistory(string categoryName)
+    {
+        if (!File.Exists(historyFilePath)) return;
+
+        string json = File.ReadAllText(historyFilePath);
+        QuestionArrayWrapper wrapper = JsonUtility.FromJson<QuestionArrayWrapper>(json);
+
+        if (wrapper?.preguntas == null) return;
+
+        List<Question> filteredQuestions = new List<Question>();
+
+        foreach (var q in wrapper.preguntas)
+        {
+            if (!string.Equals(q.categoria, categoryName, StringComparison.OrdinalIgnoreCase))
+                filteredQuestions.Add(q);
+        }
+
+        QuestionArrayWrapper updatedWrapper = new QuestionArrayWrapper
+        {
+            preguntas = filteredQuestions.ToArray()
+        };
+
+        File.WriteAllText(historyFilePath, JsonUtility.ToJson(updatedWrapper, true));
     }
 
     #endregion
