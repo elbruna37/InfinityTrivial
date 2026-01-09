@@ -40,6 +40,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private RectTransform questionTextRect;
 
     [Header("Answer Options")]
+    private string[] _shuffledOptions;
+    private int _correctIndex;
     [SerializeField] private Button[] optionButtons;
     [SerializeField] private TMP_Text[] optionTexts;
 
@@ -254,12 +256,37 @@ public class UIManager : MonoBehaviour
         _panelsSequence.Join(answersBottomPanel.DOAnchorPosY(answersBottomPanel.anchoredPosition.y + 483f, 0.3f).SetEase(Ease.OutQuad));
         _panelsSequence.Play();
 
+        PrepareShuffledOptions();
         PrepareOptionButtons();
     }
 
     #endregion
 
     #region Option Handling
+
+    /// <summary>
+    /// Mix the correct answer in the 4 possible ones
+    /// </summary>
+    private void PrepareShuffledOptions()
+    {
+        // Clone to not modify the original JSON array
+        _shuffledOptions = (string[])_currentQuestion.opciones.Clone();
+
+        _correctIndex = 0;
+
+        // Fisher–Yates shuffle
+        for (int i = _shuffledOptions.Length - 1; i > 0; i--)
+        {
+            int j = UnityEngine.Random.Range(0, i + 1);
+
+            // By moving the correct one, we update its index
+            if (i == _correctIndex) _correctIndex = j;
+            else if (j == _correctIndex) _correctIndex = i;
+
+            (_shuffledOptions[i], _shuffledOptions[j]) =
+            (_shuffledOptions[j], _shuffledOptions[i]);
+        }
+    }
 
     /// <summary>
     /// Prepares option buttons with text, listeners and sets them interactable.
@@ -269,19 +296,19 @@ public class UIManager : MonoBehaviour
         for (int i = 0; i < optionButtons.Length; i++)
         {
             optionTexts[i].color = Color.white;
+            optionButtons[i].onClick.RemoveAllListeners();
 
-            if (i < _currentQuestion.opciones.Length)
+            if (i < _shuffledOptions.Length)
             {
-                optionTexts[i].text = _currentQuestion.opciones[i];
-                int index = i; // capture
-                optionButtons[i].onClick.RemoveAllListeners();
+                optionTexts[i].text = _shuffledOptions[i];
+
+                int index = i;
                 optionButtons[i].onClick.AddListener(() => OnOptionSelected(index));
                 optionButtons[i].interactable = true;
             }
             else
             {
                 optionTexts[i].text = string.Empty;
-                optionButtons[i].onClick.RemoveAllListeners();
                 optionButtons[i].interactable = false;
             }
         }
@@ -302,7 +329,7 @@ public class UIManager : MonoBehaviour
         _fillTween?.Kill();
 
         bool timedOut = index == -1;
-        bool correct = !timedOut && index == _currentQuestion.indiceCorrecta;
+        bool correct = !timedOut && index == _correctIndex;
 
         // Disable all buttons immediately
         foreach (var btn in optionButtons)
@@ -313,8 +340,7 @@ public class UIManager : MonoBehaviour
             GameManager.Instance.PlayWrongSound();
             BlinkBackground(Color.red);
 
-            int correctIndex = _currentQuestion.indiceCorrecta;
-            optionTexts[correctIndex].color = Color.green;
+            optionTexts[_correctIndex].color = Color.green;
 
             if (_questionCoroutine != null) StopCoroutine(_questionCoroutine);
             _questionCoroutine = StartCoroutine(CloseWithDelay(false));
@@ -333,8 +359,7 @@ public class UIManager : MonoBehaviour
             GameManager.Instance.PlayWrongSound();
 
             // Mark the correct option in green.
-            int correctIndex = _currentQuestion.indiceCorrecta;
-            optionTexts[correctIndex].color = Color.green;
+            optionTexts[_correctIndex].color = Color.green;
 
             // Mark the incorrect one in red.
             optionTexts[index].color = Color.red;

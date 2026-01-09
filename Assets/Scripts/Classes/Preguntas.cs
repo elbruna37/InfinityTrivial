@@ -10,7 +10,6 @@ public class Question
     public string categoria;
     public string enunciado;
     public string[] opciones;
-    public int indiceCorrecta;
     public string dificultad;
 }
 

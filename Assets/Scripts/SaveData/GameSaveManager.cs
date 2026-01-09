@@ -126,7 +126,6 @@ public class GameSaveManager : MonoBehaviour
 
         try
         {
-
             string json = File.ReadAllText(saveFilePath);
             LoadedSaveData = JsonConvert.DeserializeObject<GameSaveData>(json);
 

@@ -165,25 +165,25 @@ public class ImporterManager : MonoBehaviour
 
         string language = LocalizationSettings.SelectedLocale?.Identifier.CultureInfo.NativeName ?? "español";
 
-        string prompt = $"Genera preguntas de trivial en {language} en formato JSON con el siguiente esquema:\n\n" +
-                        $"categoria: \"{category}\".\n\n" +
-                        $"enunciado: string con la pregunta.\n\n" +
-                        $"opciones: array de 4 respuestas posibles.\n\n" +
-                        $"indiceCorrecta: número entero entre 0 y 3 que indica la opción correcta.\n\n" +
-                        $"dificultad: \"fácil\", \"media\" o \"difícil\".\n\n" +
-                        $"Reglas obligatorias:\n\n" +
-                        $"Distribuye el valor de indiceCorrecta de forma equilibrada entre 0, 1, 2 y 3.\n\n" +
-                        $"No repitas sistemáticamente el mismo índice.\n\n" +
-                        $"Evita que el índice correcto sea siempre 0 o mayoritariamente el mismo.\n\n" +
-                        $"Evita la repetición de preguntas.\n\n" +
-                        $"No generes preguntas con el mismo enunciado\n\n" +
-                        $"No reformules preguntas equivalentes con distinto texto.\n\n" +
-                        $"Cada pregunta debe abordar un concepto distinto o un enfoque claramente diferente.\n\n" +
-                        $"Las opciones incorrectas deben ser plausibles, pero claramente falsas frente a la correcta.\n\n" +
-                        $"Cantidad exacta a generar: \n\n" +
-                        $"50 preguntas con dificultad \"fácil\"\n\n" +
-                        $"50 preguntas con dificultad \"media\"\n\n" +
-                        $"50 preguntas con dificultad \"difícil\"\n\n" +
+        string prompt = $"Genera preguntas de trivial en {language} en formato JSON con el siguiente esquema:\n" +
+                        $"categoria: \"{category}\".\n" +
+                        $"enunciado: string con la pregunta.\n" +
+                        $"opciones: array de 4 respuestas posibles,donde:\n" +
+                        $"-opciones[0] es SIEMPRE la respuesta correcta. \n" +
+                        $"-opciones[1], opciones[2] y opciones[3] son respuestas incorrectas pero plausibles. \n" +
+                        $"dificultad: \"fácil\", \"media\" o \"difícil\".\n" +
+                        $"Reglas obligatorias:\n" +
+                        $"La respuesta correcta debe estar siempre en la posición 0 del array opciones.\n" +
+                        $"Las opciones incorrectas deben ser plausibles, pero claramente falsas frente a la correcta.\n" +
+                        $"Evita la repetición de preguntas.\n" +
+                        $"No generes preguntas con el mismo enunciado\n" +
+                        $"No reformules preguntas equivalentes con distinto texto.\n" +
+                        $"Cada pregunta debe abordar un concepto distinto o un enfoque claramente diferente.\n" +
+                        $"No repitas patrones evidentes en las respuestas incorrectas.\n" +
+                        $"Cantidad exacta a generar: \n" +
+                        $"50 preguntas con dificultad \"fácil\"\n" +
+                        $"50 preguntas con dificultad \"media\"\n" +
+                        $"50 preguntas con dificultad \"difícil\"\n" +
                         $"Devuelve un único array JSON compacto sin saltos de linea, sin espacios innecesarios, que contenga todas las preguntas, sin explicaciones ni texto adicional.";
 
 

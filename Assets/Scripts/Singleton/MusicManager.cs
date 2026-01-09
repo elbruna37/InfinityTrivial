@@ -45,10 +45,11 @@ public class MusicManager : MonoBehaviour
     }
 
     // -----------------------
-    // PLAY MUSIC (aleatoria con autoplay)
+    // PLAY MUSIC 
     // -----------------------
     public void PlayMusic(string playlistName)
     {
+        Debug.Log($"Playlist '{playlistName}' run");
         StopAuto();
 
         currentPlaylist = GetPlaylist(playlistName);
@@ -103,7 +104,10 @@ public class MusicManager : MonoBehaviour
     private void StopAuto()
     {
         if (autoPlayCoroutine != null)
+        {
             StopCoroutine(autoPlayCoroutine);
+            autoPlayCoroutine = null;
+        }
     }
 
     // -----------------------
@@ -111,6 +115,8 @@ public class MusicManager : MonoBehaviour
     // -----------------------
     public void PauseMusic(int slot, float fadeTime = 1f)
     {
+        Debug.Log($"Pause Playlist in slot {slot}");
+
         if (!audioSource.isPlaying)
             return;
 
@@ -136,6 +142,8 @@ public class MusicManager : MonoBehaviour
             return;
         }
 
+        StopAuto();
+        audioSource.DOKill();
         audioSource.DOFade(0f, fadeTime).OnComplete(() =>
         {
             audioSource.Pause();
@@ -148,6 +156,8 @@ public class MusicManager : MonoBehaviour
     // -----------------------
     public void ResumeMusic(int slot, float fadeTime = 1f)
     {
+        Debug.Log($"Resume Playlist in slot {slot}");
+
         string playlistName = "";
         int index = -1;
         float time = 0f;
@@ -182,6 +192,9 @@ public class MusicManager : MonoBehaviour
 
         float targetVolume = PlayerPrefs.GetFloat("volume", 1f);
 
+        StopAuto();
+        audioSource.DOKill();
+
         audioSource.clip = currentPlaylist[currentIndex];
         audioSource.time = time;
         audioSource.volume = 0f;
@@ -206,4 +219,5 @@ public class MusicManager : MonoBehaviour
             audioSource.volume = originalVolume;
         });
     }
+
 }

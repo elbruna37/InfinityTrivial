@@ -36,7 +36,7 @@ public class TurnManager : MonoBehaviour
     bool tapCancelled;
 
     //true = PC controller; false = Movil Controller
-    [SerializeField] private bool controller = false;
+    private bool controller = false;
     private float touchStartTime;
     private bool touchActive;
     private bool pauseTriggered;
@@ -355,10 +355,10 @@ public class TurnManager : MonoBehaviour
             return;
         }
 
-        PlaySoundDelayed(0,1, () =>
+        StartCoroutine(PlaySoundDelayed(0,1, () =>
         {
             MusicManager.Instance.PlayMusic("stealMusic");
-        });
+        }));
 
         SetupWedgeButtonsForSteal(attacker, candidates);
 
@@ -479,7 +479,6 @@ public class TurnManager : MonoBehaviour
     {
         if (!isCorrect)
         {
-            MusicManager.Instance.ResumeMusic(1);
             Debug.Log($"STEAL DUEL Player {duelCurrent} FAILED!");
 
             if (duelCurrent == duelAttacker)

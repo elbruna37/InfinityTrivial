@@ -30,9 +30,9 @@ public class LoadManager : MonoBehaviour
 
     [Header("Animation")]
     [SerializeField] private float delayBetweenWedges = 0.5f;
-    [SerializeField] private float flightDuration = 1.5f;    
-    [SerializeField] private float descendDuration = 0.3f;  
-    [SerializeField] private float arcHeight = 1.5f;           
+    [SerializeField] private float flightDuration = 1.5f;
+    [SerializeField] private float descendDuration = 0.3f;
+    [SerializeField] private float arcHeight = 1.5f;
 
     private Vector3[] _originalWedgePositions;
     private Quaternion[] _originalWedgeRotations;
@@ -42,12 +42,12 @@ public class LoadManager : MonoBehaviour
 
     private static readonly Vector3[] _basePositions = new Vector3[]
     {
-        new Vector3(-3.2f, 0.15f, 8.53f),  // Rosa
-        new Vector3(-2.9f, 0.15f, 8.0f),   // Azul
-        new Vector3(-3.2f, 0.15f, 7.5f),   // Verde
-        new Vector3(-3.786f, 0.15f, 7.5f), // Amarillo
-        new Vector3(-4.1f, 0.15f, 8.0f),   // Morado
-        new Vector3(-3.784f, 0.15f, 8.528f) // Naranja
+        new Vector3(-3.2f, 0.15f, 8.53f),  // Pink
+        new Vector3(-2.9f, 0.15f, 8.0f),   // Blue
+        new Vector3(-3.2f, 0.15f, 7.5f),   // Green
+        new Vector3(-3.786f, 0.15f, 7.5f), // Yellow
+        new Vector3(-4.1f, 0.15f, 8.0f),   // Purple
+        new Vector3(-3.784f, 0.15f, 8.528f) // Orange
     };
 
     #endregion
@@ -89,7 +89,6 @@ public class LoadManager : MonoBehaviour
     {
         GameManager.Instance.PlayClickSound();
         
-
         canvas.SetActive(false);
 
         Sequence wedgeSeq = AnimateWedges();

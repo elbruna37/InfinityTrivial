@@ -25,24 +25,19 @@ public class UISelectorCategorias : MonoBehaviour
     [SerializeField] private Button confirmButton;
     [SerializeField] private GameObject confirmButtons;
     [SerializeField] private GameObject quesitoMenuPanel;
-    [SerializeField] private GameObject backButton;
     [SerializeField] private LocalizedString defaultCategoryText;
 
     [Header("Camera")]
     [SerializeField] private GameObject cameraObject;
 
-    #endregion
+    [Header("Animation")]
+    [SerializeField] private float delayBetweenWedges = 0.5f;
+    [SerializeField] private float flightDuration = 1.5f;
+    [SerializeField] private float descendDuration = 0.3f;
+    [SerializeField] private float arcHeight = 1.5f;
 
-    #region Private State
-
-    private List<string> _originalCategories;
-    private Dictionary<TMP_Dropdown, string> _selectionMap;
-    private int _currentIndex = 0;
-
-    private Tween _spinTween;
-
-    private Vector3[] _originalQuesitoPositions;
-    private Quaternion[] _originalQuesitoRotations;
+    public GameObject[] wedges;
+    public CanvasGroup[] wedgeGroup;
 
     private static readonly Vector3[] _basePositions = new Vector3[]
     {
@@ -70,9 +65,10 @@ public class UISelectorCategorias : MonoBehaviour
     public void ConfirmCategories()
     {
         GameManager.Instance.PlayClickSound();
-        canvas.SetActive(false); 
+        canvas.SetActive(false);
 
-        Sequence camSequence = DOTween.Sequence();
+        Sequence camSequence = AnimateWedges();
+
         camSequence.Append(cameraObject.transform.DOMove(new Vector3(0, 8.7f, 0), 1f).SetEase(Ease.InOutQuad));
         MusicManager.Instance.StopMusic();
         camSequence.Join(cameraObject.transform.DORotate(new Vector3(90, 360, 0), 1f, RotateMode.FastBeyond360).SetEase(Ease.InOutQuad));
@@ -104,6 +100,8 @@ public class UISelectorCategorias : MonoBehaviour
 
         confirmButtons.SetActive(false);
 
+        FadeOutWedgeTexts();
+
         Sequence returnSeq = DOTween.Sequence();
 
         returnSeq.OnComplete(() =>
@@ -120,91 +118,96 @@ public class UISelectorCategorias : MonoBehaviour
         });
     }
 
-    #endregion 
+    #endregion
 
-    #region Wedge Animations
+    #region Wedge Animation
 
-    /// <summary>
-    /// Animates a quesito rising + spinning + dropdown activation.
-    /// </summary>
-    private void AnimateWedge(GameObject quesito, TMP_Dropdown dropdown, int index)
+    private Sequence AnimateWedges()
     {
-        if (quesito == null) return;
+        Sequence allSeq = DOTween.Sequence();
 
-        Vector3 startPos = quesito.transform.position;
-        Vector3 loopPos = startPos + Vector3.up * 1.5f;
-
-        dropdown.gameObject.SetActive(false);
-
-        Sequence seq = DOTween.Sequence();
-        seq.AppendInterval(0.5f);
-        seq.Append(quesito.transform.DOMove(loopPos, 1f).SetEase(Ease.OutQuad));
-        seq.Join(quesito.transform.DORotate(new Vector3(0, 0, 90), 1f));
-
-        seq.OnComplete(() =>
+        for (int i = 0; i < Mathf.Min(6, _basePositions.Length); i++)
         {
-            quesito.transform.DORotateQuaternion(Quaternion.Euler(0, 0, 90), 0f);
-            _spinTween = quesito.transform.DORotate(new Vector3(0, 360, 0), 4f, RotateMode.WorldAxisAdd)
-                                  .SetEase(Ease.Linear)
-                                  .SetLoops(-1, LoopType.Restart);
 
-            dropdown.gameObject.SetActive(true);
-            if (_currentIndex > 0) backButton.SetActive(true);
-        });
+            float dynamicArcHeight = arcHeight + (i * 0.18f);
+            float dynamicDescendDuration = descendDuration - (i * 0.05f);
+            float dynamicFlightDuration = flightDuration - (i * 0.05f);
 
-        bool waiting = true;
-        dropdown.onValueChanged.AddListener((val) =>
-        {
-            if (val != 0 && waiting)
-            {
-                waiting = false;
-                _spinTween.Kill();
-            }
-        });
-    }
 
-    /// <summary>
-    /// Returns a quesito to its original position and rotation with a smooth parabolic motion.
-    /// </summary>
-    private Tween ReturnWedgeToOriginalPosition(GameObject quesito, int index)
-    {
-        if (quesito == null) return null;
-        if (_originalQuesitoPositions == null || _originalQuesitoPositions.Length <= index) return null;
+            GameObject wedgeGO = wedges[i];
+            Transform wedge = wedgeGO.transform;
+            Vector3 startPos = wedge.position;
+            Vector3 basePos = _basePositions[i];
+            Vector3 arrivalPos = new Vector3(basePos.x, basePos.y + dynamicArcHeight, basePos.z);
+            Quaternion baseRot = Quaternion.Euler(270f, 0f, 120f + (i * 60f));
 
-        Vector3 currentPos = quesito.transform.position;
-        Quaternion currentRot = quesito.transform.rotation;
+            // puntos de control para la parábola
+            Vector3 p0 = startPos;
+            Vector3 center = new Vector3(-3.5f, 0.226f, 8);
+            Vector3 fromCenter = (startPos - center).normalized;
+            float lateralOffset = 1f * i;
 
-        Vector3 basePos = _basePositions[index];
-        Vector3 targetPos = _originalQuesitoPositions[index];
-        Quaternion targetRot = _originalQuesitoRotations[index];
+            Vector3 p1 = new Vector3(
+                (startPos.x + arrivalPos.x) / 2f,
+                Mathf.Max(startPos.y, arrivalPos.y) + dynamicArcHeight,
+                (startPos.z + arrivalPos.z) / 2f
+            ) + fromCenter * lateralOffset;
+            Vector3 p2 = arrivalPos;
 
-        float duration = 1.2f;
-        Ease moveEase = Ease.InOutQuad;
-
-        if (Vector3.Distance(currentPos, basePos) > 0.3f)
-        {
+            // Secuencia para cada wedge
             Sequence seq = DOTween.Sequence();
-            seq.Join(quesito.transform.DOMove(targetPos, duration).SetEase(moveEase));
-            seq.Join(quesito.transform.DORotateQuaternion(targetRot, duration).SetEase(moveEase));
-            return seq;
+
+            // delay incremental (0.5s * índice)
+            seq.PrependInterval(i * delayBetweenWedges);
+
+            if (i < wedgeGroup.Length && wedgeGroup[i] != null)
+            {
+                CanvasGroup group = wedgeGroup[i];
+                seq.AppendCallback(() =>
+                {
+                    group.DOFade(0f, 0.3f).SetEase(Ease.OutQuad);
+                });
+            }
+
+            // --- Movimiento parabólico ---
+            Tween flightTween = DOTween.To(() => 0f, t =>
+            {
+                float u = 1f - t;
+                Vector3 pos = u * u * p0 + 2f * u * t * p1 + t * t * p2;
+                wedge.position = pos;
+            }, 1f, dynamicFlightDuration).SetEase(Ease.OutQuad);
+
+            seq.Append(flightTween);
+
+            // --- Rotación simultánea ---
+            Tween rotTween = wedge.DORotateQuaternion(baseRot, dynamicFlightDuration).SetEase(Ease.OutQuad);
+            seq.Join(rotTween);
+
+            // --- Descenso final ---
+            seq.Append(wedge.DOMoveY(basePos.y, dynamicDescendDuration).SetEase(Ease.InOutQuad));
+
+            allSeq.Join(seq);
         }
 
-        Sequence parabolicSeq = DOTween.Sequence();
-        Vector3 liftPos = currentPos + Vector3.up * 1.5f;
-        parabolicSeq.Append(quesito.transform.DOMove(liftPos, 0.35f).SetEase(Ease.OutQuad));
+        return allSeq;
+    }
 
-        float arcHeight = Mathf.Max(2f, Vector3.Distance(currentPos, targetPos) * 0.1f);
-        Vector3 midPoint = Vector3.Lerp(liftPos, targetPos, 0.5f);
-        midPoint.y += arcHeight;
+    void FadeOutWedgeTexts()
+    {
+        for (int i = 0; i < wedgeGroup.Length; i++)
+        {
+            CanvasGroup group = wedgeGroup[i];
+            group.DOFade(0f, 0.3f).SetEase(Ease.OutQuad);
+        }
+    }
 
-        float jumpDuration = 1.0f;
-
-        parabolicSeq.Append(quesito.transform.DOPath(new Vector3[] { liftPos, midPoint, targetPos }, jumpDuration, PathType.CatmullRom)
-                                     .SetEase(Ease.InOutSine));
-
-        parabolicSeq.Join(quesito.transform.DORotateQuaternion(targetRot, jumpDuration + 0.3f).SetEase(Ease.InOutSine));
-
-        return parabolicSeq;
+    void FadeInWedgeTexts()
+    {
+        for (int i = 0; i < wedgeGroup.Length; i++)
+        {
+            CanvasGroup group = wedgeGroup[i];
+            group.DOFade(1f, 0.3f).SetEase(Ease.OutQuad);
+        }
     }
 
     #endregion
