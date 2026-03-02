@@ -17,14 +17,19 @@ using UnityEngine.UI;
 public class ImporterManager : MonoBehaviour
 {
     #region Inspector References
+    private int importStep = 0;
+    // 0 = fácil pendiente
+    // 1 = media pendiente
+    // 2 = difícil pendiente
+    // 3 = completado
 
     [Header("3D Card & Camera")]
     [SerializeField] private GameObject card;
     [SerializeField] private GameObject cameraObject;
 
     [Header("UI Panels")]
-    [SerializeField] private CanvasGroup instructionsPanel;
-    [SerializeField] private CanvasGroup importMenuPanel;
+    [SerializeField] private CanvasGroup copyMenu;
+    [SerializeField] private CanvasGroup pasteMenu;
     [SerializeField] private CanvasGroup historyMenuPanel;
 
     [Header("UI / COPY")]
@@ -128,7 +133,7 @@ public class ImporterManager : MonoBehaviour
     private void SetupCopyButton()
     {
         if (copyButton != null)
-            copyButton.onClick.AddListener(CopyPromptToClipboard);
+            copyButton.onClick.AddListener(CopyPromptButton);
     }
 
     #endregion
@@ -149,47 +154,46 @@ public class ImporterManager : MonoBehaviour
 
     #region Copy Prompt
 
+
     /// <summary>
     /// Builds a JSON prompt based on user inputs and copies it to the system clipboard.
     /// </summary>
-    private void CopyPromptToClipboard()
+    private string GeneratePrompt(string category, string difficulty)
+    {
+        string language = LocalizationSettings.SelectedLocale?.Identifier.CultureInfo.NativeName ?? "español";
+
+        return $"Genera 50 preguntas de trivial en {language} en formato JSON con este esquema:" +
+               $"categoria:\"{category}\"," +
+               $"enunciado:string," +
+               $"opciones:array de 4 donde opciones[0] es siempre la correcta," +
+               $"dificultad:\"{difficulty}\"." +
+               $"Reglas:" +
+               $"No repitas preguntas." +
+               $"No reformules preguntas equivalentes." +
+               $"Cada pregunta debe tratar un concepto distinto." +
+               $"Devuelve un único array JSON compacto sin texto adicional ni saltos de linea.";
+    }
+
+    private void CopyPromptButton()
     {
         if (categoryInput == null || string.IsNullOrWhiteSpace(categoryInput.text))
         {
             infoText.text = "Debes introducir una categoría antes de copiar el prompt";
-            Debug.LogWarning("Intento de copiar prompt sin categoría");
             return;
         }
 
-        string category = categoryInput != null ? categoryInput.text : "General";
+        importStep = 0; // Reiniciamos flujo
 
-        string language = LocalizationSettings.SelectedLocale?.Identifier.CultureInfo.NativeName ?? "español";
+        string category = categoryInput.text.Trim();
+        string difficulty = "fácil";
 
-        string prompt = $"Genera preguntas de trivial en {language} en formato JSON con el siguiente esquema:\n" +
-                        $"categoria: \"{category}\".\n" +
-                        $"enunciado: string con la pregunta.\n" +
-                        $"opciones: array de 4 respuestas posibles,donde:\n" +
-                        $"-opciones[0] es SIEMPRE la respuesta correcta. \n" +
-                        $"-opciones[1], opciones[2] y opciones[3] son respuestas incorrectas pero plausibles. \n" +
-                        $"dificultad: \"fácil\", \"media\" o \"difícil\".\n" +
-                        $"Reglas obligatorias:\n" +
-                        $"La respuesta correcta debe estar siempre en la posición 0 del array opciones.\n" +
-                        $"Las opciones incorrectas deben ser plausibles, pero claramente falsas frente a la correcta.\n" +
-                        $"Evita la repetición de preguntas.\n" +
-                        $"No generes preguntas con el mismo enunciado\n" +
-                        $"No reformules preguntas equivalentes con distinto texto.\n" +
-                        $"Cada pregunta debe abordar un concepto distinto o un enfoque claramente diferente.\n" +
-                        $"No repitas patrones evidentes en las respuestas incorrectas.\n" +
-                        $"Cantidad exacta a generar: \n" +
-                        $"50 preguntas con dificultad \"fácil\"\n" +
-                        $"50 preguntas con dificultad \"media\"\n" +
-                        $"50 preguntas con dificultad \"difícil\"\n" +
-                        $"Devuelve un único array JSON compacto sin saltos de linea, sin espacios innecesarios, que contenga todas las preguntas, sin explicaciones ni texto adicional.";
-
+        string prompt = GeneratePrompt(category, difficulty);
 
         GUIUtility.systemCopyBuffer = prompt;
-        Debug.Log("Prompt copiado al portapapeles:\n" + prompt);
-        infoText.text = $"Prompt copiado al portapapeles de la categoría: {category}";
+
+        FadeOutCanvas(copyMenu, () => ShowCanvas(pasteMenu));
+
+        infoText.text = "Prompt copiado. Genera e importa las preguntas de dificultad FÁCIL.";
     }
 
     #endregion
@@ -202,6 +206,7 @@ public class ImporterManager : MonoBehaviour
     public void ImportQuestions()
     {
         string rawJson = jsonInput.text.Trim();
+
         if (string.IsNullOrEmpty(rawJson))
         {
             infoText.text = "No se ha introducido ningún texto";
@@ -210,14 +215,14 @@ public class ImporterManager : MonoBehaviour
 
         if (!rawJson.StartsWith("["))
         {
-            infoText.text = "El texto pegado no es válido, revisa la respuesta copiada";
-            Debug.LogError("JSON inválido: no es un array");
+            infoText.text = "El texto pegado no es válido";
             return;
         }
 
         string wrappedJson = "{\"preguntas\":" + rawJson + "}";
 
         QuestionArrayWrapper newQuestionsWrapper;
+
         try
         {
             newQuestionsWrapper = JsonUtility.FromJson<QuestionArrayWrapper>(wrappedJson);
@@ -230,7 +235,7 @@ public class ImporterManager : MonoBehaviour
 
         if (newQuestionsWrapper?.preguntas == null || newQuestionsWrapper.preguntas.Length == 0)
         {
-            infoText.text = "El texto no contiene preguntas válidas";
+            infoText.text = "No contiene preguntas válidas";
             return;
         }
 
@@ -247,11 +252,34 @@ public class ImporterManager : MonoBehaviour
         existingBatch.questions = questionsList.ToArray();
 
         File.WriteAllText(questionsFilePath, JsonUtility.ToJson(existingBatch, true));
-
         UpdateImportHistory(newQuestionsWrapper.preguntas);
 
-        infoText.text = $"Preguntas importadas correctamente: {newQuestionsWrapper.preguntas.Length}";
-        jsonInput.text = "";
+        importStep++;
+
+        string category = categoryInput.text.Trim();
+
+        if (importStep == 1)
+        {
+            string prompt = GeneratePrompt(category, "media");
+            GUIUtility.systemCopyBuffer = prompt;
+            infoText.text = "Preguntas FÁCILES importadas. Prompt copiado para dificultad MEDIA.";
+            jsonInput.text = "";
+        }
+        else if (importStep == 2)
+        {
+            string prompt = GeneratePrompt(category, "difícil");
+            GUIUtility.systemCopyBuffer = prompt;
+            infoText.text = "Preguntas MEDIAS importadas. Prompt copiado para dificultad DIFÍCIL.";
+            jsonInput.text = "";
+        }
+        else
+        {
+            infoText.text = "Categoría completada correctamente.";
+            jsonInput.text = "";
+            importStep = 0;
+
+            FadeOutCanvas(pasteMenu, () => ShowCanvas(copyMenu));
+        }
     }
 
     /// <summary>
@@ -417,14 +445,6 @@ public class ImporterManager : MonoBehaviour
     #region UI Transitions
 
     /// <summary>
-    /// Handles pressing accept on instructions, fades to import menu.
-    /// </summary>
-    public void AcceptPressed()
-    {
-        FadeOutCanvas(instructionsPanel, () => ShowCanvas(importMenuPanel));
-    }
-
-    /// <summary>
     /// Handles pressing history button, shows categories and fades to history panel.
     /// </summary>
     public void HistoryPressed()
@@ -432,7 +452,7 @@ public class ImporterManager : MonoBehaviour
         List<CategoryData> categories = GetCategories();
         ShowCategories(categories);
 
-        FadeOutCanvas(importMenuPanel, () => ShowCanvas(historyMenuPanel));
+        FadeOutCanvas(copyMenu, () => ShowCanvas(historyMenuPanel));
     }
 
     /// <summary>
@@ -440,7 +460,7 @@ public class ImporterManager : MonoBehaviour
     /// </summary>
     public void BackPressed()
     {
-        FadeOutCanvas(historyMenuPanel, () => ShowCanvas(importMenuPanel));
+        FadeOutCanvas(historyMenuPanel, () => ShowCanvas(copyMenu));
     }
 
     /// <summary>

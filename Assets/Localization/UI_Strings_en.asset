@@ -100,12 +100,18 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 9481863290880
-    m_Localized: "Enter the desired category and the amountof questions, choose the
-      difficulty, and press the \"Copy\" button. This will copy a text to the clipboard.\n\nPaste
-      that text into any AI (such as ChatGPT) to generate the questions for you.\n\nThen
-      copy the answer the AI \u200B\u200Breturns and paste it into the field below,
-      then press \"Import.\"\n\nIf you want to see the imported categories, press
-      \"History.\""
+    m_Localized: 'Enter the category you want to add and press COPY.
+
+
+      A ready-to-use
+      prompt will be copied to use in any AI (DeepSeek recommended).
+
+
+      The
+      category is generated in 3 parts per difficulty.
+
+      Import each part when
+      the game asks for it.'
     m_Metadata:
       m_Items: []
   - m_Id: 9934621630464

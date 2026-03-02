@@ -100,12 +100,10 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 9481863290880
-    m_Localized: "Introduce la categor\xEDa que quieras y la cantidad de preguntas,
-      elige la dificultad y pulsa el bot\xF3n \u201CCopiar\u201D. Eso copiar\xE1
-      un texto al portapapeles.\n\nPega ese texto en cualquier IA (como ChatGPT)
-      para que te genere las preguntas.\n\nLuego copia la respuesta que te devuelva
-      la IA y p\xE9gala en el campo inferior, despu\xE9s pulsa \"Importar\". \n\nSi
-      quieres ver las Categor\xEDas importadas pulsa \"Historial\"."
+    m_Localized: "Escribe la categor\xEDa que quieres a\xF1adir y pulsa COPIAR.\n\nSe
+      copiar\xE1 un texto listo para pegar en una IA (recomendado: DeepSeek).\n\nLa
+      categor\xEDa se genera en 3 partes por dificultad.\nImporta cada parte cuando
+      el juego te lo pida."
     m_Metadata:
       m_Items: []
   - m_Id: 9934621630464
