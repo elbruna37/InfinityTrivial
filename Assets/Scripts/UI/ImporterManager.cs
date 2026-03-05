@@ -39,6 +39,7 @@ public class ImporterManager : MonoBehaviour
     [Header("UI / PASTE")]
     [SerializeField] private TMP_InputField jsonInput;
     [SerializeField] private TMP_Text infoText;
+    [SerializeField] private string lastClipboardContent = "";
 
     [Header("UI / HISTORY")]
     [SerializeField] private Transform contentParent;
@@ -150,10 +151,18 @@ public class ImporterManager : MonoBehaviour
         if (onlyLetters != value) categoryInput.text = onlyLetters;
     }
 
+    void OnApplicationPause(bool pauseStatus)
+    {
+        if (!pauseStatus)
+        {
+            Debug.Log("La app ha vuelto del background");
+            TryPasteFromClipboard();
+        }
+    }
+
     #endregion
 
     #region Copy Prompt
-
 
     /// <summary>
     /// Builds a JSON prompt based on user inputs and copies it to the system clipboard.
@@ -199,6 +208,27 @@ public class ImporterManager : MonoBehaviour
     #endregion
 
     #region Import Questions
+
+    private void TryPasteFromClipboard()
+    {
+        string clipboard = GUIUtility.systemCopyBuffer;
+
+        if (string.IsNullOrEmpty(clipboard))
+            return;
+
+        // Evita pegar lo mismo dos veces
+        if (clipboard == lastClipboardContent)
+            return;
+
+        // Validación básica
+        if (!clipboard.Trim().StartsWith("["))
+            return;
+
+        jsonInput.text = clipboard;
+        lastClipboardContent = clipboard;
+
+        infoText.text = "Texto pegado automáticamente desde el portapapeles.";
+    }
 
     /// <summary>
     /// Imports questions from the pasted JSON input and appends them to existing questions and history.

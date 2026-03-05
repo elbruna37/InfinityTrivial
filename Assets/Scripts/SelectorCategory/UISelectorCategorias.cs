@@ -74,7 +74,7 @@ public class UISelectorCategorias : MonoBehaviour
         camSequence.Join(cameraObject.transform.DORotate(new Vector3(90, 360, 0), 1f, RotateMode.FastBeyond360).SetEase(Ease.InOutQuad));
         camSequence.OnComplete(() =>
         {
-            Destroy(QuestionsManager.Instance.gameObject);
+            //Destroy(QuestionsManager.Instance.gameObject);
             SceneManager.LoadScene("Game");
         });
     }

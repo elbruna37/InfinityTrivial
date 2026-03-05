@@ -36,7 +36,7 @@ public class TurnManager : MonoBehaviour
     bool tapCancelled;
 
     //true = PC controller; false = Movil Controller
-    private bool controller = false;
+    private bool controller = true;
     private float touchStartTime;
     private bool touchActive;
     private bool pauseTriggered;
